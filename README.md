@@ -1,5 +1,6 @@
 # Smart Melon — Frontend (FERTIMATA Rev A)
 
+
 Konsol operator PWA untuk memantau dan mengendalikan greenhouse melon dengan fertigasi otomatis.
 Spesifikasi lengkap: [`prompt-frontend.md`](prompt-frontend.md). Celah backend: [`docs/backend-gaps.md`](docs/backend-gaps.md).
 
