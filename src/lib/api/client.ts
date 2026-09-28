@@ -1,5 +1,5 @@
 import type { z } from "zod";
-import { siteConfig } from "@/config/site";
+import { apiOrigin } from "@/config/site";
 import { endSession, getToken } from "@/lib/auth/session";
 import { apiErrorSchema } from "./types";
 
@@ -44,7 +44,7 @@ type RequestOptions<S extends z.ZodType | undefined> = {
 };
 
 export function buildUrl(path: string, query?: Query): string {
-  const url = new URL(`${siteConfig.apiBaseUrl}/api${path}`);
+  const url = new URL(`${apiOrigin()}/api${path}`);
   if (query) {
     for (const [k, v] of Object.entries(query)) {
       if (v !== undefined && v !== null && v !== "") url.searchParams.set(k, String(v));

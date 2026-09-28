@@ -3,7 +3,7 @@
 import { Client } from "@stomp/stompjs";
 import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useSyncExternalStore } from "react";
-import { siteConfig } from "@/config/site";
+import { realtimeUrl } from "@/config/site";
 import { qk } from "@/lib/api/query-keys";
 import { applyRealtimeEvent } from "./apply";
 
@@ -46,7 +46,7 @@ export function useRealtime(token: string | null) {
     // Satu kegagalan dianggap masih "menyambung"; setelah itu tampilkan "terputus".
     let failures = 0;
     const client = new Client({
-      brokerURL: siteConfig.wsUrl,
+      brokerURL: realtimeUrl(),
       connectHeaders: { Authorization: `Bearer ${token}` },
       reconnectDelay: 5_000,
       heartbeatIncoming: 20_000,

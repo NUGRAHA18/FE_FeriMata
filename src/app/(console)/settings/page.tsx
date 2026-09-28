@@ -49,8 +49,8 @@ export default function SettingsPage() {
             rows={[
               ["Situs", siteConfig.name],
               ["Lokasi", siteConfig.location || "—"],
-              ["API", <span key="a" className="font-mono text-xs">{siteConfig.apiBaseUrl}</span>],
-              ["WebSocket", <span key="w" className="font-mono text-xs">{siteConfig.wsUrl}</span>],
+              ["API", <span key="a" className="font-mono text-xs">{siteConfig.apiBaseUrl || "(origin halaman)/api"}</span>],
+              ["WebSocket", <span key="w" className="font-mono text-xs">{siteConfig.wsUrl || "(origin halaman)/ws"}</span>],
               ["Realtime", connection === "connected" ? "Tersambung" : connection === "connecting" ? "Menyambung…" : "Terputus"],
               ["Mode backend", system?.mode ?? "—"],
               ["Transport pesan", system ? `${system.messagingTransport ?? "—"} (${system.messagingConnected ? "tersambung" : "terputus"})` : "—"],

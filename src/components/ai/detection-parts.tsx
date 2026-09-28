@@ -2,7 +2,7 @@
 
 import { Camera } from "lucide-react";
 import { useState, type ReactNode } from "react";
-import { siteConfig } from "@/config/site";
+import { apiOrigin } from "@/config/site";
 import type { AiDetection } from "@/lib/api/types";
 import { formatPercent } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -12,7 +12,7 @@ export function resolveImageUrl(url: string | null): string | null {
   if (!url) return null;
   if (/^(https?:|data:|blob:)/i.test(url)) return url;
   try {
-    return new URL(url, siteConfig.apiBaseUrl + "/").toString();
+    return new URL(url, apiOrigin() + "/").toString();
   } catch {
     return null;
   }
