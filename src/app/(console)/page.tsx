@@ -24,8 +24,9 @@ export default function DashboardPage() {
     <>
       <PageHeader
         title={siteConfig.name}
+        subtitle="Kondisi greenhouse hari ini"
         actions={
-          <Select label="Pilih plot" id="plot" value={plot} onChange={(e) => setPlot(e.target.value as PlotId)} wrapperClassName="w-full sm:w-auto" className="w-full">
+          <Select label="Pilih bedengan" id="plot" value={plot} onChange={(e) => setPlot(e.target.value as PlotId)} wrapperClassName="w-full sm:w-auto" className="w-full">
             {plots.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
@@ -35,12 +36,13 @@ export default function DashboardPage() {
         }
       />
       {overviewError && (
-        <ErrorState className="mb-4" message={`Gagal memuat ringkasan dashboard: ${errorMessage(overviewError)}`} />
+        <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
       )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)]">
         <div className="flex min-w-0 flex-col gap-4 md:col-span-2 lg:col-span-1">
           <ConditionsCard plot={plot} onPlotChange={setPlot} />
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+          {/* Dua kolom di ponsel supaya angkanya besar dan terbaca; tiga kolom mulai tablet. */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             <SystemStatusCard />
             {soilMetricCards.map((m) => (
               <ReadingMetricCard key={`${plot}-${m.suffix}`} metricKey={plotMetricKey(plot, m.suffix)} label={m.label} icon={m.icon} />

@@ -67,7 +67,7 @@ describe("label domain", () => {
     expect(powerSourceLabel(null)).toBe("Tidak diketahui");
   });
   it("tipe alert dikenal diterjemahkan, lainnya mentah", () => {
-    expect(alertTypeLabel("DEVICE_OFFLINE")).toBe("Perangkat offline");
+    expect(alertTypeLabel("DEVICE_OFFLINE")).toBe("Alat terputus");
     expect(alertTypeLabel("SOMETHING_NEW")).toBe("SOMETHING_NEW");
   });
   it("kode stasiun trolley", () => {

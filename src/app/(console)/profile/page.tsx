@@ -27,10 +27,10 @@ export default function ProfilePage() {
 
   return (
     <>
-      <PageHeader title="Profil" />
+      <PageHeader title="Akun" />
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>
-          <CardHeader title="Operator" icon={UserRound} />
+          <CardHeader title="Pengguna" icon={UserRound} />
           {me.isPending ? (
             <Skeleton className="h-40" />
           ) : me.error ? (
@@ -48,9 +48,8 @@ export default function ProfilePage() {
               </div>
               <KeyValue
                 rows={[
-                  ["Role", me.data.role],
+                  ["Peran", me.data.role === "OPERATOR" ? "Operator" : me.data.role],
                   ["Status akun", me.data.enabled ? "Aktif" : "Nonaktif"],
-                  ["ID", String(me.data.id)],
                 ]}
               />
             </>
@@ -60,9 +59,8 @@ export default function ProfilePage() {
           <CardHeader title="Sesi" icon={LogOut} />
           <KeyValue
             rows={[
-              ["Berakhir", session ? formatDateTime(session.expiresAt) : "—"],
-              ["Sisa", session ? <RelativeTime key="r" iso={session.expiresAt} /> : "—"],
-              ["Perpanjangan", "Tidak tersedia (backend tanpa refresh token)"],
+              ["Sesi berakhir", session ? formatDateTime(session.expiresAt) : "—"],
+              ["Sisa waktu", session ? <RelativeTime key="r" iso={session.expiresAt} /> : "—"],
             ]}
           />
           <div className="mt-4 flex flex-wrap gap-2">

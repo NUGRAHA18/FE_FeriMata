@@ -1,7 +1,9 @@
 import { siteConfig } from "@/config/site";
 
 /*
- * Formatter tampilan: angka, satuan, waktu (WIB) — semua dalam Bahasa Indonesia.
+ * Formatter tampilan: angka, satuan, waktu (WIB) — semua dalam Bahasa Indonesia yang sederhana.
+ * Pengguna utama adalah petani, jadi label domain menghindari istilah teknis (liveness, acknowledge,
+ * broker, interlock) dan memakai kata sehari-hari (alat terhubung, sudah ditangani, listrik padam).
  * Timestamp dari backend selalu ISO-8601 UTC.
  */
 
@@ -128,7 +130,7 @@ export function formatTime(v: string | number | Date | null | undefined, withSec
 
 // ── Label domain ─────────────────────────────────────────────────────────────
 
-/** Label sumber daya. Keputusan "daya cadangan" tetap memakai onBackupPower dari backend. */
+/** Label sumber listrik. Keputusan "pakai baterai" tetap memakai onBackupPower dari backend. */
 export function powerSourceLabel(source: string | null | undefined): string {
   if (!source) return "Tidak diketahui";
   switch (source.toUpperCase()) {
@@ -143,15 +145,16 @@ export function powerSourceLabel(source: string | null | undefined): string {
   }
 }
 
+/** Status koneksi alat, bahasa sehari-hari. */
 export const livenessLabel: Record<string, string> = {
-  ONLINE: "Online",
-  OFFLINE: "Offline",
-  UNKNOWN: "Belum melapor",
+  ONLINE: "Terhubung",
+  OFFLINE: "Terputus",
+  UNKNOWN: "Belum pernah terhubung",
 };
 
 export const commandStatusLabel: Record<string, string> = {
   PENDING: "Menunggu",
-  SENT: "Terkirim — menunggu konfirmasi perangkat",
+  SENT: "Terkirim, menunggu jawaban alat",
   EXECUTED: "Dijalankan",
   FAILED: "Gagal",
   CANCELLED: "Dibatalkan",
@@ -159,38 +162,84 @@ export const commandStatusLabel: Record<string, string> = {
 
 export const severityLabel: Record<string, string> = {
   INFO: "Info",
-  WARNING: "Peringatan",
-  CRITICAL: "Kritis",
+  WARNING: "Perlu perhatian",
+  CRITICAL: "Darurat",
 };
 
 const alertTypeLabels: Record<string, string> = {
-  DEVICE_OFFLINE: "Perangkat offline",
-  DEVICE_RECOVERED: "Perangkat kembali online",
-  ACTUATOR_COMMAND_FAILED: "Perintah aktuator gagal",
-  TELEMETRY_REJECTED: "Telemetri ditolak",
-  POWER_BACKUP: "Beralih ke daya cadangan",
-  POWER_RESTORED: "Daya PLN pulih",
-  DEVICE_REPORTED: "Laporan perangkat",
-  SSR_SHORT: "SSR terhubung singkat",
-  PUMP_DRY_RUN: "Pompa berjalan kering",
-  DOSING_NOT_CONVERGING: "Dosing tidak konvergen",
-  TROLLEY_LIMIT_HIT: "Trolley menyentuh limit",
-  MODBUS_TIMEOUT: "Timeout Modbus",
+  DEVICE_OFFLINE: "Alat terputus",
+  DEVICE_RECOVERED: "Alat terhubung kembali",
+  ACTUATOR_COMMAND_FAILED: "Perintah gagal dijalankan",
+  TELEMETRY_REJECTED: "Data sensor ditolak",
+  POWER_BACKUP: "Listrik PLN padam, memakai baterai",
+  POWER_RESTORED: "Listrik PLN kembali normal",
+  DEVICE_REPORTED: "Laporan dari alat",
+  SSR_SHORT: "Saklar pompa rusak (korslet)",
+  PUMP_DRY_RUN: "Pompa menyala tanpa air",
+  DOSING_NOT_CONVERGING: "Campuran pupuk tidak mencapai target",
+  TROLLEY_LIMIT_HIT: "Kereta kamera menyentuh ujung rel",
+  MODBUS_TIMEOUT: "Alat tidak menjawab",
 };
 
-/** Label Indonesia untuk tipe alert yang dikenal; tipe lain ditampilkan mentah. */
+/** Label Indonesia untuk tipe peringatan yang dikenal; tipe lain ditampilkan mentah. */
 export function alertTypeLabel(type: string): string {
   return alertTypeLabels[type] ?? type;
 }
 
 export const sourceLabel: Record<string, string> = {
   OPERATOR: "Operator",
-  AUTOMATION: "Otomasi",
+  AUTOMATION: "Otomatis",
   SYSTEM: "Sistem",
-  DEVICE: "Perangkat",
+  DEVICE: "Alat",
 };
+
+const detectionTypeLabels: Record<string, string> = {
+  NUTRIENT_DEFICIENCY: "Kekurangan nutrisi",
+  DISEASE: "Penyakit",
+};
+
+/** Label jenis deteksi kamera; jenis baru dari model ditampilkan apa adanya. */
+export function detectionTypeLabel(type: string): string {
+  return detectionTypeLabels[type] ?? type;
+}
+
+/** Tipe aktuator (dari katalog hardware) → kata sehari-hari. */
+const actuatorTypeLabels: Record<string, string> = {
+  DISTRIBUTION_PUMP: "Pompa air utama",
+  DOSING_PUMP: "Pompa pupuk",
+  SAMPLING_PUMP: "Pompa pengambil sampel",
+  FILL_VALVE: "Kran pengisian",
+  ILLUMINATION: "Lampu kamera",
+  TROLLEY_MOTOR: "Kereta kamera (jalan)",
+  TROLLEY_DIRECTION: "Kereta kamera (arah)",
+};
+
+export function actuatorTypeLabel(type: string | null | undefined): string | null {
+  if (!type) return null;
+  return actuatorTypeLabels[type] ?? type;
+}
+
+/** Tipe perangkat (dari katalog hardware) → kata sehari-hari. */
+const deviceTypeLabels: Record<string, string> = {
+  EDGE_GATEWAY: "Komputer utama",
+  POWER_METER: "Pengukur listrik",
+  MODBUS_IO: "Panel saklar",
+  MODBUS_SENSOR_GROUP: "Kelompok sensor",
+};
+
+export function deviceTypeLabel(type: string | null | undefined): string | null {
+  if (!type) return null;
+  return deviceTypeLabels[type] ?? type;
+}
 
 /** Kode stasiun trolley: 0 → HOME, 1–12 → ST-01…ST-12. */
 export function stationCode(n: number): string {
   return n <= 0 ? "HOME" : `ST-${String(n).padStart(2, "0")}`;
+}
+
+/** Posisi kereta kamera untuk manusia: "di posisi awal", "di stasiun 3", "belum dilaporkan". */
+export function stationLabel(n: number | null | undefined): string {
+  if (n == null || !Number.isFinite(n)) return "belum dilaporkan";
+  const r = Math.round(n);
+  return r <= 0 ? "di posisi awal (HOME)" : `di stasiun ${r}`;
 }

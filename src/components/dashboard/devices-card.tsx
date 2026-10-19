@@ -13,7 +13,7 @@ function Summary({ label, value }: { label: string; value: number | string }) {
   return (
     <div className="min-w-0">
       <p className="text-xs text-muted">{label}</p>
-      <p className="tabular mt-0.5 text-xl text-ink">{value}</p>
+      <p className="tabular mt-0.5 text-2xl text-ink">{value}</p>
     </div>
   );
 }
@@ -35,7 +35,7 @@ export function DevicesCard({ className }: { className?: string }) {
 
   return (
     <Card className={cn("flex min-w-0 flex-col", className)}>
-      <CardHeader title="Perangkat" icon={Cpu} href="/devices" hrefLabel="Buka daftar perangkat" />
+      <CardHeader title="Alat" icon={Cpu} href="/devices" hrefLabel="Buka daftar alat" />
       {overview.error ? (
         <ErrorState message={errorMessage(overview.error)} onRetry={() => overview.refetch()} />
       ) : !d ? (
@@ -53,10 +53,10 @@ export function DevicesCard({ className }: { className?: string }) {
       ) : (
         <>
           <div className="mb-4 grid grid-cols-4 gap-2 px-1">
-            <Summary label="Total" value={d.total} />
-            <Summary label="Online" value={d.online} />
+            <Summary label="Alat" value={d.total} />
+            <Summary label="Terhubung" value={d.online} />
             <Summary label="Sensor" value={d.sensors} />
-            <Summary label="Aktuator" value={d.actuators} />
+            <Summary label="Bisa dikendalikan" value={d.actuators} />
           </div>
           <ul className="scroll-thin -mx-1 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-1 lg:max-h-[640px]">
             {d.items.map((s) => (

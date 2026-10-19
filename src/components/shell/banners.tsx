@@ -25,14 +25,13 @@ export function Banner({ tone, icon, children, action }: { tone: Tone; icon: Rea
   );
 }
 
-const iconCls = "size-[18px]";
+const iconCls = "size-5";
 
-/** Banner yang diturunkan dari overview: broker terputus, daya cadangan, mode pengembangan. */
+/** Banner dari overview: koneksi ke alat putus, memakai baterai, mode percobaan. Bahasa sehari-hari. */
 export function SystemBanners() {
   const flags = useOverview((o) => ({
     dev: o.system.mode === "DEVELOPMENT",
     messagingDown: !o.system.messagingConnected,
-    transport: o.system.messagingTransport,
     backup: o.devices.items.filter((d) => d.onBackupPower).map((d) => d.deviceCode),
   })).data;
   if (!flags) return null;
@@ -40,27 +39,26 @@ export function SystemBanners() {
     <>
       {flags.backup.length > 0 && (
         <Banner tone="danger" icon={<BatteryWarning aria-hidden className={iconCls} strokeWidth={1.8} />}>
-          <strong className="font-semibold">Mode baterai — listrik PLN padam / daya cadangan</strong> ({flags.backup.join(", ")}). Dosing,
-          sampling, dan trolley akan ditolak oleh backend.
+          <strong className="font-semibold">Listrik PLN padam, sistem memakai baterai.</strong> Pompa pupuk dan kereta kamera dihentikan sementara
+          sampai listrik kembali.
         </Banner>
       )}
       {flags.messagingDown && (
         <Banner tone="warn" icon={<RadioTower aria-hidden className={iconCls} strokeWidth={1.8} />}>
-          <strong className="font-semibold">Broker pesan terputus</strong>
-          {flags.transport ? ` (${flags.transport})` : ""} — perintah aktuator tidak akan sampai ke perangkat.
+          <strong className="font-semibold">Koneksi ke alat terputus.</strong> Perintah nyalakan/matikan belum bisa dikirim sekarang.
         </Banner>
       )}
       {flags.dev && (
         <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-info-soft px-3 py-1 text-xs font-medium text-info">
           <FlaskConical aria-hidden className="size-3.5" strokeWidth={1.8} />
-          Mode pengembangan — data simulasi
+          Mode percobaan — angka di layar bukan dari sensor asli
         </p>
       )}
     </>
   );
 }
 
-/** Peringatan 5 menit sebelum token (60 menit, tanpa refresh) kedaluwarsa. */
+/** Peringatan 5 menit sebelum sesi (60 menit) habis. */
 export function SessionExpiryBanner({ expiresAt, onRelogin }: { expiresAt: string; onRelogin: () => void }) {
   const now = useNow();
   const left = Math.round((Date.parse(expiresAt) - now) / 1000);
@@ -71,12 +69,11 @@ export function SessionExpiryBanner({ expiresAt, onRelogin }: { expiresAt: strin
       icon={<Clock aria-hidden className={iconCls} strokeWidth={1.8} />}
       action={
         <Button size="sm" variant="dark" onClick={onRelogin}>
-          Masuk ulang
+          Masuk lagi
         </Button>
       }
     >
-      Sesi berakhir dalam <strong className="tabular font-semibold">{formatDuration(left)}</strong>. Backend belum mendukung perpanjangan sesi —
-      simpan pekerjaan lalu masuk ulang.
+      Sesi Anda habis dalam <strong className="tabular font-semibold">{formatDuration(left)}</strong>. Setelah itu Anda perlu masuk lagi.
     </Banner>
   );
 }

@@ -10,10 +10,10 @@ import type { SensorReading } from "@/lib/api/types";
  */
 
 export const RANGES = {
-  "1h": { label: "1 j", ms: 3_600_000 },
-  "6h": { label: "6 j", ms: 6 * 3_600_000 },
-  "24h": { label: "24 j", ms: 24 * 3_600_000 },
-  "7d": { label: "7 h", ms: 7 * 24 * 3_600_000 },
+  "1h": { label: "1 jam", ms: 3_600_000 },
+  "6h": { label: "6 jam", ms: 6 * 3_600_000 },
+  "24h": { label: "1 hari", ms: 24 * 3_600_000 },
+  "7d": { label: "7 hari", ms: 7 * 24 * 3_600_000 },
 } as const;
 export type RangeKey = keyof typeof RANGES;
 

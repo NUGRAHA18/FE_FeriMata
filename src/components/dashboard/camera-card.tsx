@@ -9,6 +9,7 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useDetections } from "@/lib/api/queries";
+import { detectionTypeLabel } from "@/lib/format";
 
 const PAGER_SIZE = 10;
 const noFilter = { kind: "none" } as const;
@@ -30,13 +31,13 @@ export function CameraCard() {
 
   return (
     <Card>
-      <CardHeader title="Kamera AI" icon={ScanEye} href="/ai" hrefLabel="Buka halaman AI/Kamera" />
+      <CardHeader title="Foto tanaman terbaru" icon={ScanEye} href="/ai" hrefLabel="Buka halaman kamera" />
       {q.isPending ? (
         <Skeleton className="aspect-[4/3] w-full rounded-inner" />
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : !d ? (
-        <EmptyState icon={<ScanEye aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Belum ada deteksi AI" hint="Deteksi baru akan muncul otomatis." />
+        <EmptyState icon={<ScanEye aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Belum ada foto dari kamera" hint="Foto dan hasil pemeriksaan tanaman akan muncul di sini." />
       ) : (
         <>
           <DetectionImage detection={d} className="aspect-[4/3] w-full">
@@ -51,16 +52,16 @@ export function CameraCard() {
                 {i + 1}/{items.length}
               </span>
               <div className="flex gap-1.5">
-                <button type="button" className={overlayBtn} aria-label="Deteksi sebelumnya (lebih baru)" disabled={i === 0} onClick={() => setIndex(i - 1)}>
+                <button type="button" className={overlayBtn} aria-label="Foto yang lebih baru" disabled={i === 0} onClick={() => setIndex(i - 1)}>
                   <ChevronLeft aria-hidden className="size-4" />
                 </button>
-                <button type="button" className={overlayBtn} aria-label="Buka alert" onClick={openAlertDrawer}>
+                <button type="button" className={overlayBtn} aria-label="Buka peringatan" onClick={openAlertDrawer}>
                   <Bell aria-hidden className="size-4" strokeWidth={1.8} />
                 </button>
                 <button
                   type="button"
                   className={overlayBtn}
-                  aria-label="Deteksi berikutnya (lebih lama)"
+                  aria-label="Foto yang lebih lama"
                   disabled={i >= items.length - 1}
                   onClick={() => setIndex(i + 1)}
                 >
@@ -70,8 +71,8 @@ export function CameraCard() {
             </div>
           </DetectionImage>
           <div className="mt-3 flex items-baseline justify-between gap-2 text-xs text-muted">
-            <span className="truncate">{d.detectionType}</span>
-            <span className="font-mono">{d.plantCode ?? d.deviceCode}</span>
+            <span className="truncate">{detectionTypeLabel(d.detectionType)}</span>
+            <span>{d.plantCode ?? ""}</span>
           </div>
           <ScoreBars detection={d} className="mt-2.5" />
         </>

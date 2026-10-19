@@ -126,7 +126,32 @@ function onCommand(qc: QueryClient, c: ActuatorCommand) {
 }
 
 function alertMatches(f: AlertFilters, a: Alert) {
-  return (f.acknowledged === undefined || f.acknowledged === a.acknowledged) && (f.severity === undefined || f.severity === a.severity);
+  return (
+    (f.acknowledged === undefined || f.acknowledged === a.acknowledged) &&
+    (f.severity === undefined || f.severity === a.severity) &&
+    (f.deviceId === undefined || f.deviceId === a.relatedDeviceId) &&
+    (f.sensorId === undefined || f.sensorId === a.relatedSensorId) &&
+    (f.actuatorId === undefined || f.actuatorId === a.relatedActuatorId)
+  );
+}
+
+/**
+ * ALERT_UPDATED: alert yang sudah ada berubah (di-acknowledge, mungkin oleh operator lain).
+ * Daftar diperbarui di tempat; hitungan di overview diambil ulang dari server, karena dari cache
+ * tidak bisa dibedakan apakah pengurangan sudah dilakukan oleh mutasi lokal.
+ */
+function onAlertUpdated(qc: QueryClient, a: Alert) {
+  for (const [key, page] of qc.getQueriesData<Page<Alert>>({ queryKey: qk.alertsRoot })) {
+    if (!page || !page.content.some((x) => x.id === a.id)) continue;
+    const f = (key[1] ?? {}) as AlertFilters;
+    const content = alertMatches(f, a) ? page.content.map((x) => (x.id === a.id ? a : x)) : page.content.filter((x) => x.id !== a.id);
+    qc.setQueryData<Page<Alert>>(key, { ...page, content, totalElements: page.totalElements - (page.content.length - content.length) });
+  }
+  qc.setQueryData<DashboardOverview>(qk.overview, (o) => {
+    if (!o || !a.acknowledged || !o.alerts.active.some((x) => x.id === a.id)) return o;
+    return { ...o, alerts: { ...o.alerts, active: o.alerts.active.filter((x) => x.id !== a.id) } };
+  });
+  void qc.invalidateQueries({ queryKey: qk.overview }, { cancelRefetch: false });
 }
 
 function onAlert(qc: QueryClient, a: Alert) {
@@ -211,6 +236,12 @@ export function applyRealtimeEvent(qc: QueryClient, raw: unknown): boolean {
       const p = alertSchema.safeParse(data);
       if (!p.success) return false;
       onAlert(qc, p.data);
+      return true;
+    }
+    case "ALERT_UPDATED": {
+      const p = alertSchema.safeParse(data);
+      if (!p.success) return false;
+      onAlertUpdated(qc, p.data);
       return true;
     }
     case "AI_DETECTION_CREATED": {

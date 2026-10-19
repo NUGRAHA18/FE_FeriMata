@@ -46,9 +46,9 @@ export function DetectionImage({ detection, className, children }: { detection: 
 }
 
 const scoreLabels: Record<string, string> = {
-  Leaf_N_stress: "Stres N",
-  Leaf_P_stress: "Stres P",
-  Leaf_K_stress: "Stres K",
+  Leaf_N_stress: "Kurang Nitrogen (N)",
+  Leaf_P_stress: "Kurang Fosfor (P)",
+  Leaf_K_stress: "Kurang Kalium (K)",
 };
 
 export function numericScores(scores: Record<string, unknown> | null): [string, number][] {
@@ -67,10 +67,10 @@ export function ScoreBars({ detection, className }: { detection: AiDetection; cl
       return (
         <div className={cn("flex items-baseline justify-between gap-2 text-sm", className)}>
           <span className="font-medium text-ink">{detection.label}</span>
-          <span className="tabular text-muted">keyakinan {formatPercent(detection.confidence)}</span>
+          <span className="tabular text-muted">kemungkinan {formatPercent(detection.confidence)}</span>
         </div>
       );
-    return <p className={cn("text-sm text-muted", className)}>Tidak ada skor.</p>;
+    return <p className={cn("text-sm text-muted", className)}>Belum ada hasil pemeriksaan.</p>;
   }
   return (
     <dl className={cn("flex flex-col gap-2", className)}>

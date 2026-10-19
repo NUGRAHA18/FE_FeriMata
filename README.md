@@ -1,7 +1,7 @@
-# Smart Melon — Frontend (FERTIMATA Rev A)
+# FertiMata — Frontend
 
 
-Konsol operator PWA untuk memantau dan mengendalikan greenhouse melon dengan fertigasi otomatis.
+Aplikasi web (PWA) untuk petani/operator: memantau sensor, mengendalikan pompa dan kamera, dan menerima peringatan dari greenhouse melon dengan pemupukan otomatis. Bahasa antarmuka sederhana, tanpa istilah teknis.
 Spesifikasi lengkap: [`prompt-frontend.md`](prompt-frontend.md). Celah backend: [`docs/backend-gaps.md`](docs/backend-gaps.md).
 
 Stack: Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · TanStack Query · @stomp/stompjs ·
@@ -42,7 +42,8 @@ src/components/*              kartu domain (dashboard, actuators, sensors, devic
 src/config/dashboard-layout.ts        SATU-SATUNYA pemetaan metric key → kartu dashboard
 src/lib/api                   klien HTTP (ApiRequestError), tipe + skema zod, endpoint, hook query, kunci cache
 src/lib/realtime              klien STOMP + penerapan event ke cache (apply.ts)
-src/lib/actuator-safety.ts    validasi durasi & terjemahan interlock
+src/lib/actuator-safety.ts    validasi durasi & terjemahan penolakan keamanan
+src/lib/icons.ts             ikon per tipe alat/sensor/aktuator
 src/lib/format.ts             angka, satuan, waktu WIB, label Indonesia
 ```
 

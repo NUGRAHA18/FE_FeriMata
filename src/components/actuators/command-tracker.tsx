@@ -9,10 +9,17 @@ import { cn } from "@/lib/cn";
 
 export type TrackedCommand = { uid: string; sentAtLocal: number };
 
+function commandVerb(commandType: string) {
+  const c = commandType.toUpperCase();
+  if (c === "ON") return "Nyalakan";
+  if (c === "OFF") return "Matikan";
+  return commandType;
+}
+
 /**
- * Status perintah yang dilacak: 202 hanya berarti "terkirim ke broker". Menunggu event
+ * Status perintah yang dilacak: 202 hanya berarti "terkirim". Menunggu event
  * ACTUATOR_COMMAND_UPDATED dengan commandUid yang sama sampai EXECUTED / FAILED.
- * Tanpa konfirmasi ±30 dtk → peringatan (tidak pernah dianggap berhasil).
+ * Tanpa jawaban ±30 dtk → peringatan (tidak pernah dianggap berhasil).
  */
 export function CommandTracker({ tracked, className }: { tracked: TrackedCommand; className?: string }) {
   const cmd = useTrackedCommand(tracked.uid);
@@ -32,14 +39,12 @@ export function CommandTracker({ tracked, className }: { tracked: TrackedCommand
       <Icon aria-hidden className={cn("mt-0.5 size-4 shrink-0", waiting && !late && "animate-spin")} strokeWidth={1.9} />
       <div className="min-w-0">
         <p className="font-medium">
-          {cmd.commandType}
-          {duration != null && ` · ${formatDuration(duration)}`} — {commandStatusLabel[cmd.status] ?? cmd.status}
+          {commandVerb(cmd.commandType)}
+          {duration != null && ` ${formatDuration(duration)}`} — {commandStatusLabel[cmd.status] ?? cmd.status}
         </p>
-        {late && <p className="mt-0.5 text-xs">Belum ada konfirmasi dari perangkat setelah {formatDuration(Math.round(elapsed / 1000))}. Jangan anggap berhasil.</p>}
+        {late && <p className="mt-0.5 text-xs">Alat belum menjawab setelah {formatDuration(Math.round(elapsed / 1000))}. Periksa alat sebelum menganggap berhasil.</p>}
         {cmd.status === "FAILED" && cmd.errorMessage && <p className="mt-0.5 text-xs">{cmd.errorMessage}</p>}
-        <p className="mt-0.5 font-mono text-[11px] opacity-70">
-          {cmd.commandUid} · {formatTime(cmd.executedAt ?? cmd.sentAt ?? cmd.requestedAt, true)}
-        </p>
+        <p className="mt-0.5 text-xs opacity-70">{formatTime(cmd.executedAt ?? cmd.sentAt ?? cmd.requestedAt, true)} WIB</p>
       </div>
     </div>
   );

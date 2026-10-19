@@ -3,8 +3,11 @@
 // Default dev tetap backend lokal di :8080 supaya `npm run dev` jalan tanpa .env.local.
 const devDefault = process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
 
+/** Nama produk. Dipakai di judul tab, manifest PWA, dan halaman login. */
+export const productName = "FertiMata";
+
 export const siteConfig = {
-  name: process.env.NEXT_PUBLIC_SITE_NAME ?? "Greenhouse Melon",
+  name: process.env.NEXT_PUBLIC_SITE_NAME ?? productName,
   location: process.env.NEXT_PUBLIC_SITE_LOCATION ?? "",
   apiBaseUrl: (process.env.NEXT_PUBLIC_API_BASE_URL ?? devDefault).replace(/\/+$/, ""),
   wsUrl: process.env.NEXT_PUBLIC_WS_URL ?? (devDefault ? "ws://localhost:8080/ws" : ""),

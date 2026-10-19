@@ -44,15 +44,14 @@ export function HistoryPanel({ sensorId, unit, label }: { sensorId: number; unit
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : !q.data.points.length ? (
-        <EmptyState title="Tidak ada data numerik pada rentang ini" hint="Metrik non-numerik (textValue) tidak digambar." />
+        <EmptyState title="Belum ada data pada rentang waktu ini" />
       ) : view === "chart" ? (
         <figure>
           <div className="h-72 w-full" role="img" aria-label={`Grafik ${label} ${RANGES[range].label} terakhir`}>
             <HistoryChart points={q.data.points} unit={unit} spanMs={RANGES[range].ms} />
           </div>
           <figcaption className="mt-2 text-xs text-muted">
-            {q.data.points.length} titik dari {q.data.total.toLocaleString("id-ID")} pembacaan
-            {q.data.sampled ? " · disampel per jendela waktu (rata-rata) agar ringan" : q.data.points.length < q.data.total ? " · dirata-rata per interval" : ""}.
+            Dari {q.data.total.toLocaleString("id-ID")} pembacaan{q.data.sampled || q.data.points.length < q.data.total ? ", dirata-ratakan agar grafik ringan" : ""}.
           </figcaption>
         </figure>
       ) : (

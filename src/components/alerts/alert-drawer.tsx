@@ -24,7 +24,7 @@ function DrawerBody() {
   }
   if (q.error) return <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data.content.length)
-    return <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Tidak ada alert aktif" hint="Semua alert sudah ditangani." />;
+    return <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Tidak ada peringatan" hint="Semua sudah ditangani." />;
   return (
     <div className="flex flex-col gap-2">
       {q.data.content.map((a) => (
@@ -32,29 +32,29 @@ function DrawerBody() {
       ))}
       {q.data.totalElements > q.data.content.length && (
         <p className="pt-1 text-center text-xs text-muted">
-          Menampilkan {q.data.content.length} dari {q.data.totalElements} alert.
+          Menampilkan {q.data.content.length} dari {q.data.totalElements} peringatan.
         </p>
       )}
     </div>
   );
 }
 
-/** Drawer alert yang belum di-acknowledge — dibuka dari pill "N Alert" / lonceng. */
+/** Panel peringatan yang belum ditangani — dibuka dari pill "N Peringatan" / lonceng. */
 export function AlertDrawer() {
   const { alertDrawerOpen, closeAlertDrawer, alertCount } = useShell();
   return (
     <Drawer
       open={alertDrawerOpen}
       onClose={closeAlertDrawer}
-      title="Alert aktif"
-      description={`${alertCount} alert belum di-acknowledge`}
+      title="Peringatan"
+      description={`${alertCount} belum ditangani`}
       footer={
         <Link
           href="/alerts"
           onClick={closeAlertDrawer}
           className="inline-flex h-10 items-center gap-2 rounded-control bg-active px-4 text-sm font-medium text-active-fg hover:opacity-90"
         >
-          Semua alert <ArrowUpRight aria-hidden className="size-4" />
+          Lihat semua peringatan <ArrowUpRight aria-hidden className="size-4" />
         </Link>
       }
     >

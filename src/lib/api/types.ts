@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /*
- * Kontrak API backend Smart Melon (commit 4984e5e). Semua respons divalidasi di batas jaringan.
+ * Kontrak API backend FertiMata. Semua respons divalidasi di batas jaringan.
  * Konvensi: Instant = string ISO-8601 UTC; BigDecimal = number; field boleh null.
  * Enum yang di backend bertipe String (mode, kind) sengaja dibiarkan string agar nilai baru
  * tidak membuat seluruh respons ditolak.
@@ -209,6 +209,13 @@ export const activityEntrySchema = z.object({
   at: instant,
   summary: z.string(),
   detail: z.string().nullable(),
+  // Field terstruktur (backend >= Oktober 2026). Opsional agar backend lama tetap lolos validasi.
+  status: z.string().nullable().optional(),
+  commandType: z.string().nullable().optional(),
+  actuatorCode: z.string().nullable().optional(),
+  deviceCode: z.string().nullable().optional(),
+  actor: z.string().nullable().optional(),
+  refId: z.number().nullable().optional(),
 });
 export type ActivityEntry = z.infer<typeof activityEntrySchema>;
 
@@ -238,7 +245,6 @@ export const dashboardOverviewSchema = z.object({
     warning: z.number(),
     active: z.array(alertSchema),
   }),
-  // Disebut di kontrak prompt tetapi belum ada di backend 4984e5e (lihat docs/backend-gaps.md).
   latestAiDetection: aiDetectionSchema.nullable().optional(),
   recentActivity: z.array(activityEntrySchema),
 });

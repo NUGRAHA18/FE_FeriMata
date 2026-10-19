@@ -46,7 +46,7 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
     <svg
       viewBox={`0 0 ${W} ${H}`}
       role="group"
-      aria-label={`Denah greenhouse. Plot terpilih: ${plots.find((p) => p.id === selectedPlot)?.label ?? "—"}. Trolley: ${trolleyLabel ?? "posisi belum dilaporkan"}.`}
+      aria-label={`Denah greenhouse. Bedengan terpilih: ${plots.find((p) => p.id === selectedPlot)?.label ?? "—"}. Kereta kamera: ${trolleyLabel ?? "posisi belum dilaporkan"}.`}
       className={cn("h-auto w-full select-none", className)}
     >
       {/* Bangunan & jalur samar seperti peta referensi */}
@@ -110,9 +110,6 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
             <text x={x + 14} y={PLOT_Y + 24} fontSize={14} fontWeight={600} className={sel ? "fill-active-fg" : "fill-ink-2"}>
               {p.label}
             </text>
-            <text x={x + PLOT_W - 12} y={PLOT_Y + 24} fontSize={10} textAnchor="end" className={sel ? "fill-active-fg/70" : "fill-muted"}>
-              {p.prefix}
-            </text>
           </g>
         );
       })}
@@ -135,7 +132,7 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
             key={n}
             role={clickable ? "button" : undefined}
             tabIndex={clickable ? 0 : undefined}
-            aria-label={clickable ? `Filter stasiun ${code}` : undefined}
+            aria-label={clickable ? `Tampilkan foto stasiun ${code}` : undefined}
             aria-pressed={clickable ? sel : undefined}
             onClick={() => onStationSelect?.(code)}
             onKeyDown={(e) => {

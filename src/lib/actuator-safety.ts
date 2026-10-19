@@ -3,20 +3,21 @@ import { ApiRequestError } from "@/lib/api/client";
 /*
  * Aturan keselamatan kontrol aktuator (lihat prompt-frontend.md § Kontrol aktuator).
  * Keputusan akhir selalu milik backend; fungsi di sini hanya menerjemahkan & memvalidasi input.
+ * Pesan ditulis untuk petani: tanpa istilah "interlock", "dosing", "broker".
  */
 
-/** Batas tunggu konfirmasi perangkat sebelum menampilkan peringatan. */
+/** Batas tunggu jawaban alat sebelum menampilkan peringatan. */
 export const ACK_WARNING_MS = 30_000;
 
 const interlockText: Record<string, string> = {
-  BACKUP_POWER: "Listrik PLN padam / daya cadangan: dosing, sampling, dan trolley diblokir.",
-  EXCLUSIVE_OPERATION: "Tidak bisa berjalan bersamaan: dosing tidak boleh jalan saat trolley bergerak atau LED capture menyala.",
-  DEVICE_NOT_ONLINE: "Perangkat sedang offline; perintah ditolak.",
+  BACKUP_POWER: "Listrik PLN padam dan sistem memakai baterai. Pompa pupuk, pompa sampel, dan kereta kamera tidak boleh dinyalakan dulu.",
+  EXCLUSIVE_OPERATION: "Tidak bisa berjalan bersamaan: pompa pupuk tidak boleh jalan saat kereta kamera bergerak atau lampu kamera menyala.",
+  DEVICE_NOT_ONLINE: "Alat sedang terputus, perintah tidak bisa dikirim.",
 };
 
 export type CommandErrorView = { kind: "interlock"; interlock: string | null; title: string; message: string } | { kind: "error"; title: string; message: string };
 
-/** Terjemahkan error POST /commands menjadi pesan untuk operator. */
+/** Terjemahkan error POST /commands menjadi pesan untuk pengguna. */
 export function describeCommandError(err: unknown): CommandErrorView {
   if (err instanceof ApiRequestError) {
     if (err.code === "SAFETY_INTERLOCK") {
@@ -24,15 +25,15 @@ export function describeCommandError(err: unknown): CommandErrorView {
       return {
         kind: "interlock",
         interlock,
-        title: "Ditolak oleh interlock keselamatan",
+        title: "Ditolak demi keamanan",
         message: (interlock && interlockText[interlock]) || err.message,
       };
     }
-    if (err.code === "INVALID_COMMAND") return { kind: "error", title: "Perintah tidak valid", message: err.message };
-    if (err.code === "MESSAGING_ERROR") return { kind: "error", title: "Broker tidak tersedia", message: "Broker tidak tersedia; perintah tercatat sebagai gagal." };
+    if (err.code === "INVALID_COMMAND") return { kind: "error", title: "Perintah tidak bisa dijalankan", message: err.message };
+    if (err.code === "MESSAGING_ERROR") return { kind: "error", title: "Koneksi ke alat terputus", message: "Perintah tidak sampai ke alat dan dicatat sebagai gagal. Coba lagi nanti." };
     if (err.code === "VALIDATION_ERROR") {
       const fields = Object.values(err.fieldErrors());
-      return { kind: "error", title: "Input tidak valid", message: fields.length ? fields.join("; ") : err.message };
+      return { kind: "error", title: "Isian belum benar", message: fields.length ? fields.join("; ") : err.message };
     }
     return { kind: "error", title: "Perintah gagal dikirim", message: err.message };
   }
@@ -46,10 +47,10 @@ export function describeCommandError(err: unknown): CommandErrorView {
 export function validateDuration(raw: string, maxRunSeconds: number | null): { ok: true; value: number | null } | { ok: false; error: string } {
   const text = raw.trim();
   if (!text) {
-    if (maxRunSeconds != null) return { ok: false, error: `Durasi wajib diisi (maks ${maxRunSeconds} detik).` };
+    if (maxRunSeconds != null) return { ok: false, error: `Durasi wajib diisi (paling lama ${maxRunSeconds} detik).` };
     return { ok: true, value: null };
   }
-  if (!/^\d+$/.test(text)) return { ok: false, error: "Durasi harus bilangan bulat detik." };
+  if (!/^\d+$/.test(text)) return { ok: false, error: "Durasi harus angka bulat dalam detik." };
   const n = Number(text);
   if (n <= 0) return { ok: false, error: "Durasi harus lebih dari 0 detik." };
   if (maxRunSeconds != null && n > maxRunSeconds) return { ok: false, error: `Durasi maksimal ${maxRunSeconds} detik.` };
@@ -61,7 +62,7 @@ export function buildCommand(command: "ON" | "OFF", durationSeconds: number | nu
   return { command };
 }
 
-/** Status yang dilaporkan perangkat — bukan yang diminta. */
+/** Status yang dilaporkan alat — bukan yang diminta. */
 export function reportedStateLabel(state: string | null | undefined): string {
   if (state == null) return "Belum dilaporkan";
   const s = state.toUpperCase();

@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/status";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { useActuator, usePatchActuator } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
-import { formatDateTime, formatDuration } from "@/lib/format";
+import { actuatorTypeLabel, formatDateTime, formatDuration } from "@/lib/format";
 
 function Settings({ actuator: a }: { actuator: Actuator }) {
   const patch = usePatchActuator(a.id);
@@ -51,14 +51,14 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
       <CardHeader title="Pengaturan" icon={Settings2} />
       <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3">
         <div>
-          <p className="text-sm font-medium text-ink">Aktuator aktif</p>
-          <p className="text-xs text-muted">Bila nonaktif, perintah ON ditolak. STOP tetap tersedia.</p>
+          <p className="text-sm font-medium text-ink">Boleh dinyalakan</p>
+          <p className="text-xs text-muted">Bila dimatikan, alat ini tidak bisa dinyalakan dari aplikasi. Tombol Matikan tetap bisa dipakai.</p>
         </div>
-        <Switch checked={a.enabled} label="Aktuator aktif" onChange={(v) => setConfirmEnabled(v)} disabled={patch.isPending} />
+        <Switch checked={a.enabled} label="Boleh dinyalakan" onChange={(v) => setConfirmEnabled(v)} disabled={patch.isPending} />
       </div>
       <form onSubmit={saveMax} className="mt-3 flex flex-col gap-3 rounded-inner bg-card-2 p-3.5" noValidate>
         <Field
-          label="Batas waktu jalan (maxRunSeconds)"
+          label="Paling lama menyala (detik)"
           inputMode="numeric"
           value={maxRun}
           onChange={(e) => {
@@ -67,7 +67,7 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
           }}
           suffix="dtk"
           error={maxError}
-          hint={a.maxRunSeconds == null ? "Saat ini tanpa batas. Isi 0 untuk menghapus batas." : `Saat ini ${formatDuration(a.maxRunSeconds)}. Isi 0 untuk menghapus batas.`}
+          hint={a.maxRunSeconds == null ? "Saat ini tanpa batas. Isi 0 untuk tanpa batas." : `Saat ini ${formatDuration(a.maxRunSeconds)}. Isi 0 untuk tanpa batas.`}
         />
         <div className="flex items-center justify-end gap-3">
           {saved && <span className="text-xs text-accent">Tersimpan</span>}
@@ -83,12 +83,12 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
         pending={patch.isPending}
         error={confirmEnabled !== null && patch.error ? errorMessage(patch.error) : null}
         tone={confirmEnabled ? "dark" : "danger"}
-        title={confirmEnabled ? `Aktifkan ${a.name}?` : `Nonaktifkan ${a.name}?`}
-        confirmLabel={confirmEnabled ? "Aktifkan" : "Nonaktifkan"}
+        title={confirmEnabled ? `Izinkan ${a.name} dinyalakan?` : `Larang ${a.name} dinyalakan?`}
+        confirmLabel={confirmEnabled ? "Izinkan" : "Larang"}
       >
         {confirmEnabled
-          ? "Aktuator akan kembali bisa menerima perintah ON."
-          : "Perintah ON akan ditolak backend selama aktuator nonaktif. Menonaktifkan tidak mematikan aktuator yang sedang menyala — gunakan STOP untuk itu."}
+          ? "Alat ini akan bisa dinyalakan lagi dari aplikasi."
+          : "Alat ini tidak akan bisa dinyalakan dari aplikasi. Kalau sekarang sedang menyala, matikan dulu dengan tombol Matikan."}
       </ConfirmDialog>
     </Card>
   );
@@ -101,7 +101,7 @@ export default function ActuatorDetailPage() {
 
   return (
     <>
-      <PageHeader backHref="/actuators" title={a?.name ?? "Aktuator"} subtitle={a ? `#${a.code} • ${a.deviceCode}` : undefined} />
+      <PageHeader backHref="/actuators" title={a?.name ?? "Kontrol"} subtitle={a ? (actuatorTypeLabel(a.type) ?? a.code) : undefined} />
       {q.isPending ? (
         <div className="grid gap-4 lg:grid-cols-2">
           <Skeleton className="h-64 rounded-card" />
@@ -113,22 +113,25 @@ export default function ActuatorDetailPage() {
         a && (
           <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <Card>
-              <CardHeader title="Status & kontrol" icon={SlidersHorizontal} action={!a.enabled && <Badge tone="warn">Nonaktif</Badge>} />
+              <CardHeader title="Status & kendali" icon={SlidersHorizontal} action={!a.enabled && <Badge tone="warn">Dinonaktifkan</Badge>} />
               <ReportedState actuator={a} large />
               <ActuatorControls actuator={a} className="mt-5" />
-              <h3 className="mt-6 mb-2 text-sm font-medium text-ink-2">Informasi</h3>
-              <KeyValue
-                rows={[
-                  ["Kode", <span key="c" className="font-mono">{a.code}</span>],
-                  ["Tipe", a.type ?? "—"],
-                  ["Perangkat", a.deviceCode],
-                  ["Status mentah", <span key="s" className="font-mono">{a.currentState ?? "null"}</span>],
-                  ["Status diperbarui", formatDateTime(a.stateUpdatedAt)],
-                  ["Deskripsi", a.description ?? "—"],
-                ]}
-              />
-              <h3 className="mt-5 mb-2 text-sm font-medium text-ink-2">Metadata perangkat keras</h3>
-              <MetadataTable metadata={a.metadata} />
+              {a.description && <p className="mt-5 text-sm text-ink-2">{a.description}</p>}
+              <details className="mt-5 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+                <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+                <KeyValue
+                  className="mt-2"
+                  rows={[
+                    ["Kode", <span key="c" className="font-mono">{a.code}</span>],
+                    ["Tipe", a.type ?? "—"],
+                    ["Alat", a.deviceCode],
+                    ["Status mentah", <span key="s" className="font-mono">{a.currentState ?? "null"}</span>],
+                    ["Status diperbarui", formatDateTime(a.stateUpdatedAt)],
+                  ]}
+                />
+                <h3 className="mt-3 mb-2 text-sm font-medium text-ink-2">Pemasangan (Modbus / kanal)</h3>
+                <MetadataTable metadata={a.metadata} />
+              </details>
             </Card>
             <Settings key={a.id} actuator={a} />
             <Card className="lg:col-span-2">

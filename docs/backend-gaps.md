@@ -1,28 +1,31 @@
 # Celah backend (dicatat oleh frontend)
 
-Acuan: backend `BE-melonSmart` commit `4984e5e`. Frontend tidak mengarang endpoint atau angka untuk
-menutup celah di bawah; perilaku UI saat ini dicatat di tiap butir.
+Acuan: backend `BE-melonSmart` per 19 Oktober 2026 (setelah penyesuaian FertiMata). Frontend tidak
+mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini dicatat di tiap butir.
 
-## Selisih kontrak
+## Sudah ditutup backend (frontend sudah memakainya)
 
-| Celah | Perilaku frontend |
+| Dulu celah | Sekarang |
 |---|---|
-| `DashboardOverview.latestAiDetection` disebut di `prompt-frontend.md` tetapi **tidak ada** di `DashboardOverviewResponse` backend. | Field dibuat opsional di skema zod. Kartu Kamera AI mengambil `GET /api/ai/detections?page=0&size=10` dan diperbarui realtime lewat `AI_DETECTION_CREATED`. |
-| `recentActivity` hanya berisi teks (`summary` = `"ON DIST-PUMP on PANEL-01"`, `detail` = `"EXECUTED, requested by operator"`) tanpa field terstruktur. | Frontend mengurai pola teks itu untuk ikon status; bila pola berubah, entri tetap tampil mentah. Usulan: tambahkan `status`, `actuatorCode`, `severity` sebagai field. |
+| `recentActivity` hanya teks bebas. | Backend mengirim `status`, `commandType`, `actuatorCode`, `deviceCode`, `actor`, `refId`. Frontend memakainya; parsing teks hanya cadangan untuk backend lama. |
+| Tidak ada event realtime saat alert di-acknowledge. | Event `ALERT_UPDATED` di `/topic/alerts` dan `/topic/events`. Frontend mengeluarkan alert dari daftar dan mengambil ulang hitungan overview. |
+| Tidak ada filter alert per sensor/perangkat/aktuator. | `GET /api/alerts?deviceId=&sensorId=&actuatorId=` (bisa digabung dengan `acknowledged` dan `severity`). Tab "Peringatan" di detail sensor memakainya. |
+| `DashboardOverview.latestAiDetection` disebut tidak ada. | Sudah ada di backend; skema zod menerimanya. Kartu kamera tetap memakai daftar deteksi agar bisa digeser antar foto. |
+| Telemetri tumbuh tanpa batas. | Backend punya kebijakan retensi (hapus per batch). Tidak berdampak ke UI selain grafik riwayat hanya tersedia sepanjang masa retensi (dev 7 hari, Jetson 90 hari). |
 
 ## Fitur yang belum ada
 
 | Tidak ada di backend | Perilaku frontend |
 |---|---|
-| Refresh token (sesi 60 menit). | Peringatan 5 menit sebelum kedaluwarsa + tombol "Masuk ulang"; logout otomatis tepat saat `expiresAt`. |
-| Endpoint yang menyajikan berkas gambar AI (`imageUrl` berupa path relatif). | URL relatif di-resolve ke `NEXT_PUBLIC_API_BASE_URL`; bila gagal dimuat tampil placeholder (ikon kamera + kode stasiun + "Gambar tidak dapat dimuat dari server"). |
-| Konfigurasi interlock (tipe wajib durasi, grup eksklusif) tidak diekspos lewat API. | Tidak di-hardcode sebagai validasi. Durasi hanya diwajibkan frontend bila `maxRunSeconds` tidak null; pesan `INVALID_COMMAND` / `SAFETY_INTERLOCK` dari backend selalu ditampilkan. |
-| Ambang agronomi / rentang ideal, skor kesehatan tanaman. | Tidak ditampilkan. Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). Teks bantu kartu = waktu pembacaan terakhir. |
-| Data cuaca luar. | Diganti "Kondisi dalam greenhouse" (suhu & kelembapan udara, cahaya). |
-| Task / jadwal / siklus tanam (HST). | Kartu Task diganti "Aktivitas & Kontrol" (perintah aktuator & alert). |
-| Perintah "ambil foto" / capture trolley dan stream kamera live (CCTV). | Tidak ada tombol capture; kartu kamera hanya menampilkan deteksi tersimpan. |
-| Event realtime untuk alert di-acknowledge dan perubahan data master (rename/enable sensor/aktuator). | Cache diperbarui sendiri setelah `PATCH` berhasil. Operator lain baru melihat perubahan setelah reconnect / refetch overview. |
-| Filter alert per sensor/perangkat/aktuator. | Tab "Aktivitas" di detail sensor hanya menyaring 10 alert aktif teratas dari overview (dijelaskan di UI). |
-| Endpoint agregasi riwayat (min/avg/max per interval). | `/sensors/{id}/history` dibatasi `size ≤ 1000`. Frontend mengambil semua halaman bila total ≤ 5.000 titik (≤ 5 request), selebihnya menyampel 48 jendela waktu (≤ 48 request, 6 paralel) dan merata-rata per jendela — ditandai di keterangan grafik. |
-| Daftar tipe deteksi AI. | Pilihan tipe = daftar tetap (`NUTRIENT_DEFICIENCY`, `DISEASE`) + tipe yang terlihat di data. |
+| Refresh token (sesi 60 menit). | Peringatan 5 menit sebelum kedaluwarsa + tombol "Masuk lagi"; logout otomatis tepat saat `expiresAt`. |
+| Endpoint yang menyajikan berkas gambar AI (`imageUrl` berupa path relatif). | URL relatif di-resolve ke origin backend; bila gagal dimuat tampil placeholder (ikon kamera + kode stasiun). |
+| Konfigurasi interlock (tipe wajib durasi, grup eksklusif) tidak diekspos lewat API. | Tidak di-hardcode sebagai validasi. Durasi hanya diwajibkan frontend bila `maxRunSeconds` tidak null; pesan `INVALID_COMMAND` / `SAFETY_INTERLOCK` dari backend diterjemahkan ke bahasa sehari-hari. |
+| Ambang agronomi / rentang ideal, skor kesehatan tanaman. | Tidak ditampilkan. Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). |
+| Data cuaca luar. | Diganti "Kondisi di dalam greenhouse" (suhu & kelembapan udara, cahaya). |
+| Task / jadwal / siklus tanam (HST). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan). |
+| Perintah "ambil foto" / capture trolley dan stream kamera live (CCTV). | Tidak ada tombol ambil foto; kartu kamera hanya menampilkan foto tersimpan. |
+| Event realtime untuk perubahan data master (rename/enable sensor/aktuator). | Cache diperbarui sendiri setelah `PATCH` berhasil. Operator lain baru melihat perubahan setelah reconnect / refetch overview. |
+| Endpoint agregasi riwayat (min/avg/max per interval). | `/sensors/{id}/history` dibatasi `size ≤ 1000`. Frontend mengambil semua halaman bila total ≤ 5.000 titik, selebihnya menyampel 48 jendela waktu dan merata-rata per jendela. |
+| Daftar tipe deteksi AI. | Pilihan = daftar tetap (`NUTRIENT_DEFICIENCY`, `DISEASE`) + tipe yang terlihat di data; label Indonesia di `lib/format.ts`. |
+| Ganti kata sandi / kelola pengguna. | Tidak ada UI; akun hanya dari bootstrap backend. |
 | Endpoint `/api/dev/outbox` tidak terdokumentasi bentuk responsnya. | Dev Tools memvalidasi tiap item sebagai `ActuatorCommand` dan mengabaikan yang tidak cocok. |

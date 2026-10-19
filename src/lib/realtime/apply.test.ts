@@ -116,6 +116,17 @@ describe("applyRealtimeEvent", () => {
   });
 });
 
+describe("ALERT_UPDATED", () => {
+  it("mengeluarkan alert yang ditangani operator lain dari daftar 'belum ditangani' dan dari overview", () => {
+    const key = qk.alerts({ acknowledged: false, page: 0, size: 20 });
+    qc.setQueryData(key, page([alert(1)]));
+    const ok = applyRealtimeEvent(qc, { event: "ALERT_UPDATED", data: { ...alert(1), acknowledged: true, acknowledgedBy: "rekan", acknowledgedAt: t(9) } });
+    expect(ok).toBe(true);
+    expect(qc.getQueryData<Page<Alert>>(key)!.content).toHaveLength(0);
+    expect(qc.getQueryData<DashboardOverview>(qk.overview)!.alerts.active).toHaveLength(0);
+  });
+});
+
 describe("applyAcknowledged", () => {
   it("mengurangi hitungan dan mengeluarkan alert dari daftar 'belum ditangani'", () => {
     const key = qk.alerts({ acknowledged: false, page: 0, size: 20 });

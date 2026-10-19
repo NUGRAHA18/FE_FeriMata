@@ -32,31 +32,29 @@ export default function AlertsPage() {
   return (
     <>
       <PageHeader
-        title="Alert"
-        subtitle={counts ? `${counts.unacknowledged} belum di-acknowledge · ${counts.critical} kritis · ${counts.warning} peringatan` : undefined}
+        title="Peringatan"
+        subtitle={counts ? `${counts.unacknowledged} belum ditangani · ${counts.critical} darurat · ${counts.warning} perlu perhatian` : undefined}
       />
       <Card>
         <div className="mb-4 flex flex-wrap gap-2">
           <Segmented<AckFilter>
-            label="Status acknowledge"
-            size="sm"
+            label="Status penanganan"
             value={ack}
             onChange={(v) => (setAck(v), setPage(0))}
             options={[
               { value: "open", label: "Belum ditangani" },
-              { value: "acked", label: "Sudah" },
+              { value: "acked", label: "Sudah ditangani" },
               { value: "all", label: "Semua" },
             ]}
           />
           <Segmented<SevFilter>
-            label="Severity"
-            size="sm"
+            label="Tingkat"
             value={sev}
             onChange={(v) => (setSev(v), setPage(0))}
             options={[
-              { value: "ALL", label: "Semua" },
-              { value: "CRITICAL", label: "Kritis" },
-              { value: "WARNING", label: "Peringatan" },
+              { value: "ALL", label: "Semua tingkat" },
+              { value: "CRITICAL", label: "Darurat" },
+              { value: "WARNING", label: "Perlu perhatian" },
               { value: "INFO", label: "Info" },
             ]}
           />
@@ -70,7 +68,7 @@ export default function AlertsPage() {
         ) : q.error ? (
           <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
         ) : !q.data.content.length ? (
-          <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" />} title="Tidak ada alert" hint="Tidak ada alert yang cocok dengan filter ini." />
+          <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" />} title="Tidak ada peringatan" hint="Semua aman untuk pilihan ini." />
         ) : (
           <div className="flex flex-col gap-3">
             <div className="grid gap-2 lg:grid-cols-2">

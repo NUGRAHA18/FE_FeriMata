@@ -64,7 +64,15 @@ export const getActuatorCommands = (id: number, page: number, size = 20, signal?
   apiRequest(`/actuators/${id}/commands`, { query: { page, size }, schema: pageSchema(actuatorCommandSchema), signal });
 
 // Alert
-export type AlertFilters = { acknowledged?: boolean; severity?: AlertSeverity; page?: number; size?: number };
+export type AlertFilters = {
+  acknowledged?: boolean;
+  severity?: AlertSeverity;
+  deviceId?: number;
+  sensorId?: number;
+  actuatorId?: number;
+  page?: number;
+  size?: number;
+};
 export const getAlerts = (f: AlertFilters, signal?: AbortSignal) =>
   apiRequest("/alerts", { query: { page: 0, size: 20, ...f }, schema: pageSchema(alertSchema), signal });
 export const acknowledgeAlert = (id: number) => apiRequest(`/alerts/${id}/acknowledge`, { method: "PATCH", schema: alertSchema });

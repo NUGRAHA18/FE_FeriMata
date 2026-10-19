@@ -7,15 +7,15 @@ import { Logo } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Field } from "@/components/ui/input";
-import { siteConfig } from "@/config/site";
+import { productName, siteConfig } from "@/config/site";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { login } from "@/lib/api/endpoints";
 import { consumeEndReason, safeNext, saveSession, type EndReason } from "@/lib/auth/session";
 import { useSession } from "@/lib/auth/use-session";
 
 const reasonText: Record<EndReason, string | null> = {
-  expired: "Sesi 60 menit telah berakhir. Silakan masuk kembali.",
-  unauthorized: "Sesi tidak lagi berlaku. Silakan masuk kembali.",
+  expired: "Sesi Anda sudah habis. Silakan masuk lagi.",
+  unauthorized: "Sesi Anda tidak berlaku lagi. Silakan masuk lagi.",
   logout: null,
 };
 
@@ -48,7 +48,7 @@ function LoginForm() {
       // Redirect dilakukan efek di atas begitu sesi tersimpan.
     } catch (err) {
       if (err instanceof ApiRequestError) setFieldErrors(err.fieldErrors());
-      setError(err instanceof ApiRequestError && err.status === 401 ? err.message || "Username atau password salah." : errorMessage(err));
+      setError(err instanceof ApiRequestError && err.status === 401 ? "Nama pengguna atau kata sandi salah." : errorMessage(err));
       setPending(false);
     }
   }
@@ -57,7 +57,7 @@ function LoginForm() {
     <form onSubmit={onSubmit} className="flex flex-col gap-4" noValidate>
       {notice && !error && <p className="rounded-inner bg-warn-soft px-3.5 py-2.5 text-sm text-warn-ink">{notice}</p>}
       <Field
-        label="Username"
+        label="Nama pengguna"
         name="username"
         autoComplete="username"
         autoCapitalize="none"
@@ -68,7 +68,7 @@ function LoginForm() {
         error={fieldErrors.username}
       />
       <Field
-        label="Password"
+        label="Kata sandi"
         name="password"
         type="password"
         autoComplete="current-password"
@@ -82,7 +82,7 @@ function LoginForm() {
           {error}
         </p>
       )}
-      <Button type="submit" variant="dark" size="lg" icon={LogIn} loading={pending} disabled={!username.trim() || !password} className="mt-1 w-full">
+      <Button type="submit" variant="accent" size="lg" icon={LogIn} loading={pending} disabled={!username.trim() || !password} className="mt-1 w-full">
         Masuk
       </Button>
     </form>
@@ -100,15 +100,14 @@ export default function LoginPage() {
           <div className="mb-7 flex items-center gap-3">
             <Logo />
             <div>
-              <h1 className="text-xl font-medium text-ink">{siteConfig.name}</h1>
-              <p className="text-sm text-muted">Konsol operator Smart Melon</p>
+              <h1 className="text-xl font-medium text-ink">{productName}</h1>
+              <p className="text-sm text-muted">{siteConfig.name !== productName ? siteConfig.name : "Pemantau & pengendali pemupukan greenhouse"}</p>
             </div>
           </div>
           <Suspense>
             <LoginForm />
           </Suspense>
         </div>
-        <p className="mt-4 text-center text-xs text-muted">Sesi berlaku 60 menit. FERTIMATA Rev A.</p>
       </div>
     </main>
   );

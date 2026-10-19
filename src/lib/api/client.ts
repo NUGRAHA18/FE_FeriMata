@@ -89,7 +89,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
     throw new ApiRequestError({
       status: 0,
       code: "NETWORK_ERROR",
-      message: "Tidak dapat menghubungi server. Periksa koneksi ke backend.",
+      message: "Tidak bisa terhubung ke server. Periksa koneksi internet atau jaringan greenhouse.",
       path,
     });
   }
@@ -124,7 +124,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
     throw new ApiRequestError({
       status: res.status,
       code: "INVALID_RESPONSE",
-      message: "Respons server tidak sesuai format yang diharapkan.",
+      message: "Jawaban server tidak dikenali. Coba muat ulang halaman.",
       path,
     });
   }
@@ -134,7 +134,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
 /** Pesan ramah untuk ditampilkan di kartu error. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (error.code === "MESSAGING_ERROR") return "Broker tidak tersedia; perintah tercatat sebagai gagal.";
+    if (error.code === "MESSAGING_ERROR") return "Koneksi ke alat terputus; perintah dicatat sebagai gagal.";
     return error.message;
   }
   if (error instanceof Error) return error.message;

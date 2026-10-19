@@ -8,7 +8,7 @@ import { Logo } from "./logo";
 import { useShell } from "./shell-context";
 import { ThemeToggle } from "./theme-toggle";
 
-/** Top bar mobile: logo kiri; kanan indikator koneksi, lonceng, avatar. */
+/** Top bar mobile: logo kiri; kanan indikator koneksi, lonceng peringatan, avatar. */
 export function MobileTopBar({ initials }: { initials: string }) {
   const { alertCount, connection, openAlertDrawer } = useShell();
   return (
@@ -19,7 +19,7 @@ export function MobileTopBar({ initials }: { initials: string }) {
         <ThemeToggle />
         <IconButton
           icon={Bell}
-          label={alertCount > 0 ? `${alertCount} alert belum ditangani` : "Alert"}
+          label={alertCount > 0 ? `${alertCount} peringatan belum ditangani` : "Peringatan"}
           badge={alertCount > 0}
           onClick={openAlertDrawer}
           size="lg"
@@ -27,7 +27,7 @@ export function MobileTopBar({ initials }: { initials: string }) {
         />
         <Link
           href="/profile"
-          aria-label="Profil"
+          aria-label="Akun"
           className="grid size-12 place-items-center rounded-[14px] bg-active text-sm font-semibold text-active-fg"
         >
           {initials}

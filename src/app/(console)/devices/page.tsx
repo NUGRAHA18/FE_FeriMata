@@ -11,7 +11,7 @@ import { useDevices, useOverview } from "@/lib/api/queries";
 function Stat({ label, value, tone }: { label: string; value: number; tone?: string }) {
   return (
     <Card className="py-4">
-      <p className="text-xs text-muted">{label}</p>
+      <p className="text-sm text-muted">{label}</p>
       <p className={`tabular metric-value mt-1 text-4xl ${tone ?? "text-ink"}`}>{value}</p>
     </Card>
   );
@@ -24,7 +24,7 @@ export default function DevicesPage() {
 
   return (
     <>
-      <PageHeader title="Perangkat" subtitle="Liveness dan sumber daya per perangkat logis." />
+      <PageHeader title="Alat" subtitle="Alat mana yang terhubung, dan dari mana listriknya." />
       {overview.isPending ? (
         <Skeleton className="h-96 rounded-card" />
       ) : overview.error ? (
@@ -33,10 +33,10 @@ export default function DevicesPage() {
         d && (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Total" value={d.total} />
-              <Stat label="Online" value={d.online} />
-              <Stat label="Offline" value={d.offline} tone={d.offline ? "text-danger" : undefined} />
-              <Stat label="Belum melapor" value={d.unknown} tone={d.unknown ? "text-warn-ink" : undefined} />
+              <Stat label="Semua alat" value={d.total} />
+              <Stat label="Terhubung" value={d.online} />
+              <Stat label="Terputus" value={d.offline} tone={d.offline ? "text-danger" : undefined} />
+              <Stat label="Belum pernah terhubung" value={d.unknown} tone={d.unknown ? "text-warn-ink" : undefined} />
             </div>
             <Card>
               {d.items.length ? (
@@ -48,7 +48,7 @@ export default function DevicesPage() {
                   ))}
                 </ul>
               ) : (
-                <EmptyState icon={<Cpu aria-hidden className="size-5 text-muted" />} title="Belum ada perangkat terdaftar" />
+                <EmptyState icon={<Cpu aria-hidden className="size-5 text-muted" />} title="Belum ada alat terdaftar" />
               )}
             </Card>
           </div>

@@ -10,13 +10,14 @@ import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
-import { useReadingBySensor, useSensors } from "@/lib/api/queries";
+import { useDevices, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
 import { formatReading, formatUnit } from "@/lib/format";
+import { SensorIcon } from "@/lib/icons";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
-/** Kartu sensor generik — tidak bergantung pada konfigurasi dashboard. */
+/** Kartu sensor: ikon jenis, nama, angka besar, kapan diperbarui. Kode teknis ada di halaman detail. */
 function SensorTile({ sensor: s }: { sensor: Sensor }) {
   const r = useReadingBySensor(s.id);
   const stale = useConnectionState() !== "connected";
@@ -27,47 +28,54 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
       href={`/sensors/${s.id}`}
       className={cn("flex min-w-0 flex-col rounded-inner bg-card-2 p-4 transition hover:ring-1 hover:ring-line", !s.enabled && "opacity-70")}
     >
-      <div className="flex flex-wrap items-center gap-1.5">
-        <p className="min-w-0 flex-1 truncate text-sm font-medium text-ink">{s.name}</p>
-        {!s.enabled && <Badge tone="warn">Nonaktif</Badge>}
-        {s.autoRegistered && <Badge tone="info">Auto</Badge>}
+      <div className="flex items-start gap-3">
+        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+          <SensorIcon kind={s.type} aria-hidden className="size-5" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="line-clamp-2 text-sm font-medium leading-snug text-ink">{s.name}</p>
+          <div className="mt-1 flex flex-wrap gap-1.5">
+            {!s.enabled && <Badge tone="warn">Dimatikan</Badge>}
+            {s.autoRegistered && <Badge tone="info">Baru terdeteksi</Badge>}
+          </div>
+        </div>
       </div>
-      <p className="mt-0.5 truncate font-mono text-[11px] text-muted">{s.metricKey}</p>
       <p className={cn("tabular mt-3 flex items-baseline gap-1 text-ink", stale && r && "opacity-60")}>
-        <span className="metric-value text-3xl">{value ?? "—"}</span>
-        {value && unit && <span className="text-sm text-muted">{unit}</span>}
+        <span className="metric-value text-[34px] font-normal sm:text-[40px]">{value ?? "—"}</span>
+        {value && unit && <span className="text-base text-muted">{unit}</span>}
       </p>
-      <p className="mt-2 truncate text-[11px] text-muted">{r ? <RelativeTime iso={r.recordedAt} prefix="diperbarui " /> : "belum ada pembacaan"}</p>
+      <p className="mt-2 truncate text-xs text-muted">{r ? <RelativeTime iso={r.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
     </Link>
   );
 }
 
 export default function SensorsPage() {
   const q = useSensors();
+  const deviceNames = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, d.name]))).data;
   const [filter, setFilter] = useState("");
   const groups = useMemo(() => {
     const f = filter.trim().toLowerCase();
     const map = new Map<string, Sensor[]>();
     for (const s of q.data ?? []) {
-      if (f && ![s.name, s.code, s.metricKey, s.deviceCode].some((x) => x.toLowerCase().includes(f))) continue;
+      if (f && ![s.name, s.code, s.metricKey, s.deviceCode, deviceNames?.[s.deviceCode] ?? ""].some((x) => x.toLowerCase().includes(f))) continue;
       map.set(s.deviceCode, [...(map.get(s.deviceCode) ?? []), s]);
     }
     return [...map.entries()];
-  }, [q.data, filter]);
+  }, [q.data, filter, deviceNames]);
 
   return (
     <>
       <PageHeader
         title="Sensor"
-        subtitle={q.data ? `${q.data.length} sensor · ${q.data.filter((s) => s.enabled).length} aktif` : undefined}
+        subtitle={q.data ? `${q.data.length} sensor terpasang` : undefined}
         actions={
           <input
             type="search"
             aria-label="Cari sensor"
-            placeholder="Cari nama, kode, metric key…"
+            placeholder="Cari sensor…"
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className={cn(inputClass, "h-10 w-full bg-card text-sm sm:w-64")}
+            className={cn(inputClass, "h-11 w-full bg-card text-sm sm:w-64")}
           />
         }
       />
@@ -75,7 +83,7 @@ export default function SensorsPage() {
         <Card>
           <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
-              <Skeleton key={i} className="h-32 rounded-inner" />
+              <Skeleton key={i} className="h-36 rounded-inner" />
             ))}
           </div>
         </Card>
@@ -87,8 +95,8 @@ export default function SensorsPage() {
         <div className="flex flex-col gap-4">
           {groups.map(([device, list]) => (
             <Card key={device}>
-              <h2 className="mb-3 flex items-baseline gap-2 font-mono text-[15px] font-medium text-ink">
-                {device} <span className="font-sans text-xs font-normal text-muted">{list.length} sensor</span>
+              <h2 className="mb-3 flex items-baseline gap-2 text-base font-medium text-ink">
+                {deviceNames?.[device] ?? device} <span className="text-xs font-normal text-muted">{list.length} sensor</span>
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">
                 {list.map((s) => (

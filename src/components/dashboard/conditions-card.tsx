@@ -1,12 +1,12 @@
 "use client";
 
-import { Droplet, MapPin, Sun } from "lucide-react";
+import { Camera, Droplet, MapPin, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { RelativeTime } from "@/components/ui/time";
 import { siteConfig } from "@/config/site";
 import { conditionKeys, plots, trolleyLayout, type PlotId } from "@/config/dashboard-layout";
 import { useReadingByMetric } from "@/lib/api/queries";
-import { formatLongDate, formatReading, formatTime, formatUnit, stationCode } from "@/lib/format";
+import { formatLongDate, formatReading, formatTime, formatUnit, stationLabel } from "@/lib/format";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/cn";
@@ -16,8 +16,8 @@ function Clock() {
   const now = useNow();
   return (
     <div className="text-right text-sm text-ink-2" suppressHydrationWarning>
-      <p className="tabular">{now ? formatLongDate(now) : " "}</p>
-      <p className="tabular text-xs text-muted">{now ? `${formatTime(now, true)} WIB` : " "}</p>
+      <p className="tabular">{now ? formatLongDate(now) : " "}</p>
+      <p className="tabular text-xs text-muted">{now ? `${formatTime(now, true)} WIB` : " "}</p>
     </div>
   );
 }
@@ -27,13 +27,13 @@ function SmallStat({ icon: Icon, label, metricKey }: { icon: typeof Sun; label: 
   const v = formatReading(r);
   return (
     <div className="min-w-0">
-      <p className="flex items-center gap-1.5 text-xs text-muted">
-        <Icon aria-hidden className="size-3.5" strokeWidth={1.6} />
+      <p className="flex items-center gap-1.5 text-sm text-muted">
+        <Icon aria-hidden className="size-4" strokeWidth={1.7} />
         {label}
       </p>
-      <p className="tabular mt-0.5 text-lg whitespace-nowrap text-ink">
+      <p className="tabular mt-0.5 text-2xl whitespace-nowrap text-ink">
         {v ?? "—"}
-        {v && r?.unit && <span className="ml-0.5 text-sm text-muted">{formatUnit(r.unit)}</span>}
+        {v && r?.unit && <span className="ml-1 text-base text-muted">{formatUnit(r.unit)}</span>}
       </p>
     </div>
   );
@@ -63,10 +63,10 @@ export function ConditionsCard({ plot, onPlotChange }: { plot: PlotId; onPlotCha
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] sm:gap-5">
         <div className="flex min-w-0 flex-col">
-          <p className="text-xs font-medium tracking-wide text-muted uppercase">Suhu udara dalam</p>
+          <p className="text-sm font-medium text-muted">Suhu udara di dalam greenhouse</p>
           <p className={cn("tabular mt-1 flex items-start text-ink", stale && air && "opacity-60")}>
-            <span className="metric-value text-[64px]">{airValue ?? "—"}</span>
-            {airValue && air?.unit && <span className="mt-1 text-3xl font-light text-muted">{formatUnit(air.unit)}</span>}
+            <span className="metric-value text-[64px] font-normal sm:text-[72px]">{airValue ?? "—"}</span>
+            {airValue && air?.unit && <span className="mt-2 text-3xl text-muted">{formatUnit(air.unit)}</span>}
           </p>
           <p className="mt-1 text-xs text-muted">{air ? <RelativeTime iso={air.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
 
@@ -78,16 +78,11 @@ export function ConditionsCard({ plot, onPlotChange }: { plot: PlotId; onPlotCha
           <div className="mt-auto pt-5">
             <div className="rounded-inner bg-card-2 p-3.5">
               <p className="font-medium text-ink">{selected.label}</p>
-              <div className="mt-2 grid grid-cols-2 gap-2 text-xs">
-                <div>
-                  <p className="text-muted">Prefix data</p>
-                  <p className="mt-0.5 font-mono text-ink-2">{selected.prefix}.*</p>
-                </div>
-                <div>
-                  <p className="text-muted">Trolley</p>
-                  <p className="mt-0.5 text-ink-2">{station == null ? "belum dilaporkan" : stationCode(Math.round(station))}</p>
-                </div>
-              </div>
+              <p className="mt-0.5 text-sm text-muted">Angka tanah di bawah berasal dari bedengan ini. Ketuk bedengan lain di denah untuk berganti.</p>
+              <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-2">
+                <Camera aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.7} />
+                Kereta kamera {stationLabel(station)}
+              </p>
             </div>
           </div>
         </div>

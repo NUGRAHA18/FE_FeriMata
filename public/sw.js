@@ -1,5 +1,5 @@
 /*
- * Service worker Smart Melon. HANYA meng-cache aset statis ber-hash (/_next/static) dan ikon.
+ * Service worker FertiMata. HANYA meng-cache aset statis ber-hash (/_next/static) dan ikon.
  * Respons API dan halaman tidak pernah di-cache: data kendali harus selalu segar.
  */
 const CACHE = "fertimata-static-v1";

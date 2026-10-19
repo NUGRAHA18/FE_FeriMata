@@ -10,14 +10,14 @@ describe("describeCommandError — interlock", () => {
   it("BACKUP_POWER", () => {
     const v = describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "blocked", { interlock: "BACKUP_POWER" }));
     expect(v.kind).toBe("interlock");
-    expect(v.message).toBe("Listrik PLN padam / daya cadangan: dosing, sampling, dan trolley diblokir.");
+    expect(v.message).toMatch(/^Listrik PLN padam dan sistem memakai baterai/);
   });
   it("EXCLUSIVE_OPERATION", () => {
     const v = describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "x", { interlock: "EXCLUSIVE_OPERATION" }));
     expect(v.message).toMatch(/^Tidak bisa berjalan bersamaan/);
   });
   it("DEVICE_NOT_ONLINE", () => {
-    expect(describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "x", { interlock: "DEVICE_NOT_ONLINE" })).message).toBe("Perangkat sedang offline; perintah ditolak.");
+    expect(describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "x", { interlock: "DEVICE_NOT_ONLINE" })).message).toBe("Alat sedang terputus, perintah tidak bisa dikirim.");
   });
   it("interlock tak dikenal → pesan mentah backend", () => {
     const v = describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "Tank level low", { interlock: "TANK_LOW" }));
@@ -25,7 +25,7 @@ describe("describeCommandError — interlock", () => {
   });
   it("INVALID_COMMAND & MESSAGING_ERROR", () => {
     expect(describeCommandError(apiErr(400, "INVALID_COMMAND", "durationSeconds wajib")).message).toBe("durationSeconds wajib");
-    expect(describeCommandError(apiErr(503, "MESSAGING_ERROR", "x")).message).toBe("Broker tidak tersedia; perintah tercatat sebagai gagal.");
+    expect(describeCommandError(apiErr(503, "MESSAGING_ERROR", "x")).message).toMatch(/dicatat sebagai gagal/);
   });
 });
 

@@ -13,7 +13,7 @@ import { StatusDot } from "@/components/ui/status";
 import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevice, useDeviceStatus, useOverview, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
+import { deviceTypeLabel, formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
 
 function SensorLine({ sensor: s }: { sensor: Sensor }) {
   const r = useReadingBySensor(s.id);
@@ -22,7 +22,7 @@ function SensorLine({ sensor: s }: { sensor: Sensor }) {
     <Link href={`/sensors/${s.id}`} className="flex items-center justify-between gap-3 rounded-inner bg-card-2 px-3.5 py-2.5 hover:ring-1 hover:ring-line">
       <div className="min-w-0">
         <p className="truncate text-sm text-ink">{s.name}</p>
-        <p className="truncate font-mono text-[11px] text-muted">{s.metricKey}</p>
+        {s.unit && <p className="truncate text-xs text-muted">satuan {formatUnit(s.unit) || s.unit}</p>}
       </div>
       <p className="tabular shrink-0 text-sm text-ink">
         {v ?? "—"} {v && <span className="text-muted">{formatUnit(r?.unit ?? s.unit)}</span>}
@@ -44,7 +44,7 @@ export default function DeviceDetailPage() {
 
   return (
     <>
-      <PageHeader backHref="/devices" title={d?.name ?? "Perangkat"} subtitle={d ? `#${d.deviceCode}${d.type ? ` • ${d.type}` : ""}` : undefined} />
+      <PageHeader backHref="/devices" title={d?.name ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
       {device.isPending ? (
         <Skeleton className="h-80 rounded-card" />
       ) : device.error ? (
@@ -53,7 +53,7 @@ export default function DeviceDetailPage() {
         d && (
           <div className="grid gap-4 lg:grid-cols-3">
             <Card>
-              <CardHeader title="Liveness & daya" icon={Plug} />
+              <CardHeader title="Koneksi & listrik" icon={Plug} />
               {status ? (
                 <>
                   <p className="flex items-center gap-2 text-2xl text-ink">
@@ -61,7 +61,7 @@ export default function DeviceDetailPage() {
                     {livenessLabel[status.status] ?? status.status}
                   </p>
                   <p className="mt-1 text-xs text-muted">
-                    <LastSeen s={status} />
+                    <LastSeen s={status} withTimeout />
                   </p>
                   <div className="mt-3 flex flex-wrap gap-1.5">
                     <DeviceIssueChips s={status} />
@@ -69,11 +69,10 @@ export default function DeviceDetailPage() {
                   <KeyValue
                     className="mt-4"
                     rows={[
-                      ["Sumber daya", powerSourceLabel(status.powerSource)],
-                      ["Daya cadangan", status.onBackupPower ? "Ya" : "Tidak"],
-                      ["Sumber daya diperbarui", formatDateTime(status.powerSourceUpdatedAt)],
-                      ["Terakhir terlihat", formatDateTime(status.lastSeenAt)],
-                      ["Timeout offline", `${status.offlineTimeoutSeconds} dtk`],
+                      ["Sumber listrik", powerSourceLabel(status.powerSource)],
+                      ["Memakai baterai", status.onBackupPower ? "Ya" : "Tidak"],
+                      ["Listrik dilaporkan", formatDateTime(status.powerSourceUpdatedAt)],
+                      ["Kabar terakhir", formatDateTime(status.lastSeenAt)],
                     ]}
                   />
                 </>
@@ -82,15 +81,18 @@ export default function DeviceDetailPage() {
               ) : (
                 <Skeleton className="h-40" />
               )}
-              <h3 className="mt-5 mb-2 text-sm font-medium text-ink-2">Informasi</h3>
-              <KeyValue
-                rows={[
-                  ["Kode", <span key="c" className="font-mono">{d.deviceCode}</span>],
-                  ["Tipe", d.type ?? "—"],
-                  ["Deskripsi", d.description ?? "—"],
-                  ["Terdaftar", formatDateTime(d.createdAt)],
-                ]}
-              />
+              {d.description && <p className="mt-4 text-sm text-ink-2">{d.description}</p>}
+              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+                <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+                <KeyValue
+                  className="mt-2"
+                  rows={[
+                    ["Kode alat", <span key="c" className="font-mono">{d.deviceCode}</span>],
+                    ["Tipe", d.type ?? "—"],
+                    ["Terdaftar", formatDateTime(d.createdAt)],
+                  ]}
+                />
+              </details>
             </Card>
             <Card>
               <CardHeader title={`Sensor (${sensors.data?.length ?? 0})`} icon={Gauge} href="/sensors" hrefLabel="Semua sensor" />
@@ -105,11 +107,11 @@ export default function DeviceDetailPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="Perangkat ini tidak punya sensor" />
+                <EmptyState title="Alat ini tidak punya sensor" />
               )}
             </Card>
             <Card>
-              <CardHeader title={`Aktuator (${actuators.data?.length ?? 0})`} icon={SlidersHorizontal} href="/actuators" hrefLabel="Kontrol aktuator" />
+              <CardHeader title={`Bisa dikendalikan (${actuators.data?.length ?? 0})`} icon={SlidersHorizontal} href="/actuators" hrefLabel="Buka kontrol" />
               {actuators.isPending ? (
                 <Skeleton className="h-40" />
               ) : actuators.error ? (
@@ -120,7 +122,7 @@ export default function DeviceDetailPage() {
                     <Link key={a.id} href={`/actuators/${a.id}`} className="flex items-center gap-3 rounded-inner bg-card-2 px-3.5 py-2.5 hover:ring-1 hover:ring-line">
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm text-ink">{a.name}</p>
-                        <p className="truncate font-mono text-[11px] text-muted">{a.code}</p>
+                        <p className="truncate text-xs text-muted">{a.code}</p>
                       </div>
                       <ReportedState actuator={a} />
                       <ChevronRight aria-hidden className="size-4 shrink-0 text-muted" />
@@ -128,7 +130,7 @@ export default function DeviceDetailPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="Perangkat ini tidak punya aktuator" />
+                <EmptyState title="Tidak ada yang bisa dikendalikan di alat ini" />
               )}
             </Card>
           </div>

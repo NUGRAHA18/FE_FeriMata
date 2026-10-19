@@ -10,13 +10,14 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? "Greenhouse Melon";
+const productName = "FertiMata";
+const siteName = process.env.NEXT_PUBLIC_SITE_NAME ?? productName;
 
 export const metadata: Metadata = {
   title: { default: siteName, template: `%s · ${siteName}` },
-  description: "Konsol operator Smart Melon (FERTIMATA) — pemantauan dan kendali fertigasi greenhouse.",
-  applicationName: "Smart Melon",
-  appleWebApp: { capable: true, title: "Smart Melon", statusBarStyle: "default" },
+  description: "FertiMata: pemantauan dan kendali pemupukan otomatis greenhouse melon.",
+  applicationName: productName,
+  appleWebApp: { capable: true, title: productName, statusBarStyle: "default" },
   icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
 };
 

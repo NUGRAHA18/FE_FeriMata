@@ -12,7 +12,7 @@ type MetricCardProps = {
   /** Satu baris teks bantu (mis. "diperbarui 12 dtk lalu"). */
   hint?: ReactNode;
   href?: string;
-  /** Kartu "hero" hijau. */
+  /** Kartu "hero" berwarna. */
   tone?: "default" | "accent" | "warn" | "danger";
   badge?: ReactNode;
   stale?: boolean;
@@ -28,43 +28,57 @@ const toneClass = {
 };
 
 /**
- * Kartu metrik gaya referensi: ikon garis kiri atas, tombol ↗ kanan atas, label,
- * nilai besar & tipis dengan satuan kecil abu-abu, satu baris teks bantu.
+ * Kartu angka sensor. Dibuat besar dan lapang: ikon dalam lingkaran berwarna, label yang mudah
+ * dibaca, angka besar, satuan di sampingnya, dan satu baris keterangan kapan terakhir diperbarui.
+ * Ukuran minimum dipilih agar tetap terbaca di ponsel dari jarak satu lengan.
  */
 export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = "default", badge, stale, compact, className }: MetricCardProps) {
   const colored = tone !== "default";
-  // Angka panjang (mis. EC "1.242 µS/cm") diperkecil agar tidak meluap dari kartu.
-  const long = (value?.length ?? 0) + (unit?.length ?? 0) > 7;
+  // Angka panjang (mis. EC "1.242 µS/cm") sedikit diperkecil agar tidak meluap dari kartu.
+  const long = (value?.length ?? 0) + (unit?.length ?? 0) > 8;
   return (
     <section
       aria-label={label}
       className={cn(
         "relative flex min-w-0 flex-col rounded-card shadow-card",
-        compact ? "p-3" : "p-3 sm:p-5",
+        compact ? "p-3.5" : "p-4 sm:p-5",
         toneClass[tone],
         className,
       )}
     >
       <div className="flex items-start justify-between gap-2">
-        <Icon aria-hidden className={cn("mt-1 size-4 shrink-0 sm:size-[18px]", colored ? "opacity-90" : "text-ink-2")} strokeWidth={1.5} />
+        <span
+          className={cn(
+            "grid shrink-0 place-items-center rounded-full",
+            compact ? "size-9" : "size-10 sm:size-11",
+            colored ? "bg-white/20 text-current" : "bg-accent-soft text-accent",
+          )}
+        >
+          <Icon aria-hidden className={cn(compact ? "size-[18px]" : "size-5 sm:size-[22px]")} strokeWidth={1.8} />
+        </span>
         {href && (
           <CornerLink
             href={href}
-            label={`Detail ${label}`}
-            className={cn(colored && "bg-white/20 text-current hover:bg-white/30 hover:text-current", compact ? "size-7" : "size-7 sm:size-8")}
+            label={`Lihat detail ${label}`}
+            className={cn(colored && "bg-white/20 text-current hover:bg-white/30 hover:text-current", "size-8 sm:size-9")}
           />
         )}
       </div>
-      <p className={cn("mt-2 line-clamp-2 font-medium", compact ? "text-xs" : "text-xs sm:text-sm", colored ? "opacity-95" : "text-ink-2")}>
+      <p className={cn("mt-3 line-clamp-2 font-medium leading-snug", compact ? "text-sm" : "text-sm sm:text-base", colored ? "opacity-95" : "text-ink-2")}>
         {label}
       </p>
-      <div className={cn("flex flex-wrap items-end gap-x-2 gap-y-1", compact ? "mt-2" : "mt-2 sm:mt-4")}>
+      <div className={cn("flex flex-wrap items-end gap-x-2 gap-y-1", compact ? "mt-1.5" : "mt-2 sm:mt-3")}>
         <p className={cn("tabular flex items-baseline", stale && "opacity-60")}>
-          <span className={cn("metric-value", long ? (compact ? "text-[22px]" : "text-[22px] sm:text-4xl") : compact ? "text-[28px]" : "text-[28px] sm:text-5xl")}>
+          <span
+            className={cn(
+              "metric-value font-normal",
+              long ? (compact ? "text-[26px]" : "text-[30px] sm:text-[44px]") : compact ? "text-[32px]" : "text-[38px] sm:text-[54px]",
+            )}
+          >
             {value ?? "—"}
           </span>
           {value != null && unit && (
-            <span className={cn("ml-0.5 font-light", compact ? "text-sm" : "text-sm sm:text-xl", colored ? "opacity-75" : "text-muted")}>
+            <span className={cn("ml-1 font-normal", compact ? "text-base" : "text-base sm:text-2xl", colored ? "opacity-80" : "text-muted")}>
               {unit}
             </span>
           )}
@@ -72,7 +86,7 @@ export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = 
         {badge}
       </div>
       {hint && (
-        <p className={cn("mt-auto truncate pt-2 text-[11px] sm:pt-3 sm:text-xs", colored ? "opacity-85" : "text-muted")}>{hint}</p>
+        <p className={cn("mt-auto truncate pt-2 text-xs sm:pt-3 sm:text-[13px]", colored ? "opacity-85" : "text-muted")}>{hint}</p>
       )}
     </section>
   );

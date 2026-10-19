@@ -6,15 +6,15 @@ import { PageHeader } from "@/components/shell/page-header";
 import { ThemeSwitcher } from "@/components/shell/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
 import { KeyValue } from "@/components/ui/key-value";
-import { siteConfig } from "@/config/site";
+import { productName, siteConfig } from "@/config/site";
 import { useOverview } from "@/lib/api/queries";
 import { formatDateTime } from "@/lib/format";
 import { useConnectionState } from "@/lib/realtime/stomp";
 
 const themeSamples = [
-  { theme: "light", label: "Terang", note: "Abu-abu netral, aksen hijau hemat." },
-  { theme: "dark", label: "Gelap", note: "Kontras sama, nyaman di malam hari." },
-  { theme: "green", label: "Hijau", note: "Hijau mendominasi latar, kartu, dan elemen aktif." },
+  { theme: "light", label: "Terang", note: "Latar abu-abu muda, cocok di siang hari." },
+  { theme: "dark", label: "Gelap", note: "Nyaman di malam hari." },
+  { theme: "green", label: "Hijau", note: "Nuansa hijau daun." },
 ];
 
 export default function SettingsPage() {
@@ -41,23 +41,32 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted">Pilihan tema disimpan di perangkat ini. &quot;Ikuti sistem&quot; memakai Terang/Gelap sesuai OS.</p>
+          <p className="mt-3 text-xs text-muted">Pilihan tema disimpan di perangkat ini. &quot;Ikuti sistem&quot; memakai Terang/Gelap sesuai pengaturan HP/komputer.</p>
         </Card>
         <Card>
-          <CardHeader title="Sistem" icon={Info} />
+          <CardHeader title="Tentang" icon={Info} />
           <KeyValue
             rows={[
-              ["Situs", siteConfig.name],
+              ["Aplikasi", productName],
+              ["Greenhouse", siteConfig.name !== productName ? siteConfig.name : "—"],
               ["Lokasi", siteConfig.location || "—"],
-              ["API", <span key="a" className="font-mono text-xs">{siteConfig.apiBaseUrl || "(origin halaman)/api"}</span>],
-              ["WebSocket", <span key="w" className="font-mono text-xs">{siteConfig.wsUrl || "(origin halaman)/ws"}</span>],
-              ["Realtime", connection === "connected" ? "Tersambung" : connection === "connecting" ? "Menyambung…" : "Terputus"],
-              ["Mode backend", system?.mode ?? "—"],
-              ["Transport pesan", system ? `${system.messagingTransport ?? "—"} (${system.messagingConnected ? "tersambung" : "terputus"})` : "—"],
-              ["Overview dibuat", formatDateTime(system?.generatedAt)],
-              ["Zona waktu", "Asia/Jakarta (WIB)"],
+              ["Data langsung", connection === "connected" ? "Tersambung" : connection === "connecting" ? "Menyambung…" : "Terputus"],
+              ["Zona waktu", "WIB (Asia/Jakarta)"],
             ]}
           />
+          <details className="mt-3 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+            <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+            <KeyValue
+              className="mt-2"
+              rows={[
+                ["API", <span key="a" className="font-mono text-xs">{siteConfig.apiBaseUrl || "(origin halaman)/api"}</span>],
+                ["WebSocket", <span key="w" className="font-mono text-xs">{siteConfig.wsUrl || "(origin halaman)/ws"}</span>],
+                ["Mode backend", system?.mode ?? "—"],
+                ["Transport pesan", system ? `${system.messagingTransport ?? "—"} (${system.messagingConnected ? "tersambung" : "terputus"})` : "—"],
+                ["Overview dibuat", formatDateTime(system?.generatedAt)],
+              ]}
+            />
+          </details>
         </Card>
         {system?.mode === "DEVELOPMENT" && (
           <div className="lg:col-span-2">
