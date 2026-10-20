@@ -10,7 +10,7 @@ import { errorMessage } from "@/lib/api/client";
 import { useAcknowledgeAlert } from "@/lib/api/queries";
 import type { Alert } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
-import { alertTypeLabel, formatDateTime, severityLabel, sourceLabel } from "@/lib/format";
+import { alertMessageLabel, alertTitleLabel, alertTypeLabel, formatDateTime, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export const severityTone: Record<string, Tone> = { INFO: "info", WARNING: "warn", CRITICAL: "danger" };
@@ -55,7 +55,7 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="font-medium text-ink">{alertTypeLabel(a.type) === a.type ? a.title : alertTypeLabel(a.type)}</p>
+            <p className="font-medium text-ink">{alertTypeLabel(a.type) === a.type ? alertTitleLabel(a.title) : alertTypeLabel(a.type)}</p>
             <Chip tone={tone} icon={false} className="py-0.5 text-[11px]">
               {severityLabel[a.severity] ?? a.severity}
             </Chip>
@@ -63,7 +63,7 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
           <p className="mt-0.5 text-xs text-muted">
             {sourceLabel[a.source] ?? a.source} • <RelativeTime iso={a.createdAt} />
           </p>
-          {a.message && <p className={cn("mt-1.5 text-ink-2", compact ? "line-clamp-2 text-sm" : "text-sm")}>{a.message}</p>}
+          {a.message && <p className={cn("mt-1.5 text-ink-2", compact ? "line-clamp-2 text-sm" : "text-sm")}>{alertMessageLabel(a.message)}</p>}
           <RelatedLinks a={a} />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {a.acknowledged ? (

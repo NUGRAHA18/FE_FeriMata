@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import {
+  alertMessageLabel,
+  alertTitleLabel,
   alertTypeLabel,
+  deviceNameLabel,
   formatDateTime,
   formatDuration,
   formatNumber,
@@ -74,5 +77,27 @@ describe("label domain", () => {
     expect(stationCode(0)).toBe("HOME");
     expect(stationCode(3)).toBe("ST-03");
     expect(stationCode(12)).toBe("ST-12");
+  });
+});
+
+describe("alertMessageLabel / alertTitleLabel / deviceNameLabel", () => {
+  it("menerjemahkan pesan backend yang dikenal", () => {
+    expect(alertMessageLabel("No message received from RIO-TANK-01 for more than 120 seconds")).toBe(
+      "RIO-TANK-01 tidak memberi kabar selama lebih dari 2 menit. Periksa listrik dan kabel alat ini.",
+    );
+    expect(alertMessageLabel("Device RIO-TANK-01 started reporting again")).toBe("RIO-TANK-01 kembali memberi kabar.");
+    expect(alertMessageLabel("Device JETSON reports power source MAINS again")).toBe("JETSON kembali memakai listrik PLN.");
+    expect(alertMessageLabel("Device RIO-1 reported that command ON failed: Device reported failure")).toBe(
+      "RIO-1 gagal menyalakan. Periksa alatnya, lalu coba lagi.",
+    );
+  });
+  it("membiarkan pesan yang tidak dikenal", () => {
+    expect(alertMessageLabel("Tangki hampir kosong")).toBe("Tangki hampir kosong");
+  });
+  it("menerjemahkan judul dan nama perangkat bawaan", () => {
+    expect(alertTitleLabel("Device offline")).toBe("Alat terputus");
+    expect(deviceNameLabel("Development edge device")).toBe("Komputer Simulasi (Dev)");
+    expect(deviceNameLabel("Pompa Utama")).toBe("Pompa Utama");
+    expect(deviceNameLabel(null)).toBeNull();
   });
 });

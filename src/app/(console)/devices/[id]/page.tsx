@@ -13,7 +13,7 @@ import { StatusDot } from "@/components/ui/status";
 import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevice, useDeviceStatus, useOverview, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { deviceTypeLabel, formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
+import { deviceNameLabel, deviceTypeLabel, formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
 
 function SensorLine({ sensor: s }: { sensor: Sensor }) {
   const r = useReadingBySensor(s.id);
@@ -44,7 +44,7 @@ export default function DeviceDetailPage() {
 
   return (
     <>
-      <PageHeader backHref="/devices" title={d?.name ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
+      <PageHeader backHref="/devices" title={deviceNameLabel(d?.name) ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
       {device.isPending ? (
         <Skeleton className="h-80 rounded-card" />
       ) : device.error ? (

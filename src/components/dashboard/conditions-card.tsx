@@ -2,11 +2,12 @@
 
 import { Camera, Droplet, MapPin, Sun } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { Chip } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { siteConfig } from "@/config/site";
-import { conditionKeys, plots, trolleyLayout, type PlotId } from "@/config/dashboard-layout";
+import { conditionKeys, trolleyLayout, type PlotId } from "@/config/dashboard-layout";
 import { useReadingByMetric } from "@/lib/api/queries";
-import { formatLongDate, formatReading, formatTime, formatUnit, stationLabel } from "@/lib/format";
+import { formatLongDate, formatReading, formatTime, formatUnit, stationCode } from "@/lib/format";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/cn";
@@ -17,7 +18,7 @@ function Clock() {
   return (
     <div className="text-right text-sm text-ink-2" suppressHydrationWarning>
       <p className="tabular">{now ? formatLongDate(now) : " "}</p>
-      <p className="tabular text-xs text-muted">{now ? `${formatTime(now, true)} WIB` : " "}</p>
+      <p className="tabular text-xs text-ink-2">{now ? `${formatTime(now, true)} WIB` : " "}</p>
     </div>
   );
 }
@@ -27,11 +28,11 @@ function SmallStat({ icon: Icon, label, metricKey }: { icon: typeof Sun; label: 
   const v = formatReading(r);
   return (
     <div className="min-w-0">
-      <p className="flex items-center gap-1.5 text-sm text-muted">
+      <p className="flex items-center gap-1.5 text-sm text-ink-2">
         <Icon aria-hidden className="size-4" strokeWidth={1.7} />
         {label}
       </p>
-      <p className="tabular mt-0.5 text-2xl whitespace-nowrap text-ink">
+      <p className="tabular mt-0.5 text-[clamp(1.25rem,6vw,1.5rem)] whitespace-nowrap text-ink">
         {v ?? "—"}
         {v && r?.unit && <span className="ml-1 text-base text-muted">{formatUnit(r.unit)}</span>}
       </p>
@@ -50,7 +51,6 @@ export function ConditionsCard({ plot, onPlotChange }: { plot: PlotId; onPlotCha
   const station = useTrolleyStation();
   const stale = useConnectionState() !== "connected";
   const airValue = formatReading(air);
-  const selected = plots.find((p) => p.id === plot)!;
 
   return (
     <Card>
@@ -63,27 +63,23 @@ export function ConditionsCard({ plot, onPlotChange }: { plot: PlotId; onPlotCha
       </div>
       <div className="mt-3 grid gap-4 sm:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] sm:gap-5">
         <div className="flex min-w-0 flex-col">
-          <p className="text-sm font-medium text-muted">Suhu udara di dalam greenhouse</p>
+          <p className="text-sm font-medium text-ink-2">Suhu udara di dalam greenhouse</p>
           <p className={cn("tabular mt-1 flex items-start text-ink", stale && air && "opacity-60")}>
-            <span className="metric-value text-[64px] font-normal sm:text-[72px]">{airValue ?? "—"}</span>
+            <span className="metric-value text-[clamp(3rem,16vw,4.5rem)] font-normal">{airValue ?? "—"}</span>
             {airValue && air?.unit && <span className="mt-2 text-3xl text-muted">{formatUnit(air.unit)}</span>}
           </p>
-          <p className="mt-1 text-xs text-muted">{air ? <RelativeTime iso={air.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
+          <p className="mt-1 text-xs text-ink-2">{air ? <RelativeTime iso={air.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
 
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-1">
             <SmallStat icon={Droplet} label="Kelembapan udara" metricKey={conditionKeys.airHumidity} />
             <SmallStat icon={Sun} label="Cahaya" metricKey={conditionKeys.illuminance} />
           </div>
 
-          <div className="mt-auto pt-5">
-            <div className="rounded-inner bg-card-2 p-3.5">
-              <p className="font-medium text-ink">{selected.label}</p>
-              <p className="mt-0.5 text-sm text-muted">Angka tanah di bawah berasal dari bedengan ini. Ketuk bedengan lain di denah untuk berganti.</p>
-              <p className="mt-2 flex items-center gap-1.5 text-sm text-ink-2">
-                <Camera aria-hidden className="size-4 shrink-0 text-muted" strokeWidth={1.7} />
-                Kereta kamera {stationLabel(station)}
-              </p>
-            </div>
+          <div className="mt-auto flex flex-col items-start gap-2 pt-5">
+            <Chip icon={Camera}>
+              Kamera: {station == null ? "—" : stationCode(Math.round(station))}
+            </Chip>
+            <p className="text-xs text-ink-2">Ketuk plot di denah untuk berganti.</p>
           </div>
         </div>
         <GreenhouseMap selectedPlot={plot} onPlotSelect={onPlotChange} trolleyStation={station} className="self-center" />

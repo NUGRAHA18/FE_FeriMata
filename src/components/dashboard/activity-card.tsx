@@ -7,7 +7,7 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useLiveActivity, useOverview } from "@/lib/api/queries";
 import type { ActivityEntry } from "@/lib/api/types";
-import { commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
+import { alertMessageLabel, alertTitleLabel, alertTypeLabel, commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export function isOnState(state: string | null | undefined) {
@@ -79,8 +79,8 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
     return {
       key,
       at: e.at,
-      title: e.summary,
-      detail: msg ? `${severityLabel[sev] ?? sev} · ${msg}` : (e.detail ?? ""),
+      title: alertTitleLabel(e.summary),
+      detail: msg ? `${severityLabel[sev] ?? sev} · ${alertMessageLabel(msg)}` : (e.detail ?? ""),
       icon: severityIcon(sev),
     };
   }
@@ -110,8 +110,8 @@ export function ActivityCard({ className }: { className?: string }) {
         : {
           key: l.key,
           at: l.at,
-          title: l.alert.title,
-          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${l.alert.message}`,
+          title: alertTypeLabel(l.alert.type) === l.alert.type ? alertTitleLabel(l.alert.title) : alertTypeLabel(l.alert.type),
+          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${alertMessageLabel(l.alert.message)}`,
           icon: severityIcon(l.alert.severity),
         },
     ),
@@ -165,8 +165,8 @@ export function ActivityCard({ className }: { className?: string }) {
                 <li key={f.key} className="flex items-start gap-3 rounded-inner bg-card-2 p-3">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-ink">{f.title}</p>
-                    <p className="mt-0.5 line-clamp-2 text-sm text-muted">{f.detail}</p>
-                    <p className="mt-1 text-xs text-muted">
+                    <p className="mt-0.5 line-clamp-2 text-sm text-ink-2">{f.detail}</p>
+                    <p className="mt-1 text-xs text-ink-2">
                       <RelativeTime iso={f.at} />
                     </p>
                   </div>

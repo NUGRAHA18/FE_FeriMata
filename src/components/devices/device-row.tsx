@@ -5,7 +5,7 @@ import { ChevronRight } from "lucide-react";
 import { Chip, StatusDot, type Tone } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import type { DeviceStatus } from "@/lib/api/types";
-import { deviceTypeLabel, formatDuration, livenessLabel, powerSourceLabel } from "@/lib/format";
+import { deviceNameLabel, deviceTypeLabel, formatDuration, livenessLabel, powerSourceLabel } from "@/lib/format";
 import { DeviceIcon } from "@/lib/icons";
 import { cn } from "@/lib/cn";
 
@@ -46,7 +46,8 @@ type DeviceRowProps = {
 };
 
 /** Item alat: ikon jenis alat, nama, jenis dalam bahasa sehari-hari, status terhubung, chip masalah. */
-export function DeviceRow({ status: s, name, type, href, className }: DeviceRowProps) {
+export function DeviceRow({ status: s, name: rawName, type, href, className }: DeviceRowProps) {
+  const name = deviceNameLabel(rawName);
   const tone = s.onBackupPower ? "danger" : (livenessTone[s.status] ?? "neutral");
   const body = (
     <>

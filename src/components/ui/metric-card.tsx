@@ -2,6 +2,10 @@ import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 import { CornerLink } from "./card";
+import { Badge, type Tone } from "./status";
+
+/** Penilaian nilai terhadap rentang acuan, mis. { tone: "ok", label: "Sesuai target" }. */
+export type MetricStatus = { tone: Tone; label: string };
 
 type MetricCardProps = {
   label: string;
@@ -15,6 +19,8 @@ type MetricCardProps = {
   /** Kartu "hero" berwarna. */
   tone?: "default" | "accent" | "warn" | "danger";
   badge?: ReactNode;
+  /** Badge penilaian nilai; hanya diisi bila ada rentang acuan dari backend. */
+  status?: MetricStatus | null;
   stale?: boolean;
   compact?: boolean;
   className?: string;
@@ -32,7 +38,7 @@ const toneClass = {
  * dibaca, angka besar, satuan di sampingnya, dan satu baris keterangan kapan terakhir diperbarui.
  * Ukuran minimum dipilih agar tetap terbaca di ponsel dari jarak satu lengan.
  */
-export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = "default", badge, stale, compact, className }: MetricCardProps) {
+export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = "default", badge, status, stale, compact, className }: MetricCardProps) {
   const colored = tone !== "default";
   // Angka panjang (mis. EC "1.242 µS/cm") sedikit diperkecil agar tidak meluap dari kartu.
   const long = (value?.length ?? 0) + (unit?.length ?? 0) > 8;
@@ -72,7 +78,13 @@ export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = 
           <span
             className={cn(
               "metric-value font-normal",
-              long ? (compact ? "text-[26px]" : "text-[30px] sm:text-[44px]") : compact ? "text-[32px]" : "text-[38px] sm:text-[54px]",
+              long
+                ? compact
+                  ? "text-[clamp(1.375rem,6.5vw,1.625rem)]"
+                  : "text-[clamp(1.5rem,7vw,2.75rem)]"
+                : compact
+                  ? "text-[clamp(1.625rem,8vw,2rem)]"
+                  : "text-[clamp(2rem,9.5vw,3.375rem)]",
             )}
           >
             {value ?? "—"}
@@ -85,8 +97,13 @@ export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = 
         </p>
         {badge}
       </div>
+      {status && !colored && (
+        <Badge tone={status.tone} className="mt-2 self-start text-xs">
+          {status.label}
+        </Badge>
+      )}
       {hint && (
-        <p className={cn("mt-auto truncate pt-2 text-xs sm:pt-3 sm:text-[13px]", colored ? "opacity-85" : "text-muted")}>{hint}</p>
+        <p className={cn("mt-auto truncate pt-2 text-xs sm:pt-3 sm:text-[13px]", colored ? "opacity-90" : "text-ink-2")}>{hint}</p>
       )}
     </section>
   );

@@ -12,7 +12,7 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useDevices, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { formatReading, formatUnit } from "@/lib/format";
+import { deviceNameLabel, formatReading, formatUnit } from "@/lib/format";
 import { SensorIcon } from "@/lib/icons";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
@@ -51,7 +51,7 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
 
 export default function SensorsPage() {
   const q = useSensors();
-  const deviceNames = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, d.name]))).data;
+  const deviceNames = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, deviceNameLabel(d.name)]))).data;
   const [filter, setFilter] = useState("");
   const groups = useMemo(() => {
     const f = filter.trim().toLowerCase();

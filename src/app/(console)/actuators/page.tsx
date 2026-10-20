@@ -13,7 +13,7 @@ import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevices, useOverview } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
-import { livenessLabel, stationLabel } from "@/lib/format";
+import { deviceNameLabel, livenessLabel, stationLabel } from "@/lib/format";
 
 function groupByDevice(list: Actuator[]) {
   const groups = new Map<string, Actuator[]>();
@@ -34,7 +34,7 @@ function TrolleyNote() {
 export default function ActuatorsPage() {
   const q = useActuators();
   const devices = useOverview((o) => Object.fromEntries(o.devices.items.map((d) => [d.deviceCode, d]))).data;
-  const names = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, d.name]))).data;
+  const names = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, deviceNameLabel(d.name)]))).data;
   const canWrite = useCanWrite();
 
   return (
