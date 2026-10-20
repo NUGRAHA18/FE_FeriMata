@@ -1,4 +1,5 @@
-import { forwardRef, useId, type ComponentProps, type ReactNode } from "react";
+import { Eye, EyeOff } from "lucide-react";
+import { forwardRef, useId, useState, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
 export const inputClass =
@@ -26,6 +27,50 @@ export const Field = forwardRef<HTMLInputElement, FieldProps>(function Field({ l
           {...props}
         />
         {suffix && <span className="pointer-events-none absolute inset-y-0 right-3.5 flex items-center text-sm text-muted">{suffix}</span>}
+      </div>
+      {(error || hint) && (
+        <p id={msgId} className={cn("text-xs", error ? "text-danger-ink" : "text-muted")}>
+          {error || hint}
+        </p>
+      )}
+    </div>
+  );
+});
+
+/** Input kata sandi dengan tombol mata untuk menampilkan/menyembunyikan isinya. */
+export const PasswordField = forwardRef<HTMLInputElement, Omit<FieldProps, "type" | "suffix">>(function PasswordField(
+  { label, hint, error, className, id, ...props },
+  ref,
+) {
+  const [visible, setVisible] = useState(false);
+  const autoId = useId();
+  const inputId = id ?? autoId;
+  const msgId = `${inputId}-msg`;
+  return (
+    <div className={cn("flex flex-col gap-1.5", className)}>
+      <label htmlFor={inputId} className="text-sm font-medium text-ink-2">
+        {label}
+      </label>
+      <div className="relative">
+        <input
+          ref={ref}
+          id={inputId}
+          type={visible ? "text" : "password"}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error || hint ? msgId : undefined}
+          className={cn(inputClass, "pr-12")}
+          {...props}
+        />
+        <button
+          type="button"
+          onClick={() => setVisible((v) => !v)}
+          aria-label={visible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+          aria-pressed={visible}
+          title={visible ? "Sembunyikan kata sandi" : "Tampilkan kata sandi"}
+          className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-control text-ink-2 hover:text-ink focus-visible:outline-2 focus-visible:outline-accent"
+        >
+          {visible ? <EyeOff aria-hidden className="size-5" strokeWidth={1.7} /> : <Eye aria-hidden className="size-5" strokeWidth={1.7} />}
+        </button>
       </div>
       {(error || hint) && (
         <p id={msgId} className={cn("text-xs", error ? "text-danger-ink" : "text-muted")}>

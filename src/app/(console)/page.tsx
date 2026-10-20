@@ -1,6 +1,7 @@
 "use client";
 
 import { ActivityCard } from "@/components/dashboard/activity-card";
+import { CultivationCard } from "@/components/dashboard/cultivation-card";
 import { CameraCard } from "@/components/dashboard/camera-card";
 import { ConditionsCard } from "@/components/dashboard/conditions-card";
 import { DevicesCard } from "@/components/dashboard/devices-card";
@@ -26,7 +27,7 @@ export default function DashboardPage() {
         title={siteConfig.name}
         subtitle="Kondisi greenhouse hari ini"
         actions={
-          <Select label="Pilih bedengan" id="plot" value={plot} onChange={(e) => setPlot(e.target.value as PlotId)} wrapperClassName="w-full sm:w-auto" className="w-full">
+          <Select label="Pilih Plot" id="plot" value={plot} onChange={(e) => setPlot(e.target.value as PlotId)} wrapperClassName="w-full sm:w-auto" className="w-full">
             {plots.map((p) => (
               <option key={p.id} value={p.id}>
                 {p.label}
@@ -41,6 +42,7 @@ export default function DashboardPage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)]">
         <div className="flex min-w-0 flex-col gap-4 md:col-span-2 lg:col-span-1">
           <ConditionsCard plot={plot} onPlotChange={setPlot} />
+          <CultivationCard />
           {/* Dua kolom di ponsel supaya angkanya besar dan terbaca; tiga kolom mulai tablet. */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
             <SystemStatusCard />

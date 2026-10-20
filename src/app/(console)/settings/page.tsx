@@ -1,6 +1,8 @@
 "use client";
 
-import { Info, Palette } from "lucide-react";
+import Link from "next/link";
+import { ArrowUpRight, Info, Palette, Sprout, Users } from "lucide-react";
+import { useSession } from "@/lib/auth/use-session";
 import { DevTools } from "@/components/settings/dev-tools";
 import { PageHeader } from "@/components/shell/page-header";
 import { ThemeSwitcher } from "@/components/shell/theme-toggle";
@@ -20,11 +22,32 @@ const themeSamples = [
 export default function SettingsPage() {
   const system = useOverview((o) => o.system).data;
   const connection = useConnectionState();
+  const role = useSession()?.user.role;
+  const isAdmin = role === "ADMIN";
+  const canWrite = isAdmin || role === "OPERATOR";
 
   return (
     <>
       <PageHeader title="Pengaturan" />
       <div className="grid gap-4 lg:grid-cols-2">
+        <Card className="lg:col-span-2">
+          <CardHeader title="Siklus tanam & tanaman" icon={Sprout} />
+          <p className="text-sm text-ink-2">
+            {canWrite ? "Atur tanggal tanam, fase pertumbuhan, daftar tanaman perlakuan, dan catat pengamatan 3–4 harian." : "Lihat umur tanaman, fase pertumbuhan, dan daftar tanaman perlakuan."}
+          </p>
+          <Link href="/cultivation" className="mt-3 inline-flex h-11 items-center gap-2 rounded-control bg-active px-4 text-sm font-medium text-active-fg hover:opacity-90">
+            Buka halaman Tanaman <ArrowUpRight aria-hidden className="size-4" />
+          </Link>
+        </Card>
+        {isAdmin && (
+          <Card className="lg:col-span-2">
+            <CardHeader title="Pengguna" icon={Users} />
+            <p className="text-sm text-ink-2">Tambah akun untuk petani atau operator lain, atur perannya, dan atur ulang kata sandi.</p>
+            <Link href="/users" className="mt-3 inline-flex h-11 items-center gap-2 rounded-control bg-active px-4 text-sm font-medium text-active-fg hover:opacity-90">
+              Kelola pengguna <ArrowUpRight aria-hidden className="size-4" />
+            </Link>
+          </Card>
+        )}
         <Card>
           <CardHeader title="Tampilan" icon={Palette} />
           <ThemeSwitcher />
@@ -68,7 +91,7 @@ export default function SettingsPage() {
             />
           </details>
         </Card>
-        {system?.mode === "DEVELOPMENT" && (
+        {canWrite && system?.mode === "DEVELOPMENT" && (
           <div className="lg:col-span-2">
             <DevTools />
           </div>

@@ -19,13 +19,14 @@ import { errorMessage } from "@/lib/api/client";
 import { useAlerts, useDevices, useOverview, useSensor, useSensorLatest } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
 import { formatDateTime, formatReading, formatUnit } from "@/lib/format";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
 type Tab = "history" | "detail" | "device" | "activity";
-const tabs: { value: Tab; label: string }[] = [
+const allTabs: { value: Tab; label: string; writeOnly?: boolean }[] = [
   { value: "history", label: "Riwayat" },
-  { value: "detail", label: "Pengaturan" },
+  { value: "detail", label: "Pengaturan", writeOnly: true },
   { value: "device", label: "Alat" },
   { value: "activity", label: "Peringatan" },
 ];
@@ -99,6 +100,8 @@ function ActivityTab({ sensor: s }: { sensor: Sensor }) {
 export default function SensorDetailPage() {
   const id = Number(useParams<{ id: string }>().id);
   const q = useSensor(id);
+  const canWrite = useCanWrite();
+  const tabs = allTabs.filter((t) => canWrite || !t.writeOnly);
   const [tab, setTab] = useState<Tab>("history");
   const s = q.data;
 

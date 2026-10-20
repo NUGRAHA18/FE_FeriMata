@@ -232,6 +232,13 @@ export function deviceTypeLabel(type: string | null | undefined): string | null 
   return deviceTypeLabels[type] ?? type;
 }
 
+const roleLabels: Record<string, string> = { ADMIN: "Admin", OPERATOR: "Operator", VIEWER: "Pelihat" };
+
+export function roleLabel(role: string | null | undefined): string {
+  if (!role) return "—";
+  return roleLabels[role] ?? role;
+}
+
 /** Kode stasiun trolley: 0 → HOME, 1–12 → ST-01…ST-12. */
 export function stationCode(n: number): string {
   return n <= 0 ? "HOME" : `ST-${String(n).padStart(2, "0")}`;

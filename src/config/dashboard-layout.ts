@@ -2,7 +2,7 @@ import { Atom, Droplets, FlaskConical, Leaf, Sprout, Thermometer, Zap, type Luci
 
 /*
  * SATU-SATUNYA tempat pemetaan metric key → kartu dashboard.
- * Metric key adalah data katalog backend (hardware/fertimata-rev-a.yml) yang bisa berubah tanpa
+ * Metric key adalah data katalog backend yang bisa berubah tanpa
  * perubahan backend. Kartu yang metric key-nya tidak ada di data tampil "—", bukan error.
  * Satuan TIDAK didefinisikan di sini — selalu diambil dari field `unit` pembacaan.
  * Label ditulis untuk petani: istilah teknis (EC, pH) tetap ada di dalam kurung karena itu yang
@@ -12,8 +12,8 @@ import { Atom, Droplets, FlaskConical, Leaf, Sprout, Thermometer, Zap, type Luci
 export type PlotId = "a" | "b";
 
 export const plots: { id: PlotId; label: string; prefix: string }[] = [
-  { id: "a", label: "Bedengan A", prefix: "soil_a" },
-  { id: "b", label: "Bedengan B", prefix: "soil_b" },
+  { id: "a", label: "Plot A", prefix: "soil_a" },
+  { id: "b", label: "Plot B", prefix: "soil_b" },
 ];
 
 export type MetricCardDef = { suffix: string; label: string; icon: LucideIcon };

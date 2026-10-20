@@ -1,6 +1,7 @@
 import type { z } from "zod";
 import { apiOrigin } from "@/config/site";
-import { endSession, getToken } from "@/lib/auth/session";
+import { ensureFreshToken, refreshSession } from "@/lib/auth/refresh";
+import { endSession, getSession, getToken } from "@/lib/auth/session";
 import { apiErrorSchema } from "./types";
 
 /** Satu-satunya jenis error dari klien HTTP. `code` = field `error` backend (mis. SAFETY_INTERLOCK). */
@@ -68,30 +69,41 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
   opts: RequestOptions<S> = {},
 ): Promise<S extends z.ZodType ? z.infer<S> : unknown> {
   const { method = "GET", body, query, schema, signal, auth = true } = opts;
-  const headers: Record<string, string> = { Accept: "application/json" };
-  if (body !== undefined) headers["Content-Type"] = "application/json";
-  if (auth) {
-    const token = getToken();
-    if (token) headers.Authorization = `Bearer ${token}`;
-  }
 
-  let res: Response;
-  try {
-    res = await fetch(buildUrl(path, query), {
-      method,
-      headers,
-      body: body === undefined ? undefined : JSON.stringify(body),
-      signal,
-      cache: "no-store",
-    });
-  } catch (e) {
-    if ((e as Error)?.name === "AbortError") throw e;
-    throw new ApiRequestError({
-      status: 0,
-      code: "NETWORK_ERROR",
-      message: "Tidak bisa terhubung ke server. Periksa koneksi internet atau jaringan greenhouse.",
-      path,
-    });
+  // Token akses hampir habis? Perbarui dulu, supaya request ini tidak gagal 401.
+  if (auth) await ensureFreshToken();
+
+  const send = async () => {
+    const headers: Record<string, string> = { Accept: "application/json" };
+    if (body !== undefined) headers["Content-Type"] = "application/json";
+    if (auth) {
+      const token = getToken();
+      if (token) headers.Authorization = `Bearer ${token}`;
+    }
+    try {
+      return await fetch(buildUrl(path, query), {
+        method,
+        headers,
+        body: body === undefined ? undefined : JSON.stringify(body),
+        signal,
+        cache: "no-store",
+      });
+    } catch (e) {
+      if ((e as Error)?.name === "AbortError") throw e;
+      throw new ApiRequestError({
+        status: 0,
+        code: "NETWORK_ERROR",
+        message: "Tidak bisa terhubung ke server. Periksa koneksi internet atau jaringan greenhouse.",
+        path,
+      });
+    }
+  };
+
+  let res = await send();
+  // 401 pada request ber-token: coba perpanjang sesi sekali, lalu ulangi. Kalau refresh gagal,
+  // refreshSession sudah mengakhiri sesi.
+  if (res.status === 401 && auth && getSession()?.refreshToken && (await refreshSession())) {
+    res = await send();
   }
 
   const text = await res.text();

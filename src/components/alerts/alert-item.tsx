@@ -9,6 +9,7 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useAcknowledgeAlert } from "@/lib/api/queries";
 import type { Alert } from "@/lib/api/types";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { alertTypeLabel, formatDateTime, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -41,6 +42,7 @@ function RelatedLinks({ a }: { a: Alert }) {
 /** Satu peringatan: ikon tingkat, judul, pesan, lalu satu tombol "Tandai sudah ditangani". */
 export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boolean }) {
   const ack = useAcknowledgeAlert();
+  const canWrite = useCanWrite();
   const tone = severityTone[a.severity] ?? "neutral";
   const Icon = severityIcon[a.severity] ?? Info;
   // 409 = sudah ditangani (mis. oleh operator lain) — bukan kegagalan bagi pengguna.
@@ -69,10 +71,12 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
                 <Check aria-hidden className="size-3.5 text-accent" />
                 Sudah ditangani {a.acknowledgedBy ? `oleh ${a.acknowledgedBy}` : ""} · {formatDateTime(a.acknowledgedAt)}
               </span>
-            ) : (
+            ) : canWrite ? (
               <Button size="md" variant="dark" icon={Check} loading={ack.isPending} onClick={() => ack.mutate(a.id)}>
                 Tandai sudah ditangani
               </Button>
+            ) : (
+              <span className="text-xs text-muted">Belum ditangani</span>
             )}
             {ack.error && (
               <span role="alert" className={cn("text-xs", alreadyAcked ? "text-muted" : "text-danger-ink")}>

@@ -16,6 +16,7 @@ import { Badge } from "@/components/ui/status";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { useActuator, usePatchActuator } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { actuatorTypeLabel, formatDateTime, formatDuration } from "@/lib/format";
 
 function Settings({ actuator: a }: { actuator: Actuator }) {
@@ -98,6 +99,7 @@ export default function ActuatorDetailPage() {
   const id = Number(useParams<{ id: string }>().id);
   const q = useActuator(id);
   const a = q.data;
+  const canWrite = useCanWrite();
 
   return (
     <>
@@ -133,7 +135,7 @@ export default function ActuatorDetailPage() {
                 <MetadataTable metadata={a.metadata} />
               </details>
             </Card>
-            <Settings key={a.id} actuator={a} />
+            {canWrite && <Settings key={a.id} actuator={a} />}
             <Card className="lg:col-span-2">
               <CardHeader title="Riwayat perintah" icon={History} />
               <CommandHistory actuatorId={a.id} />

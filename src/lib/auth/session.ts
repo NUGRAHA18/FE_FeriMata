@@ -1,11 +1,12 @@
 import type { User } from "@/lib/api/types";
 
 /*
- * Sesi operator. Backend memberi token 60 menit tanpa refresh token, jadi sesi disimpan
- * sebagai { token, expiresAt, user } dan dihapus saat kedaluwarsa atau saat menerima 401.
+ * Sesi pengguna. Backend memberi dua token: token akses (60 menit, dikirim di header Authorization)
+ * dan refresh token (7 hari). Sesi dianggap hidup selama refresh token belum kedaluwarsa; token
+ * akses diperbarui diam-diam oleh lib/auth/refresh.ts.
  */
 
-export type Session = { token: string; expiresAt: string; user: User };
+export type Session = { token: string; expiresAt: string; refreshToken: string; refreshExpiresAt: string; user: User };
 export type EndReason = "logout" | "expired" | "unauthorized";
 
 const KEY = "fertimata.session";
@@ -26,10 +27,18 @@ function read(): string | null {
 function parse(raw: string | null): Session | null {
   if (!raw) return null;
   try {
-    const s = JSON.parse(raw) as Session;
-    if (typeof s?.token !== "string" || typeof s?.expiresAt !== "string") return null;
-    if (Date.parse(s.expiresAt) <= Date.now()) return null;
-    return s;
+    const s = JSON.parse(raw) as Partial<Session>;
+    if (typeof s?.token !== "string" || typeof s?.expiresAt !== "string" || !s.user) return null;
+    // Sesi lama (tanpa refresh token) hanya hidup sampai token aksesnya habis.
+    const end = typeof s.refreshExpiresAt === "string" ? s.refreshExpiresAt : s.expiresAt;
+    if (Date.parse(end) <= Date.now()) return null;
+    return {
+      token: s.token,
+      expiresAt: s.expiresAt,
+      refreshToken: typeof s.refreshToken === "string" ? s.refreshToken : "",
+      refreshExpiresAt: end,
+      user: s.user,
+    };
   } catch {
     return null;
   }
@@ -55,15 +64,23 @@ function emit() {
 }
 
 export function saveSession(session: Session) {
+  const raw = JSON.stringify(session);
   try {
-    localStorage.setItem(KEY, JSON.stringify(session));
+    localStorage.setItem(KEY, raw);
   } catch {
     // Penyimpanan tidak tersedia: sesi hanya hidup di memori tab ini.
-    cachedRaw = JSON.stringify(session);
-    cachedSession = session;
   }
+  cachedRaw = raw;
+  cachedSession = session;
   lastEndReason = null;
   emit();
+}
+
+/** Mengganti sebagian field sesi (mis. token baru setelah refresh) tanpa menyentuh yang lain. */
+export function updateSession(patch: Partial<Session>) {
+  const current = getSession();
+  if (!current) return;
+  saveSession({ ...current, ...patch });
 }
 
 export function endSession(reason: EndReason) {

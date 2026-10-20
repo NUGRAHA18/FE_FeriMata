@@ -6,7 +6,7 @@ import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { Logo } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
-import { Field } from "@/components/ui/input";
+import { Field, PasswordField } from "@/components/ui/input";
 import { productName, siteConfig } from "@/config/site";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { login } from "@/lib/api/endpoints";
@@ -14,8 +14,8 @@ import { consumeEndReason, safeNext, saveSession, type EndReason } from "@/lib/a
 import { useSession } from "@/lib/auth/use-session";
 
 const reasonText: Record<EndReason, string | null> = {
-  expired: "Sesi Anda sudah habis. Silakan masuk lagi.",
-  unauthorized: "Sesi Anda tidak berlaku lagi. Silakan masuk lagi.",
+  expired: "Sesi Anda sudah habis. Silakan Login kembali.",
+  unauthorized: "Sesi Anda tidak berlaku lagi. Silakan Login Kembali.",
   logout: null,
 };
 
@@ -33,7 +33,7 @@ function LoginForm() {
   const [notice] = useState(() => (typeof window === "undefined" ? null : reasonText[consumeEndReason() ?? "logout"]));
 
   useEffect(() => {
-    if (session) router.replace(next);
+    if (session) router.replace(session.user.mustChangePassword ? "/profile?ganti-sandi=1" : next);
   }, [session, next, router]);
 
   async function onSubmit(e: FormEvent) {
@@ -44,8 +44,7 @@ function LoginForm() {
     setFieldErrors({});
     try {
       const res = await login(username.trim(), password);
-      saveSession({ token: res.accessToken, expiresAt: res.expiresAt, user: res.user });
-      // Redirect dilakukan efek di atas begitu sesi tersimpan.
+      saveSession({ token: res.accessToken, expiresAt: res.expiresAt, refreshToken: res.refreshToken, refreshExpiresAt: res.refreshExpiresAt, user: res.user });
     } catch (err) {
       if (err instanceof ApiRequestError) setFieldErrors(err.fieldErrors());
       setError(err instanceof ApiRequestError && err.status === 401 ? "Nama pengguna atau kata sandi salah." : errorMessage(err));
@@ -67,10 +66,9 @@ function LoginForm() {
         onChange={(e) => setUsername(e.target.value)}
         error={fieldErrors.username}
       />
-      <Field
+      <PasswordField
         label="Kata sandi"
         name="password"
-        type="password"
         autoComplete="current-password"
         required
         value={password}
@@ -85,6 +83,7 @@ function LoginForm() {
       <Button type="submit" variant="accent" size="lg" icon={LogIn} loading={pending} disabled={!username.trim() || !password} className="mt-1 w-full">
         Masuk
       </Button>
+      <p className="text-center text-xs text-muted">Sesi Login selama 7 hari.</p>
     </form>
   );
 }

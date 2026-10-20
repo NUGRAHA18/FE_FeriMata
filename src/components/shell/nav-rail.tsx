@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
 import { Logo } from "./logo";
-import { isActive, primaryNav, secondaryNav, type NavItem } from "./nav-items";
+import { useCanWrite } from "@/lib/auth/use-session";
+import { isActive, navFor, primaryNav, secondaryNav, type NavItem } from "./nav-items";
 import { ThemeToggle } from "./theme-toggle";
 
 /** Ikon + label pendek, supaya menu tidak perlu ditebak dari gambarnya saja. */
@@ -30,6 +31,7 @@ function RailLink({ item, active, badge }: { item: NavItem; active: boolean; bad
 /** Rail navigasi vertikal kiri (≥ 768 px). */
 export function NavRail({ alertBadge }: { alertBadge?: boolean }) {
   const pathname = usePathname();
+  const canWrite = useCanWrite();
   return (
     <nav
       aria-label="Navigasi utama"
@@ -37,7 +39,7 @@ export function NavRail({ alertBadge }: { alertBadge?: boolean }) {
     >
       <Logo />
       <ul className="flex flex-col gap-2">
-        {primaryNav.map((item) => (
+        {navFor(primaryNav, canWrite).map((item) => (
           <li key={item.href}>
             <RailLink item={item} active={isActive(pathname, item.href)} badge={item.href === "/alerts" && alertBadge} />
           </li>

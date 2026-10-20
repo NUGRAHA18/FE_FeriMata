@@ -200,8 +200,114 @@ export function useDetections(f: api.DetectionFilter, page = 0, size = 20) {
   });
 }
 
+// ── Siklus tanam & tanaman ───────────────────────────────────────────────────
+
+export function useCycleToday() {
+  return useQuery({ queryKey: qk.cycleToday, queryFn: ({ signal }) => api.getCycleToday(signal), staleTime: 60_000 });
+}
+
+export function useCycles() {
+  return useQuery({ queryKey: qk.cycles, queryFn: ({ signal }) => api.getCycles(signal) });
+}
+
+/** Setelah siklus/fase berubah: HST & fase di overview dan daftar siklus diambil ulang. */
+function useInvalidateCultivation() {
+  const qc = useQueryClient();
+  return () => {
+    void qc.invalidateQueries({ queryKey: qk.cycleToday });
+    void qc.invalidateQueries({ queryKey: qk.cycles });
+    void qc.invalidateQueries({ queryKey: qk.overview });
+  };
+}
+
+export function useCreateCycle() {
+  const invalidate = useInvalidateCultivation();
+  return useMutation({ mutationFn: (body: api.CycleInput) => api.createCycle(body), onSuccess: invalidate });
+}
+
+export function usePatchCycle(id: number) {
+  const invalidate = useInvalidateCultivation();
+  return useMutation({ mutationFn: (body: api.CyclePatch) => api.patchCycle(id, body), onSuccess: invalidate });
+}
+
+export function usePutPhases(id: number) {
+  const invalidate = useInvalidateCultivation();
+  return useMutation({ mutationFn: (phases: api.PhaseInput[]) => api.putPhases(id, phases), onSuccess: invalidate });
+}
+
+export function usePlants(f: api.PlantFilters) {
+  return useQuery({ queryKey: qk.plants(f), queryFn: ({ signal }) => api.getPlants(f, signal), placeholderData: keepPreviousData });
+}
+
+export function useCreatePlant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.PlantInput) => api.createPlant(body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.plantsRoot });
+      void qc.invalidateQueries({ queryKey: qk.cycleToday });
+      void qc.invalidateQueries({ queryKey: qk.overview });
+    },
+  });
+}
+
+export function usePatchPlant() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: api.PlantPatch }) => api.patchPlant(id, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.plantsRoot }),
+  });
+}
+
+export function useObservations(plantId: number, page = 0) {
+  return useQuery({ queryKey: qk.observations(plantId, page), queryFn: ({ signal }) => api.getObservations(plantId, page, 10, signal), placeholderData: keepPreviousData });
+}
+
+export function useAddObservation(plantId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.ObservationInput) => api.addObservation(plantId, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.plantsRoot }),
+  });
+}
+
 // ── Profil ───────────────────────────────────────────────────────────────────
 
 export function useMe() {
   return useQuery({ queryKey: qk.me, queryFn: ({ signal }) => api.getMe(signal), staleTime: 5 * 60_000 });
+}
+
+export function useChangePassword() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: { currentPassword: string; newPassword: string }) => api.changePassword(body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.me }),
+  });
+}
+
+// ── Pengguna (ADMIN) ─────────────────────────────────────────────────────────
+
+export function useUsers() {
+  return useQuery({ queryKey: qk.users, queryFn: ({ signal }) => api.getUsers(signal) });
+}
+
+export function useCreateUser() {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: (body: api.UserInput) => api.createUser(body), onSuccess: () => void qc.invalidateQueries({ queryKey: qk.users }) });
+}
+
+export function usePatchUser() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, body }: { id: number; body: api.UserPatch }) => api.patchUser(id, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.users }),
+  });
+}
+
+export function useResetPassword() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: ({ id, newPassword }: { id: number; newPassword: string }) => api.resetUserPassword(id, newPassword),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.users }),
+  });
 }

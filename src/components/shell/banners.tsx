@@ -58,7 +58,7 @@ export function SystemBanners() {
   );
 }
 
-/** Peringatan 5 menit sebelum sesi (60 menit) habis. */
+/** Peringatan 5 menit sebelum sesi 7 hari (refresh token) habis. */
 export function SessionExpiryBanner({ expiresAt, onRelogin }: { expiresAt: string; onRelogin: () => void }) {
   const now = useNow();
   const left = Math.round((Date.parse(expiresAt) - now) / 1000);

@@ -11,6 +11,7 @@ import { reportedStateLabel } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { usePatchActuator } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { actuatorTypeLabel, formatDuration } from "@/lib/format";
 import { ActuatorIcon } from "@/lib/icons";
 import { cn } from "@/lib/cn";
@@ -35,10 +36,13 @@ export function ReportedState({ actuator: a, large }: { actuator: Pick<Actuator,
 
 /** Tombol Nyalakan/Matikan + dialog + pelacak perintah terakhir. Matikan tidak pernah dinonaktifkan. */
 export function ActuatorControls({ actuator: a, className }: { actuator: Actuator; className?: string }) {
+  const canWrite = useCanWrite();
   const [dialog, setDialog] = useState<"ON" | "OFF" | null>(null);
   const [confirmEnable, setConfirmEnable] = useState(false);
   const [tracked, setTracked] = useState<TrackedCommand | null>(null);
   const patch = usePatchActuator(a.id);
+  // Pelihat hanya melihat status; tidak ada tombol yang bisa ditekan lalu ditolak.
+  if (!canWrite) return null;
 
   return (
     <div className={className}>

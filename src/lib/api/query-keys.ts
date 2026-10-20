@@ -7,6 +7,7 @@ import type { ActuatorCommand, Alert } from "./types";
  */
 export const qk = {
   me: ["me"] as const,
+  users: ["users"] as const,
   overview: ["overview"] as const,
   /** Record<sensorId, SensorReading> — pembacaan terakhir, dinormalisasi per sensor. */
   readings: ["readings"] as const,
@@ -31,6 +32,12 @@ export const qk = {
 
   alertsRoot: ["alerts"] as const,
   alerts: (f: AlertFilters) => ["alerts", f] as const,
+
+  cycleToday: ["cultivation", "today"] as const,
+  cycles: ["cultivation", "cycles"] as const,
+  plantsRoot: ["plants"] as const,
+  plants: (f: Record<string, unknown>) => ["plants", f] as const,
+  observations: (plantId: number, page: number) => ["plants", plantId, "observations", page] as const,
 
   detectionsRoot: ["ai", "detections"] as const,
   detections: (f: DetectionFilter, page: number, size: number) => ["ai", "detections", f, { page, size }] as const,

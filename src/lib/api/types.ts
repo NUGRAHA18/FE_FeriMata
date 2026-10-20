@@ -17,6 +17,9 @@ export const userSchema = z.object({
   fullName: z.string().nullable(),
   role: z.string(),
   enabled: z.boolean(),
+  mustChangePassword: z.boolean().optional().default(false),
+  createdAt: instant.nullable().optional(),
+  updatedAt: instant.nullable().optional(),
 });
 export type User = z.infer<typeof userSchema>;
 
@@ -25,6 +28,8 @@ export const loginResponseSchema = z.object({
   tokenType: z.string(),
   expiresIn: z.number(),
   expiresAt: instant,
+  refreshToken: z.string(),
+  refreshExpiresAt: instant,
   user: userSchema,
 });
 export type LoginResponse = z.infer<typeof loginResponseSchema>;
@@ -203,6 +208,93 @@ export const aiDetectionSchema = z.object({
 });
 export type AiDetection = z.infer<typeof aiDetectionSchema>;
 
+// ── Siklus tanam & tanaman ────────────────────────────────────────────────────
+export const growthPhaseSchema = z.object({
+  id: z.number().nullable().optional(),
+  code: z.string(),
+  name: z.string(),
+  startHst: z.number(),
+  endHst: z.number().nullable(),
+  ecTargetMin: z.number().nullable(),
+  ecTargetMax: z.number().nullable(),
+  ratioN: z.number().nullable(),
+  ratioP: z.number().nullable(),
+  ratioK: z.number().nullable(),
+  notes: z.string().nullable(),
+});
+export type GrowthPhase = z.infer<typeof growthPhaseSchema>;
+
+export const cycleStatusSchema = z.enum(["PLANNED", "ACTIVE", "ENDED"]);
+export type CycleStatus = z.infer<typeof cycleStatusSchema>;
+
+export const plantingCycleSchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  name: z.string(),
+  variety: z.string().nullable(),
+  transplantDate: z.string(),
+  expectedHarvestDate: z.string().nullable(),
+  endedAt: z.string().nullable(),
+  status: cycleStatusSchema,
+  notes: z.string().nullable(),
+  phases: z.array(growthPhaseSchema),
+  createdAt: instant,
+  updatedAt: instant,
+});
+export type PlantingCycle = z.infer<typeof plantingCycleSchema>;
+
+export const cycleTodaySchema = z.object({
+  cycle: plantingCycleSchema,
+  today: z.string(),
+  hst: z.number(),
+  currentPhase: growthPhaseSchema.nullable(),
+  nextPhase: growthPhaseSchema.nullable(),
+  daysUntilNextPhase: z.number().nullable(),
+  plantCount: z.number(),
+  treatmentPlantCount: z.number(),
+});
+export type CycleToday = z.infer<typeof cycleTodaySchema>;
+
+export const plantObservationSchema = z.object({
+  id: z.number(),
+  plantId: z.number(),
+  plantCode: z.string(),
+  observedAt: instant,
+  hst: z.number().nullable(),
+  heightCm: z.number().nullable(),
+  leafCount: z.number().nullable(),
+  leaf3LengthCm: z.number().nullable(),
+  leaf3WidthCm: z.number().nullable(),
+  visualNotes: z.string().nullable(),
+  soilSnapshot: json.nullable(),
+  observedBy: z.string().nullable(),
+  createdAt: instant,
+});
+export type PlantObservation = z.infer<typeof plantObservationSchema>;
+
+export const plantSchema = z.object({
+  id: z.number(),
+  code: z.string(),
+  name: z.string(),
+  description: z.string().nullable(),
+  cycleId: z.number().nullable(),
+  cycleCode: z.string().nullable(),
+  treatmentCode: z.string().nullable(),
+  blockCode: z.string().nullable(),
+  rowCode: z.string().nullable(),
+  plotCode: z.string().nullable(),
+  stationCode: z.string().nullable(),
+  positionInRow: z.number().nullable(),
+  comparisonGroup: z.string().nullable(),
+  taggedLeaves: z.string().nullable(),
+  active: z.boolean(),
+  metadata: json.nullable(),
+  lastObservation: plantObservationSchema.nullable(),
+  createdAt: instant,
+  updatedAt: instant,
+});
+export type Plant = z.infer<typeof plantSchema>;
+
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export const activityEntrySchema = z.object({
   kind: z.string(),
@@ -247,6 +339,22 @@ export const dashboardOverviewSchema = z.object({
   }),
   latestAiDetection: aiDetectionSchema.nullable().optional(),
   recentActivity: z.array(activityEntrySchema),
+  // Null bila belum ada siklus tanam aktif; opsional agar backend lama tetap lolos.
+  cultivation: z
+    .object({
+      cycleId: z.number(),
+      cycleCode: z.string(),
+      cycleName: z.string(),
+      transplantDate: z.string(),
+      hst: z.number(),
+      currentPhase: growthPhaseSchema.nullable(),
+      nextPhase: growthPhaseSchema.nullable(),
+      daysUntilNextPhase: z.number().nullable(),
+      plantCount: z.number(),
+      treatmentPlantCount: z.number(),
+    })
+    .nullable()
+    .optional(),
 });
 export type DashboardOverview = z.infer<typeof dashboardOverviewSchema>;
 

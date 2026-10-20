@@ -12,6 +12,7 @@ import { trolleyActuatorCodes } from "@/config/dashboard-layout";
 import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevices, useOverview } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { livenessLabel, stationLabel } from "@/lib/format";
 
 function groupByDevice(list: Actuator[]) {
@@ -34,10 +35,14 @@ export default function ActuatorsPage() {
   const q = useActuators();
   const devices = useOverview((o) => Object.fromEntries(o.devices.items.map((d) => [d.deviceCode, d]))).data;
   const names = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, d.name]))).data;
+  const canWrite = useCanWrite();
 
   return (
     <>
-      <PageHeader title="Kontrol" subtitle="Nyalakan atau matikan pompa, lampu, dan kereta kamera." />
+      <PageHeader
+        title={canWrite ? "Kontrol" : "Status alat"}
+        subtitle={canWrite ? "Nyalakan atau matikan pompa, lampu, dan kereta kamera." : "Status pompa, lampu, dan kereta kamera. Akun Anda hanya bisa melihat."}
+      />
       {q.isPending ? (
         <div className="grid gap-4 lg:grid-cols-2">
           {Array.from({ length: 2 }).map((_, i) => (

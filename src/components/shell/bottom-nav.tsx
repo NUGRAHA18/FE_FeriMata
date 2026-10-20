@@ -3,18 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/cn";
-import { isActive, primaryNav } from "./nav-items";
+import { useCanWrite } from "@/lib/auth/use-session";
+import { isActive, navFor, primaryNav } from "./nav-items";
 
 /** Bottom navigation melayang (< 768 px): ikon + label, supaya tidak perlu menebak arti ikon. */
 export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
   const pathname = usePathname();
+  const canWrite = useCanWrite();
   return (
     <nav
       aria-label="Navigasi utama"
       className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(10px,env(safe-area-inset-bottom))] md:hidden"
     >
       <ul className="mx-auto flex max-w-md items-stretch justify-between rounded-[22px] bg-card/90 p-1.5 shadow-[0_8px_30px_rgb(0_0_0/0.12)] ring-1 ring-line backdrop-blur-xl">
-        {primaryNav.map((item) => {
+        {navFor(primaryNav, canWrite).map((item) => {
           const active = isActive(pathname, item.href);
           const Icon = item.icon;
           return (

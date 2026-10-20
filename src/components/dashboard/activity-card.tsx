@@ -101,19 +101,19 @@ export function ActivityCard({ className }: { className?: string }) {
     ...live.map<FeedItem>((l) =>
       l.kind === "ACTUATOR_COMMAND"
         ? {
-            key: l.key,
-            at: l.at,
-            title: `${l.command.actuatorCode} ${commandVerb(l.command.commandType)}`,
-            detail: `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}`,
-            icon: commandIcon(l.command.status),
-          }
+          key: l.key,
+          at: l.at,
+          title: `${l.command.actuatorCode} ${commandVerb(l.command.commandType)}`,
+          detail: `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}`,
+          icon: commandIcon(l.command.status),
+        }
         : {
-            key: l.key,
-            at: l.at,
-            title: l.alert.title,
-            detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${l.alert.message}`,
-            icon: severityIcon(l.alert.severity),
-          },
+          key: l.key,
+          at: l.at,
+          title: l.alert.title,
+          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${l.alert.message}`,
+          icon: severityIcon(l.alert.severity),
+        },
     ),
     ...(d?.entries ?? []).map(fromOverviewEntry),
   ].slice(0, 15);

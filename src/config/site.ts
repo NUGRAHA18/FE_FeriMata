@@ -3,7 +3,6 @@
 // Default dev tetap backend lokal di :8080 supaya `npm run dev` jalan tanpa .env.local.
 const devDefault = process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
 
-/** Nama produk. Dipakai di judul tab, manifest PWA, dan halaman login. */
 export const productName = "FertiMata";
 
 export const siteConfig = {
@@ -14,7 +13,6 @@ export const siteConfig = {
   timeZone: "Asia/Jakarta",
 } as const;
 
-/** Origin absolut backend: `apiBaseUrl`, atau origin halaman bila kosong. Hanya dipanggil di browser. */
 export function apiOrigin(): string {
   return siteConfig.apiBaseUrl || window.location.origin;
 }
