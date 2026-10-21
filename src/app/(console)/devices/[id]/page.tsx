@@ -82,7 +82,7 @@ export default function DeviceDetailPage() {
                 <Skeleton className="h-40" />
               )}
               {d.description && <p className="mt-4 text-sm text-ink-2">{d.description}</p>}
-              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
                 <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
                 <KeyValue
                   className="mt-2"

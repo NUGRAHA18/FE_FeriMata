@@ -97,7 +97,7 @@ function PhaseEditor({ cycleId, phases, onDone }: { cycleId: number; phases: Gro
   return (
     <form onSubmit={submit} className="flex flex-col gap-3" noValidate>
       <p className="text-xs text-muted">HST = hari setelah tanam. Akhir kosong berarti sampai siklus selesai. Angka EC dan N:P:K dipakai untuk target pemupukan fase itu.</p>
-      <div className="scroll-thin overflow-x-auto rounded-inner bg-card-2">
+      <div className="scroll-thin overflow-x-auto rounded-inner bg-card-2 ring-1 ring-line">
         <table className="w-full min-w-[760px] text-left text-sm">
           <thead className="text-xs text-muted">
             <tr className="border-b border-line">
@@ -182,14 +182,14 @@ function CycleCard({ today }: { today: CycleToday }) {
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <Inset>
           <p className="text-sm text-muted">Umur tanaman</p>
-          <p className="tabular metric-value mt-1 text-[40px] font-normal text-ink">
+          <p className="tabular metric-value mt-1 text-[40px] text-ink">
             {today.hst} <span className="text-base text-muted">HST</span>
           </p>
           <p className="mt-0.5 text-xs text-muted">tanam {formatDate(c.transplantDate)}</p>
         </Inset>
         <Inset>
           <p className="text-sm text-muted">Fase sekarang</p>
-          <p className="mt-1 text-xl font-medium text-ink">{phase?.name ?? "Di luar fase"}</p>
+          <p className="mt-1 text-xl font-semibold text-ink">{phase?.name ?? "Di luar fase"}</p>
           {today.nextPhase && today.daysUntilNextPhase != null && (
             <p className="mt-0.5 text-xs text-muted">
               {today.daysUntilNextPhase} hari lagi ke {today.nextPhase.name}
@@ -198,20 +198,20 @@ function CycleCard({ today }: { today: CycleToday }) {
         </Inset>
         <Inset>
           <p className="text-sm text-muted">Target EC fase ini</p>
-          <p className="tabular mt-1 text-xl font-medium text-ink">
+          <p className="tabular mt-1 text-xl font-semibold text-ink">
             {phase && phase.ecTargetMin != null && phase.ecTargetMax != null ? `${formatNumber(phase.ecTargetMin, 2)}–${formatNumber(phase.ecTargetMax, 2)} mS/cm` : "—"}
           </p>
         </Inset>
         <Inset>
           <p className="text-sm text-muted">N : P : K fase ini</p>
-          <p className="tabular mt-1 text-xl font-medium text-ink">
+          <p className="tabular mt-1 text-xl font-semibold text-ink">
             {phase && phase.ratioN != null && phase.ratioK != null ? `${formatNumber(phase.ratioN, 1)} : ${formatNumber(phase.ratioP ?? 1, 1)} : ${formatNumber(phase.ratioK, 1)}` : "—"}
           </p>
         </Inset>
       </div>
 
       <div className="mt-5 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-ink-2">Fase pertumbuhan</h3>
+        <h3 className="text-sm font-semibold text-ink-2">Fase pertumbuhan</h3>
         {canWrite && !editing && (
           <Button size="sm" onClick={() => setEditing(true)}>
             Ubah fase
@@ -227,8 +227,8 @@ function CycleCard({ today }: { today: CycleToday }) {
           {c.phases.map((p) => {
             const current = phase?.code === p.code;
             return (
-              <li key={p.code} className={cn("rounded-inner p-3.5", current ? "bg-accent-soft ring-1 ring-accent" : "bg-card-2")}>
-                <p className="font-medium text-ink">{p.name}</p>
+              <li key={p.code} className={cn("rounded-inner p-3.5", current ? "bg-accent-soft ring-1 ring-accent" : "bg-card-2 ring-1 ring-line")}>
+                <p className="font-semibold text-ink">{p.name}</p>
                 <p className="tabular mt-0.5 text-xs text-muted">
                   HST {p.startHst}
                   {p.endHst != null ? `–${p.endHst}` : " ke atas"}
@@ -267,7 +267,7 @@ function NewPlantForm({ cycleId }: { cycleId: number }) {
       </Button>
     );
   return (
-    <form onSubmit={submit} className="grid gap-3 rounded-inner bg-card-2 p-4 sm:grid-cols-3" noValidate>
+    <form onSubmit={submit} className="grid gap-3 rounded-inner bg-card-2 p-4 sm:grid-cols-3 ring-1 ring-line" noValidate>
       <Field label="Kode tanaman" value={f.code} onChange={(e) => set({ code: e.target.value })} placeholder="B1-N-02" required />
       <Select label="Perlakuan" hideLabel={false} id="np-treatment" value={f.treatmentCode ?? ""} onChange={(e) => set({ treatmentCode: e.target.value })} wrapperClassName="flex-col items-start gap-1.5">
         <option value="">Tanaman biasa</option>
@@ -359,7 +359,7 @@ function ObservationList({ plantId }: { plantId: number }) {
       {q.data.content.map((o) => {
         const soil = Object.entries(o.soilSnapshot ?? {}) as [string, { value?: unknown; unit?: string | null }][];
         return (
-          <li key={o.id} className="rounded-inner bg-card p-3 text-sm">
+          <li key={o.id} className="rounded-inner bg-card p-3 text-sm ring-1 ring-line">
             <p className="flex flex-wrap items-baseline gap-x-2 text-ink">
               <span className="font-medium">{o.hst != null ? `HST ${o.hst}` : formatDate(o.observedAt)}</span>
               <span className="text-xs text-muted">{formatDateTime(o.observedAt)}{o.observedBy ? ` · ${o.observedBy}` : ""}</span>
@@ -393,7 +393,7 @@ function PlantRow({ plant }: { plant: Plant }) {
       <button type="button" className="flex w-full items-start justify-between gap-3 text-left" onClick={() => setOpen((v) => !v)} aria-expanded={open}>
         <div className="min-w-0">
           <div className="flex flex-wrap items-center gap-2">
-            <p className="font-medium text-ink">{plant.code}</p>
+            <p className="font-semibold text-ink">{plant.code}</p>
             <Badge tone={treatmentTone[plant.treatmentCode ?? ""] ?? "neutral"}>{treatmentLabel(plant.treatmentCode)}</Badge>
             {plant.comparisonGroup && plant.comparisonGroup !== "NONE" && <Badge tone="neutral">{comparisonLabel[plant.comparisonGroup] ?? plant.comparisonGroup}</Badge>}
           </div>
@@ -463,7 +463,7 @@ function PlantsSection({ cycleId }: { cycleId: number }) {
         <div className="flex flex-col gap-4">
           {[...blocks.entries()].map(([block, list]) => (
             <section key={block}>
-              <h3 className="mb-2 text-sm font-medium text-ink-2">
+              <h3 className="mb-2 text-sm font-semibold text-ink-2">
                 {block.startsWith("Tanpa") ? block : `Blok ${block}`} <span className="font-normal text-muted">· {list.length} tanaman</span>
               </h3>
               <div className="grid gap-2 lg:grid-cols-2">

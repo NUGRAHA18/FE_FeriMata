@@ -3,13 +3,14 @@
 import { Bell, ChevronLeft, ChevronRight, ScanEye } from "lucide-react";
 import { useState } from "react";
 import { DetectionImage, ScoreBars } from "@/components/ai/detection-parts";
+import { GreenhouseScene } from "@/components/illustrations";
 import { useShell } from "@/components/shell/shell-context";
 import { Card, CardHeader } from "@/components/ui/card";
-import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
+import { ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useDetections } from "@/lib/api/queries";
-import { detectionTypeLabel } from "@/lib/format";
+import { detectionTypeLabel, panDirectionLabel } from "@/lib/format";
 
 const PAGER_SIZE = 10;
 const noFilter = { kind: "none" } as const;
@@ -37,12 +38,19 @@ export function CameraCard() {
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : !d ? (
-        <EmptyState icon={<ScanEye aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Belum ada foto dari kamera" hint="Foto dan hasil pemeriksaan tanaman akan muncul di sini." />
+        <div className="relative flex min-h-56 flex-col items-center overflow-hidden rounded-inner bg-gradient-to-b from-accent-soft/60 to-card-2 px-6 pt-7 pb-28 text-center ring-1 ring-line">
+          <span className="grid size-12 place-items-center rounded-full bg-card text-accent shadow-card ring-1 ring-line">
+            <ScanEye aria-hidden className="size-6" strokeWidth={1.8} />
+          </span>
+          <p className="mt-3 font-semibold text-ink">Belum ada foto dari kamera</p>
+          <p className="mt-1 max-w-64 text-sm text-ink-2">Foto dan hasil pemeriksaan tanaman akan muncul di sini.</p>
+          <GreenhouseScene className="absolute right-0 bottom-0 h-28 w-56" />
+        </div>
       ) : (
         <>
           <DetectionImage detection={d} className="aspect-[4/3] w-full">
             <div className="absolute inset-x-0 top-0 flex items-center justify-between bg-gradient-to-b from-black/45 to-transparent p-3 text-white">
-              <span className="rounded-md bg-black/30 px-2 py-0.5 font-mono text-xs backdrop-blur-md">{d.stationCode ?? "—"}</span>
+              <span className="rounded-md bg-black/30 px-2 py-0.5 font-mono text-xs backdrop-blur-md">{[d.stationCode ?? "—", panDirectionLabel(d.panDirection)].filter(Boolean).join(" · ")}</span>
               <span className="text-xs opacity-90">
                 <RelativeTime iso={d.detectedAt} />
               </span>
@@ -70,7 +78,7 @@ export function CameraCard() {
               </div>
             </div>
           </DetectionImage>
-          <div className="mt-3 flex items-baseline justify-between gap-2 text-xs text-muted">
+          <div className="mt-3 flex items-baseline justify-between gap-2 text-xs text-ink-2">
             <span className="truncate">{detectionTypeLabel(d.detectionType)}</span>
             <span>{d.plantCode ?? ""}</span>
           </div>

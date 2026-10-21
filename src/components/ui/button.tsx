@@ -9,7 +9,7 @@ const variants: Record<Variant, string> = {
   primary: "bg-active text-active-fg hover:opacity-90",
   dark: "bg-active text-active-fg hover:opacity-90",
   accent: "bg-accent text-accent-fg hover:brightness-105",
-  soft: "bg-card-2 text-ink hover:bg-sunken",
+  soft: "bg-card-2 text-ink ring-1 ring-line hover:bg-sunken",
   ghost: "bg-transparent text-ink-2 hover:bg-card-2",
   danger: "bg-danger text-white hover:brightness-105",
 };
@@ -50,7 +50,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       {loading ? (
         <Loader2 aria-hidden className="size-4 animate-spin" />
       ) : (
-        Icon && <Icon aria-hidden className="size-4" strokeWidth={1.8} />
+        Icon && <Icon aria-hidden className="size-4" strokeWidth={2} />
       )}
       {children}
     </button>
@@ -77,12 +77,12 @@ export function IconButton({ icon: Icon, label, active, size = "md", badge, clas
         "relative grid shrink-0 place-items-center transition",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40",
         iconSizes[size],
-        active ? "bg-active text-active-fg" : "bg-card-2 text-ink-2 hover:bg-sunken",
+        active ? "bg-active text-active-fg" : "bg-card-2 text-ink-2 ring-1 ring-line hover:bg-sunken",
         className,
       )}
       {...props}
     >
-      <Icon aria-hidden className={size === "sm" ? "size-4" : "size-[18px]"} strokeWidth={1.6} />
+      <Icon aria-hidden className={size === "sm" ? "size-4" : "size-[18px]"} strokeWidth={2} />
       {badge && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-danger ring-2 ring-card-2" />}
     </button>
   );

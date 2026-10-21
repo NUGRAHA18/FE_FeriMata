@@ -9,16 +9,15 @@ import { Atom, Droplets, FlaskConical, Leaf, Sprout, Thermometer, Zap, type Luci
  * tertulis di alat ukur, tetapi kata utamanya bahasa sehari-hari.
  */
 
-export type PlotId = "a" | "b";
-
-export const plots: { id: PlotId; label: string; prefix: string }[] = [
-  { id: "a", label: "Plot A", prefix: "soil_a" },
-  { id: "b", label: "Plot B", prefix: "soil_b" },
-];
+/**
+ * Awalan metric key sensor tanah. FERTIMATA Rev A hanya punya satu sensor tanah 7-in-1 (alamat 1);
+ * key `soil_a.*` dipertahankan backend supaya riwayat lama tetap nyambung.
+ */
+export const soilPrefix = "soil_a";
 
 export type MetricCardDef = { suffix: string; label: string; icon: LucideIcon };
 
-/** Kartu metrik tanah untuk bedengan terpilih; key = `${plot.prefix}.${suffix}`. */
+/** Kartu metrik tanah; key = `${soilPrefix}.${suffix}`. */
 export const soilMetricCards: MetricCardDef[] = [
   { suffix: "moisture", label: "Kelembapan tanah", icon: Droplets },
   { suffix: "temperature", label: "Suhu tanah", icon: Thermometer },
@@ -29,9 +28,8 @@ export const soilMetricCards: MetricCardDef[] = [
   { suffix: "potassium", label: "Kalium (K)", icon: Atom },
 ];
 
-export function plotMetricKey(plot: PlotId, suffix: string) {
-  const p = plots.find((x) => x.id === plot) ?? plots[0];
-  return `${p.prefix}.${suffix}`;
+export function soilMetricKey(suffix: string) {
+  return `${soilPrefix}.${suffix}`;
 }
 
 /** Kartu "Kondisi Greenhouse" (pengganti cuaca luar di referensi). */
@@ -41,20 +39,21 @@ export const conditionKeys = {
   illuminance: "light.illuminance",
 };
 
-/** Kartu tangki pupuk (EC & pH flow cell). */
+/** Kartu tangki pupuk (probe EC & pH di rakit drum, suhu larutan, float LOW). */
 export const tankKeys = {
   ec: "tank.ec",
   ph: "tank.ph",
-  supplyFloat: "tank.supply_float",
-  mixingFloat: "tank.mixing_float",
+  waterTemperature: "tank.water_temperature",
+  /** 1 = air cukup; 0 = air rendah ATAU kabel putus → pompa air utama, pompa pupuk & aduk diblokir. */
+  floatLowOk: "tank.float_low_ok",
 };
 
-/** Kereta kamera: rel utara → selatan, 0 = HOME, 1–12 = ST-01…ST-12. */
+/** Kereta kamera: rel selatan (HOME) → utara (END), 0 = HOME, 1–10 = ST-01…ST-10 tiap 60 cm. */
 export const trolleyLayout = {
   stationKey: "trolley.station",
   homeLimitKey: "trolley.home_limit",
   endLimitKey: "trolley.end_limit",
-  stationCount: 12,
+  stationCount: 10,
   stationSpacingCm: 60,
 };
 

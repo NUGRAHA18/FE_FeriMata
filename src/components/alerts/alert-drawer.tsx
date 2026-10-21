@@ -24,7 +24,7 @@ function DrawerBody() {
   }
   if (q.error) return <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />;
   if (!q.data.content.length)
-    return <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" strokeWidth={1.6} />} title="Tidak ada peringatan" hint="Semua sudah ditangani." />;
+    return <EmptyState icon={<BellOff aria-hidden className="size-5" strokeWidth={2} />} title="Tidak ada peringatan" hint="Semua sudah ditangani." />;
   return (
     <div className="flex flex-col gap-2">
       {q.data.content.map((a) => (

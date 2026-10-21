@@ -22,7 +22,7 @@ export function CommandHistory({ actuatorId }: { actuatorId: number }) {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="scroll-thin overflow-x-auto rounded-inner bg-card-2">
+      <div className="scroll-thin overflow-x-auto rounded-inner bg-card-2 ring-1 ring-line">
         <table className="w-full min-w-[640px] text-left text-sm">
           <thead className="text-xs text-muted">
             <tr className="border-b border-line">

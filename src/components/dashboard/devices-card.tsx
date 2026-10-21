@@ -11,9 +11,9 @@ import { cn } from "@/lib/cn";
 
 function Summary({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="min-w-0">
-      <p className="text-xs text-muted">{label}</p>
-      <p className="tabular mt-0.5 text-2xl text-ink">{value}</p>
+    <div className="min-w-0 px-2.5 first:pl-0">
+      <p className="text-xs leading-tight text-ink-2">{label}</p>
+      <p className="tabular mt-1 text-2xl font-bold text-ink">{value}</p>
     </div>
   );
 }
@@ -52,7 +52,7 @@ export function DevicesCard({ className }: { className?: string }) {
         </>
       ) : (
         <>
-          <div className="mb-4 grid grid-cols-4 gap-2 px-1">
+          <div className="mb-4 grid grid-cols-4 items-end divide-x divide-line px-1">
             <Summary label="Alat" value={d.total} />
             <Summary label="Terhubung" value={d.online} />
             <Summary label="Sensor" value={d.sensors} />

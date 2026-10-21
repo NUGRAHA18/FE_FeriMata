@@ -24,8 +24,8 @@ export function ConnectionIndicator({ state, compact }: { state: ConnectionState
       role="status"
       title={connectionText[state]}
       className={cn(
-        "inline-flex items-center gap-2 rounded-full text-sm text-ink-2",
-        compact ? "px-0" : "bg-card px-3 py-2",
+        "inline-flex shrink-0 items-center gap-2 rounded-full text-sm whitespace-nowrap text-ink-2",
+        compact ? "px-0" : "h-10 bg-card px-3.5 font-medium text-ink shadow-card ring-1 ring-line",
       )}
     >
       <StatusDot tone={tone} pulse={state !== "connected"} />
@@ -42,14 +42,14 @@ export function AlertPill({ count }: { count: number }) {
       type="button"
       onClick={openAlertDrawer}
       aria-label={`${count} peringatan belum ditangani — buka daftar peringatan`}
-      className="inline-flex h-10 items-center gap-2 rounded-control bg-active pr-2 pl-3 text-sm font-medium text-active-fg transition hover:opacity-90 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="inline-flex h-10 shrink-0 items-center gap-2 rounded-full bg-card pr-3.5 pl-3.5 text-sm font-medium whitespace-nowrap text-ink shadow-card ring-1 ring-line sm:pr-2 transition hover:bg-card-2 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
       <span className="relative">
-        <Bell aria-hidden className="size-4" strokeWidth={1.8} />
-        {count > 0 && <span aria-hidden className="absolute -top-0.5 -right-0.5 size-1.5 rounded-full bg-danger" />}
+        <Bell aria-hidden className="size-[18px] text-ink-2" strokeWidth={1.8} />
+        {count > 0 && <span aria-hidden className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-danger ring-2 ring-card" />}
       </span>
       <span className="tabular">{count} Peringatan</span>
-      <span className="grid size-6 place-items-center rounded-md bg-white/10">
+      <span className="hidden size-6 place-items-center rounded-full bg-accent-soft text-accent sm:grid">
         <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.8} />
       </span>
     </button>

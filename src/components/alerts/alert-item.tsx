@@ -55,7 +55,7 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="font-medium text-ink">{alertTypeLabel(a.type) === a.type ? alertTitleLabel(a.title) : alertTypeLabel(a.type)}</p>
+            <p className="font-semibold text-ink">{alertTypeLabel(a.type) === a.type ? alertTitleLabel(a.title) : alertTypeLabel(a.type)}</p>
             <Chip tone={tone} icon={false} className="py-0.5 text-[11px]">
               {severityLabel[a.severity] ?? a.severity}
             </Chip>

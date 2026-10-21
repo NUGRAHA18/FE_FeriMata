@@ -207,6 +207,10 @@ export function detectionTypeLabel(type: string): string {
 const actuatorTypeLabels: Record<string, string> = {
   DISTRIBUTION_PUMP: "Pompa air utama",
   DOSING_PUMP: "Pompa pupuk",
+  STIRRER: "Pengaduk pupuk",
+  SENSOR_POWER: "Daya sensor EC",
+  CAMERA_PAN: "Arah kamera (timur/barat)",
+  // Tipe lama (sebelum Rev A); barisnya dinonaktifkan tapi masih muncul di riwayat.
   SAMPLING_PUMP: "Pompa pengambil sampel",
   FILL_VALVE: "Kran pengisian",
   ILLUMINATION: "Lampu kamera",
@@ -239,9 +243,17 @@ export function roleLabel(role: string | null | undefined): string {
   return roleLabels[role] ?? role;
 }
 
-/** Kode stasiun trolley: 0 → HOME, 1–12 → ST-01…ST-12. */
+/** Kode stasiun trolley: 0 → HOME, n → ST-0n (Rev A: 1–10). */
 export function stationCode(n: number): string {
   return n <= 0 ? "HOME" : `ST-${String(n).padStart(2, "0")}`;
+}
+
+const panDirectionLabels: Record<string, string> = { TIMUR: "Timur", BARAT: "Barat" };
+
+/** Arah kamera saat memotret (TIMUR/BARAT); arah lain ditampilkan apa adanya. */
+export function panDirectionLabel(dir: string | null | undefined): string | null {
+  if (!dir) return null;
+  return panDirectionLabels[dir.toUpperCase()] ?? dir;
 }
 
 /** Posisi kereta kamera untuk manusia: "di posisi awal", "di stasiun 3", "belum dilaporkan". */

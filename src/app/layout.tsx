@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   description: "FertiMata: pemantauan dan kendali pemupukan otomatis greenhouse melon.",
   applicationName: productName,
   appleWebApp: { capable: true, title: productName, statusBarStyle: "default" },
-  icons: { icon: "/icons/icon.svg", apple: "/icons/apple-touch-icon.png" },
+  icons: { icon: [{ url: "/icons/icon-192.png", type: "image/png", sizes: "192x192" }], apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {

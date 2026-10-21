@@ -1,6 +1,7 @@
 import type { LucideIcon } from "lucide-react";
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
+import { LeafCorner } from "@/components/illustrations";
 import { CornerLink } from "./card";
 import { Badge, type Tone } from "./status";
 
@@ -46,13 +47,18 @@ export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = 
     <section
       aria-label={label}
       className={cn(
-        "relative flex min-w-0 flex-col rounded-card shadow-card",
+        "@container relative flex min-w-0 flex-col overflow-hidden rounded-card shadow-card ring-1 ring-line",
         compact ? "p-3.5" : "p-4 sm:p-5",
         toneClass[tone],
         className,
       )}
     >
-      <div className="flex items-start justify-between gap-2">
+      {colored && (
+        <span aria-hidden className="pointer-events-none absolute -top-3 -right-4 h-20 w-28 opacity-30 mix-blend-screen">
+          <LeafCorner className="size-full" />
+        </span>
+      )}
+      <div className="relative flex items-start justify-between gap-2">
         <span
           className={cn(
             "grid shrink-0 place-items-center rounded-full",
@@ -70,27 +76,27 @@ export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = 
           />
         )}
       </div>
-      <p className={cn("mt-3 line-clamp-2 font-medium leading-snug", compact ? "text-sm" : "text-sm sm:text-base", colored ? "opacity-95" : "text-ink-2")}>
+      <p className={cn("mt-3 line-clamp-2 font-semibold leading-snug", compact ? "text-sm" : "text-sm sm:text-[15px]", colored ? "opacity-95" : "text-ink-2")}>
         {label}
       </p>
       <div className={cn("flex flex-wrap items-end gap-x-2 gap-y-1", compact ? "mt-1.5" : "mt-2 sm:mt-3")}>
-        <p className={cn("tabular flex items-baseline", stale && "opacity-60")}>
+        <p className={cn("tabular flex flex-wrap items-baseline", stale && "opacity-60")}>
           <span
             className={cn(
-              "metric-value font-normal",
+              "metric-value",
               long
                 ? compact
-                  ? "text-[clamp(1.375rem,6.5vw,1.625rem)]"
-                  : "text-[clamp(1.5rem,7vw,2.75rem)]"
+                  ? "text-[clamp(1.375rem,17cqi,1.625rem)]"
+                  : "text-[clamp(1.5rem,21cqi,2.75rem)]"
                 : compact
-                  ? "text-[clamp(1.625rem,8vw,2rem)]"
-                  : "text-[clamp(2rem,9.5vw,3.375rem)]",
+                  ? "text-[clamp(1.625rem,22cqi,2rem)]"
+                  : "text-[clamp(2rem,30cqi,3.375rem)]",
             )}
           >
             {value ?? "—"}
           </span>
           {value != null && unit && (
-            <span className={cn("ml-1 font-normal", compact ? "text-base" : "text-base sm:text-2xl", colored ? "opacity-80" : "text-muted")}>
+            <span className={cn("ml-1 font-medium", compact ? "text-sm" : "text-sm sm:text-xl", colored ? "opacity-85" : "text-ink-2")}>
               {unit}
             </span>
           )}

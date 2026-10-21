@@ -1,13 +1,11 @@
 "use client";
 
-import { plots, trolleyLayout, type PlotId } from "@/config/dashboard-layout";
+import { trolleyLayout } from "@/config/dashboard-layout";
 import { stationCode } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 type GreenhouseMapProps = {
-  selectedPlot?: PlotId;
-  onPlotSelect?: (p: PlotId) => void;
-  /** Posisi trolley (0 = HOME, 1–12). null = belum dilaporkan. */
+  /** Posisi trolley (0 = HOME, 1–10). null = belum dilaporkan. */
   trolleyStation?: number | null;
   /** Stasiun yang disorot (mis. filter AI). */
   selectedStation?: string | null;
@@ -15,29 +13,33 @@ type GreenhouseMapProps = {
   className?: string;
 };
 
-// Geometri denah (unit viewBox). Utara di atas; rel kamera di lorong tengah.
+// Geometri denah (unit viewBox). Utara di atas; rel kamera di lorong tengah, HOME di ujung selatan.
 const W = 340;
 const H = 250;
 const RAIL_X = 170;
-const HOME_Y = 30;
-const FIRST_Y = 50;
-const LAST_Y = 222;
-const PLOT_Y = 40;
-const PLOT_H = 192;
-const PLOT_W = 100;
-const plotX: Record<PlotId, number> = { a: 38, b: 202 };
+const HOME_Y = 222;
+const FIRST_Y = 202;
+const LAST_Y = 30;
+const BED_Y = 22;
+const BED_H = 208;
+const BED_W = 100;
+const sides = [
+  { id: "barat", label: "Barat", x: 38 },
+  { id: "timur", label: "Timur", x: 202 },
+];
 
 function stationY(n: number) {
   if (n <= 0) return HOME_Y;
-  const step = (LAST_Y - FIRST_Y) / (trolleyLayout.stationCount - 1);
-  return FIRST_Y + (Math.min(n, trolleyLayout.stationCount) - 1) * step;
+  const step = (FIRST_Y - LAST_Y) / (trolleyLayout.stationCount - 1);
+  return FIRST_Y - (Math.min(n, trolleyLayout.stationCount) - 1) * step;
 }
 
 /**
- * Denah greenhouse buatan sendiri: Plot A & B, rel kamera utara→selatan dengan 12 stasiun
- * (jarak 60 cm), posisi trolley, dan tangki fertigasi. Plot terpilih berwarna gelap.
+ * Denah greenhouse buatan sendiri: tanaman sisi barat & timur, rel kamera selatan→utara dengan
+ * 10 stasiun (jarak 60 cm), posisi trolley, dan tangki fertigasi. Di tiap stasiun kamera memotret
+ * ke dua arah (timur dan barat).
  */
-export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, selectedStation, onStationSelect, className }: GreenhouseMapProps) {
+export function GreenhouseMap({ trolleyStation, selectedStation, onStationSelect, className }: GreenhouseMapProps) {
   const stations = Array.from({ length: trolleyLayout.stationCount }, (_, i) => i + 1);
   const trolleyKnown = trolleyStation != null && Number.isFinite(trolleyStation);
   const trolleyLabel = trolleyKnown ? stationCode(Math.round(trolleyStation!)) : null;
@@ -46,7 +48,7 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
     <svg
       viewBox={`0 0 ${W} ${H}`}
       role="group"
-      aria-label={`Denah greenhouse. Bedengan terpilih: ${plots.find((p) => p.id === selectedPlot)?.label ?? "—"}. Kereta kamera: ${trolleyLabel ?? "posisi belum dilaporkan"}.`}
+      aria-label={`Denah greenhouse. Kereta kamera: ${trolleyLabel ?? "posisi belum dilaporkan"}.`}
       className={cn("h-auto w-full select-none", className)}
     >
       {/* Bangunan & jalur samar seperti peta referensi */}
@@ -64,61 +66,24 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
         </text>
       </g>
 
-      {/* Plot */}
-      {plots.map((p) => {
-        const sel = p.id === selectedPlot;
-        const x = plotX[p.id];
-        const clickable = !!onPlotSelect;
-        return (
-          <g
-            key={p.id}
-            role={clickable ? "button" : undefined}
-            tabIndex={clickable ? 0 : undefined}
-            aria-label={clickable ? `Pilih ${p.label}` : undefined}
-            aria-pressed={clickable ? sel : undefined}
-            onClick={() => onPlotSelect?.(p.id)}
-            onKeyDown={(e) => {
-              if (clickable && (e.key === "Enter" || e.key === " ")) {
-                e.preventDefault();
-                onPlotSelect?.(p.id);
-              }
-            }}
-            className={cn(clickable && "cursor-pointer outline-none focus-visible:[&>rect]:stroke-accent")}
-          >
-            <rect
-              x={x}
-              y={PLOT_Y}
-              width={PLOT_W}
-              height={PLOT_H}
-              rx={16}
-              strokeWidth={sel ? 0 : 1.5}
-              strokeDasharray={sel ? undefined : "5 4"}
-              className={cn("transition-colors", sel ? "fill-active" : "fill-card stroke-muted/60")}
-            />
-            {/* bedengan */}
-            {[0, 1, 2].map((i) => (
-              <rect
-                key={i}
-                x={x + 14 + i * 28}
-                y={PLOT_Y + 38}
-                width={20}
-                height={PLOT_H - 58}
-                rx={8}
-                className={sel ? "fill-active-fg/12" : "fill-sunken/70"}
-              />
-            ))}
-            <text x={x + 14} y={PLOT_Y + 24} fontSize={14} fontWeight={600} className={sel ? "fill-active-fg" : "fill-ink-2"}>
-              {p.label}
-            </text>
-          </g>
-        );
-      })}
+      {/* Tanaman sisi barat & timur rel */}
+      {sides.map((side) => (
+        <g key={side.id} aria-hidden>
+          <rect x={side.x} y={BED_Y} width={BED_W} height={BED_H} rx={16} className="fill-card" />
+          {[0, 1, 2].map((i) => (
+            <rect key={i} x={side.x + 14 + i * 28} y={BED_Y + 38} width={20} height={BED_H - 58} rx={8} className="fill-accent-soft" />
+          ))}
+          <text x={side.x + 14} y={BED_Y + 24} fontSize={13} fontWeight={600} className="fill-ink-2">
+            {side.label}
+          </text>
+        </g>
+      ))}
 
       {/* Rel kamera & stasiun */}
-      <line x1={RAIL_X} x2={RAIL_X} y1={HOME_Y} y2={LAST_Y} strokeWidth={2} className="stroke-ink-2" />
+      <line x1={RAIL_X} x2={RAIL_X} y1={LAST_Y} y2={HOME_Y} strokeWidth={2} className="stroke-ink-2" />
       <g>
-        <rect x={RAIL_X - 19} y={HOME_Y - 8} width={38} height={16} rx={5} className="fill-card stroke-ink-2" strokeWidth={1} />
-        <text x={RAIL_X} y={HOME_Y + 3.5} fontSize={9} fontWeight={600} textAnchor="middle" className="fill-ink-2">
+        <rect x={RAIL_X + 12} y={HOME_Y - 8} width={38} height={16} rx={5} className="fill-card stroke-ink-2" strokeWidth={1} />
+        <text x={RAIL_X + 31} y={HOME_Y + 3.5} fontSize={9} fontWeight={600} textAnchor="middle" className="fill-ink-2">
           HOME
         </text>
       </g>
@@ -161,9 +126,11 @@ export function GreenhouseMap({ selectedPlot, onPlotSelect, trolleyStation, sele
           <circle cx={RAIL_X} cy={0} r={11} className="fill-accent/20" />
           <rect x={RAIL_X - 8} y={-6} width={16} height={12} rx={4} className="fill-accent" />
           <circle cx={RAIL_X} cy={0} r={2.2} className="fill-accent-fg" />
-          <text x={RAIL_X - 13} y={3} fontSize={10} fontWeight={700} textAnchor="end" className="fill-accent">
-            {trolleyLabel}
-          </text>
+          {Math.round(trolleyStation!) > 0 && (
+            <text x={RAIL_X - 13} y={3} fontSize={10} fontWeight={700} textAnchor="end" className="fill-accent">
+              {trolleyLabel}
+            </text>
+          )}
         </g>
       )}
 

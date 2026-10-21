@@ -35,11 +35,11 @@ export function Tabs<T extends string>({ value, onChange, tabs, label, className
             onKeyDown={(e) => onKey(e, i)}
             className={cn(
               "relative shrink-0 pb-3 text-sm font-medium whitespace-nowrap transition focus-visible:outline-none focus-visible:[&>span]:text-accent",
-              sel ? "text-ink" : "text-muted hover:text-ink-2",
+              sel ? "font-semibold text-ink" : "text-muted hover:text-ink-2",
             )}
           >
             <span>{t.label}</span>
-            {sel && <span aria-hidden className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-ink" />}
+            {sel && <span aria-hidden className="absolute inset-x-0 -bottom-px h-0.5 rounded-full bg-accent" />}
           </button>
         );
       })}

@@ -3,7 +3,8 @@
 import { useRouter, useSearchParams } from "next/navigation";
 import { LogIn } from "lucide-react";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
-import { Logo } from "@/components/shell/logo";
+import { LeafCorner } from "@/components/illustrations";
+import { LogoFull } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Field, PasswordField } from "@/components/ui/input";
@@ -95,17 +96,20 @@ export default function LoginPage() {
         <ThemeToggle />
       </div>
       <div className="w-full max-w-[400px]">
-        <div className="rounded-card bg-card p-6 shadow-card sm:p-8">
-          <div className="mb-7 flex items-center gap-3">
-            <Logo />
-            <div>
-              <h1 className="text-xl font-medium text-ink">{productName}</h1>
-              <p className="text-sm text-muted">{siteConfig.name !== productName ? siteConfig.name : "Pemantau & pengendali pemupukan greenhouse"}</p>
-            </div>
+        <div className="relative overflow-hidden rounded-card bg-card shadow-card ring-1 ring-line">
+          {/* Kepala berlogo. Logonya berlatar putih, jadi bidang ini tetap putih juga pada tema gelap. */}
+          <div className="relative overflow-hidden bg-white px-6 pt-6 pb-4">
+            <LeafCorner className="pointer-events-none absolute -top-4 -right-6 h-24 w-36" />
+            <h1 className="relative mx-auto w-full max-w-[240px]">
+              <LogoFull />
+            </h1>
           </div>
-          <Suspense>
-            <LoginForm />
-          </Suspense>
+          <div className="p-6 pt-5 sm:p-8 sm:pt-6">
+            <p className="mb-6 text-center text-sm text-ink-2">{siteConfig.name !== productName ? siteConfig.name : "Pemantau & pengendali pemupukan greenhouse"}</p>
+            <Suspense>
+              <LoginForm />
+            </Suspense>
+          </div>
         </div>
       </div>
     </main>

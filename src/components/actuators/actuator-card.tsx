@@ -23,7 +23,7 @@ export function ReportedState({ actuator: a, large }: { actuator: Pick<Actuator,
   const tone = a.currentState == null ? "neutral" : on ? "ok" : "neutral";
   return (
     <div>
-      <p className={cn("flex items-center gap-2 font-medium text-ink", large ? "text-2xl" : "text-base")}>
+      <p className={cn("flex items-center gap-2 font-semibold text-ink", large ? "text-2xl" : "text-base")}>
         <StatusDot tone={tone} pulse={on} className={large ? "size-3" : "size-2.5"} />
         {reportedStateLabel(a.currentState)}
       </p>
@@ -92,7 +92,7 @@ export function ActuatorCard({ actuator: a }: { actuator: Actuator }) {
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <h3 className="truncate text-base font-medium text-ink">{a.name}</h3>
+              <h3 className="truncate text-base font-semibold text-ink">{a.name}</h3>
               {!a.enabled && <Badge tone="warn">Dinonaktifkan</Badge>}
             </div>
             {typeLabel && <p className="mt-0.5 truncate text-xs text-muted">{typeLabel}</p>}

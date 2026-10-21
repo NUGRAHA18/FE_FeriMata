@@ -50,14 +50,14 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
   return (
     <Card>
       <CardHeader title="Pengaturan" icon={Settings2} />
-      <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3">
+      <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3 ring-1 ring-line">
         <div>
           <p className="text-sm font-medium text-ink">Boleh dinyalakan</p>
           <p className="text-xs text-muted">Bila dimatikan, alat ini tidak bisa dinyalakan dari aplikasi. Tombol Matikan tetap bisa dipakai.</p>
         </div>
         <Switch checked={a.enabled} label="Boleh dinyalakan" onChange={(v) => setConfirmEnabled(v)} disabled={patch.isPending} />
       </div>
-      <form onSubmit={saveMax} className="mt-3 flex flex-col gap-3 rounded-inner bg-card-2 p-3.5" noValidate>
+      <form onSubmit={saveMax} className="mt-3 flex flex-col gap-3 rounded-inner bg-card-2 p-3.5 ring-1 ring-line" noValidate>
         <Field
           label="Paling lama menyala (detik)"
           inputMode="numeric"
@@ -119,7 +119,7 @@ export default function ActuatorDetailPage() {
               <ReportedState actuator={a} large />
               <ActuatorControls actuator={a} className="mt-5" />
               {a.description && <p className="mt-5 text-sm text-ink-2">{a.description}</p>}
-              <details className="mt-5 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+              <details className="mt-5 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
                 <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
                 <KeyValue
                   className="mt-2"
@@ -131,7 +131,7 @@ export default function ActuatorDetailPage() {
                     ["Status diperbarui", formatDateTime(a.stateUpdatedAt)],
                   ]}
                 />
-                <h3 className="mt-3 mb-2 text-sm font-medium text-ink-2">Pemasangan (Modbus / kanal)</h3>
+                <h3 className="mt-3 mb-2 text-sm font-semibold text-ink-2">Pemasangan (Modbus / kanal)</h3>
                 <MetadataTable metadata={a.metadata} />
               </details>
             </Card>

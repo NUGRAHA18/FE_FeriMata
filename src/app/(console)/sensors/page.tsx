@@ -41,7 +41,7 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
         </div>
       </div>
       <p className={cn("tabular mt-3 flex items-baseline gap-1 text-ink", stale && r && "opacity-60")}>
-        <span className="metric-value text-[34px] font-normal sm:text-[40px]">{value ?? "—"}</span>
+        <span className="metric-value text-[34px] sm:text-[40px]">{value ?? "—"}</span>
         {value && unit && <span className="text-base text-muted">{unit}</span>}
       </p>
       <p className="mt-2 truncate text-xs text-muted">{r ? <RelativeTime iso={r.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
@@ -90,12 +90,12 @@ export default function SensorsPage() {
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : !groups.length ? (
-        <EmptyState icon={<Gauge aria-hidden className="size-5 text-muted" />} title={filter ? "Tidak ada sensor yang cocok" : "Belum ada sensor"} />
+        <EmptyState icon={<Gauge aria-hidden className="size-5" strokeWidth={2} />} title={filter ? "Tidak ada sensor yang cocok" : "Belum ada sensor"} />
       ) : (
         <div className="flex flex-col gap-4">
           {groups.map(([device, list]) => (
             <Card key={device}>
-              <h2 className="mb-3 flex items-baseline gap-2 text-base font-medium text-ink">
+              <h2 className="mb-3 flex items-baseline gap-2 text-base font-semibold text-ink">
                 {deviceNames?.[device] ?? device} <span className="text-xs font-normal text-muted">{list.length} sensor</span>
               </h2>
               <div className="grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-4">

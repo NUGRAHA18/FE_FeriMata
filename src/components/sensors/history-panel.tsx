@@ -55,7 +55,7 @@ export function HistoryPanel({ sensorId, unit, label }: { sensorId: number; unit
           </figcaption>
         </figure>
       ) : (
-        <div className="scroll-thin max-h-80 overflow-y-auto rounded-inner bg-card-2">
+        <div className="scroll-thin max-h-80 overflow-y-auto rounded-inner bg-card-2 ring-1 ring-line">
           <table className="w-full text-sm">
             <thead className="sticky top-0 bg-card-2 text-xs text-muted">
               <tr className="border-b border-line">
