@@ -136,11 +136,11 @@ function ProfileContent() {
           <Button variant="danger" icon={LogOut} onClick={logout}>
             Keluar
           </Button>
-          <Link href="/settings" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink hover:bg-sunken">
+          <Link href="/settings" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink ring-1 ring-line hover:bg-sunken">
             <Settings aria-hidden className="size-4" /> Pengaturan
           </Link>
           {isAdmin && (
-            <Link href="/users" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink hover:bg-sunken">
+            <Link href="/users" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink ring-1 ring-line hover:bg-sunken">
               <Users aria-hidden className="size-4" /> Kelola pengguna
             </Link>
           )}

@@ -10,8 +10,10 @@ import { ApiRequestError } from "@/lib/api/client";
 export const ACK_WARNING_MS = 30_000;
 
 const interlockText: Record<string, string> = {
-  BACKUP_POWER: "Listrik PLN padam dan sistem memakai baterai. Pompa pupuk, pompa sampel, dan kereta kamera tidak boleh dinyalakan dulu.",
-  EXCLUSIVE_OPERATION: "Tidak bisa berjalan bersamaan: pompa pupuk tidak boleh jalan saat kereta kamera bergerak atau lampu kamera menyala.",
+  BACKUP_POWER: "Listrik PLN padam dan sistem memakai baterai. Pompa air utama, pompa pupuk, pengaduk, dan kereta kamera tidak boleh dinyalakan dulu.",
+  EXCLUSIVE_OPERATION: "Tidak bisa berjalan bersamaan: pompa pupuk dan pengaduk tidak boleh jalan saat kereta kamera bergerak atau pompa air utama menyala.",
+  BLOCKED_WHILE_ACTIVE: "Arah kamera tidak bisa diputar saat kereta kamera sedang bergerak. Tunggu kereta berhenti dulu.",
+  FLOAT_LOW: "Air di drum pupuk rendah, atau kabel pelampungnya putus. Pompa air utama, pompa pupuk, dan pengaduk tidak bisa dinyalakan sampai air cukup.",
   DEVICE_NOT_ONLINE: "Alat sedang terputus, perintah tidak bisa dikirim.",
 };
 

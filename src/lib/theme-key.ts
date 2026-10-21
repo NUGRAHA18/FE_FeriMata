@@ -5,7 +5,7 @@ export type ResolvedTheme = (typeof THEMES)[number];
 
 /** Warna bilah status browser/PWA per tema (= warna latar). */
 export const THEME_COLORS: Record<ResolvedTheme, string> = {
-  light: "#e9e9e9",
+  light: "#eef5ef",
   dark: "#111211",
   green: "#cbe2d1",
 };

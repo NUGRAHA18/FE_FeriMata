@@ -68,7 +68,7 @@ export default function AlertsPage() {
         ) : q.error ? (
           <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
         ) : !q.data.content.length ? (
-          <EmptyState icon={<BellOff aria-hidden className="size-5 text-muted" />} title="Tidak ada peringatan" hint="Semua aman untuk pilihan ini." />
+          <EmptyState icon={<BellOff aria-hidden className="size-5" strokeWidth={2} />} title="Tidak ada peringatan" hint="Semua aman untuk pilihan ini." />
         ) : (
           <div className="flex flex-col gap-3">
             <div className="grid gap-2 lg:grid-cols-2">

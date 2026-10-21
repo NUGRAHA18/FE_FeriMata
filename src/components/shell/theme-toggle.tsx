@@ -20,12 +20,12 @@ export function ThemeToggle({ className }: { className?: string }) {
       aria-label={label}
       title={label}
       className={cn(
-        "grid size-12 shrink-0 place-items-center rounded-[14px] bg-card text-ink-2 transition hover:bg-card-2",
+        "grid size-12 shrink-0 place-items-center rounded-[14px] bg-card text-ink-2 shadow-card ring-1 ring-line transition hover:bg-card-2",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
         className,
       )}
     >
-      <Icon aria-hidden className="size-[19px]" strokeWidth={1.6} />
+      <Icon aria-hidden className="size-[19px]" strokeWidth={2} />
     </button>
   );
 }

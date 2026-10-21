@@ -14,7 +14,7 @@ import { formatDateTime } from "@/lib/format";
 import { useConnectionState } from "@/lib/realtime/stomp";
 
 const themeSamples = [
-  { theme: "light", label: "Terang", note: "Latar abu-abu muda, cocok di siang hari." },
+  { theme: "light", label: "Terang", note: "Putih dan hijau mint, cocok di siang hari." },
   { theme: "dark", label: "Gelap", note: "Nyaman di malam hari." },
   { theme: "green", label: "Hijau", note: "Nuansa hijau daun." },
 ];
@@ -77,7 +77,7 @@ export default function SettingsPage() {
               ["Zona waktu", "WIB (Asia/Jakarta)"],
             ]}
           />
-          <details className="mt-3 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+          <details className="mt-3 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
             <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
             <KeyValue
               className="mt-2"

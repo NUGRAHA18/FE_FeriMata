@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import type { Tone } from "@/components/ui/status";
 import { useOverview } from "@/lib/api/queries";
 import { formatDuration } from "@/lib/format";
+import { LeafCorner } from "@/components/illustrations";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/use-now";
 
@@ -49,9 +50,10 @@ export function SystemBanners() {
         </Banner>
       )}
       {flags.dev && (
-        <p className="inline-flex w-fit items-center gap-1.5 rounded-full bg-info-soft px-3 py-1 text-xs font-medium text-info">
-          <FlaskConical aria-hidden className="size-3.5" strokeWidth={1.8} />
+        <p className="relative inline-flex w-full items-center gap-2 overflow-hidden rounded-inner bg-accent-soft px-3.5 py-2.5 pr-16 text-[13px] font-medium text-accent ring-1 ring-line sm:w-fit sm:rounded-full sm:py-1.5">
+          <FlaskConical aria-hidden className="size-4 shrink-0" strokeWidth={1.9} />
           Mode percobaan — angka di layar bukan dari sensor asli
+          <LeafCorner className="absolute -top-1 right-0 h-12 w-16" />
         </p>
       )}
     </>

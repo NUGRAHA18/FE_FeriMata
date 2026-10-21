@@ -17,7 +17,7 @@ type SegmentedProps<T extends string> = {
 /** Segmented control: opsi terpilih berlatar "active" (hitam / hijau tua pada mode Hijau). */
 export function Segmented<T extends string>({ value, onChange, options, label, size = "md", className }: SegmentedProps<T>) {
   return (
-    <div role="radiogroup" aria-label={label} className={cn("inline-flex max-w-full gap-1 overflow-x-auto rounded-control bg-card-2 p-1", className)}>
+    <div role="radiogroup" aria-label={label} className={cn("inline-flex max-w-full gap-1 overflow-x-auto rounded-control bg-card-2 p-1 ring-1 ring-line", className)}>
       {options.map((o) => {
         const selected = o.value === value;
         const Icon = o.icon;
@@ -35,7 +35,7 @@ export function Segmented<T extends string>({ value, onChange, options, label, s
               selected ? "bg-active text-active-fg" : "text-ink-2 hover:bg-sunken",
             )}
           >
-            {Icon && <Icon aria-hidden className="size-4" strokeWidth={1.7} />}
+            {Icon && <Icon aria-hidden className="size-4" strokeWidth={2} />}
             {o.label}
           </button>
         );

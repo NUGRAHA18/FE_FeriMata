@@ -21,7 +21,7 @@ export function AppShell({ children, alertCount, connection, initials, banners, 
   return (
     <ShellProvider alertCount={alertCount} connection={connection}>
       <NavRail alertBadge={alertCount > 0} />
-      <div className="min-h-dvh px-4 pt-[max(16px,env(safe-area-inset-top))] pb-28 md:pb-8 md:pl-[104px] md:pr-6 md:pt-6 lg:pr-8">
+      <div className="min-h-dvh px-4 pt-[max(16px,env(safe-area-inset-top))] pb-[calc(7.5rem+env(safe-area-inset-bottom))] md:pb-8 md:pl-[116px] md:pr-6 md:pt-6 lg:pl-[156px] lg:pr-8">
         <div className="mx-auto w-full max-w-[1480px]">
           <MobileTopBar initials={initials} />
           {banners && <div className="mb-4 flex flex-col gap-2 empty:hidden">{banners}</div>}

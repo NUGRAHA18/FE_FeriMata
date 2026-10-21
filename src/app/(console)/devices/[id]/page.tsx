@@ -13,7 +13,7 @@ import { StatusDot } from "@/components/ui/status";
 import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevice, useDeviceStatus, useOverview, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { deviceTypeLabel, formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
+import { deviceNameLabel, deviceTypeLabel, formatDateTime, formatReading, formatUnit, livenessLabel, powerSourceLabel } from "@/lib/format";
 
 function SensorLine({ sensor: s }: { sensor: Sensor }) {
   const r = useReadingBySensor(s.id);
@@ -44,7 +44,7 @@ export default function DeviceDetailPage() {
 
   return (
     <>
-      <PageHeader backHref="/devices" title={d?.name ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
+      <PageHeader backHref="/devices" title={deviceNameLabel(d?.name) ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
       {device.isPending ? (
         <Skeleton className="h-80 rounded-card" />
       ) : device.error ? (
@@ -82,7 +82,7 @@ export default function DeviceDetailPage() {
                 <Skeleton className="h-40" />
               )}
               {d.description && <p className="mt-4 text-sm text-ink-2">{d.description}</p>}
-              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
                 <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
                 <KeyValue
                   className="mt-2"

@@ -20,7 +20,7 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 |---|---|
 | Endpoint yang menyajikan berkas gambar AI (`imageUrl` berupa path relatif). | URL relatif di-resolve ke origin backend; bila gagal dimuat tampil placeholder (ikon kamera + kode stasiun). |
 | Konfigurasi interlock (tipe wajib durasi, grup eksklusif) tidak diekspos lewat API. | Tidak di-hardcode sebagai validasi. Durasi hanya diwajibkan frontend bila `maxRunSeconds` tidak null; pesan `INVALID_COMMAND` / `SAFETY_INTERLOCK` dari backend diterjemahkan ke bahasa sehari-hari. |
-| Ambang agronomi / rentang ideal, skor kesehatan tanaman. | Tidak ditampilkan. Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). |
+| Ambang agronomi / rentang ideal (suhu, kelembapan, cahaya, pH, NPK), skor kesehatan tanaman. | Tidak ditampilkan. Satu-satunya badge status: EC tangki dibanding `ecTargetMin/Max` fase tanam berjalan (Sesuai target / Terlalu encer / Terlalu pekat). Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). |
 | Data cuaca luar. | Diganti "Kondisi di dalam greenhouse" (suhu & kelembapan udara, cahaya). |
 | Task / jadwal / siklus tanam (HST). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan). |
 | Perintah "ambil foto" / capture trolley dan stream kamera live (CCTV). | Tidak ada tombol ambil foto; kartu kamera hanya menampilkan foto tersimpan. |

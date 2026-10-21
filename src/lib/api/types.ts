@@ -200,6 +200,8 @@ export const aiDetectionSchema = z.object({
   // Map<String, Object> di backend; nilai non-angka diabaikan saat ditampilkan.
   scores: json.nullable(),
   stationCode: z.string().nullable(),
+  // Arah kamera di stasiun: TIMUR / BARAT (Rev A). Opsional supaya backend lama tetap terbaca.
+  panDirection: z.string().nullable().optional(),
   captureId: z.string().nullable(),
   imageUrl: z.string().nullable(),
   metadata: json.nullable(),

@@ -44,7 +44,7 @@ function LatestValue({ sensor: s }: { sensor: Sensor }) {
         <Skeleton className="mt-3 h-16 w-40" />
       ) : (
         <p className={cn("tabular mt-2 flex items-start text-ink", stale && r && "opacity-60")}>
-          <span className="metric-value text-[72px] font-normal sm:text-[88px]">{value ?? "—"}</span>
+          <span className="metric-value text-[72px] sm:text-[88px]">{value ?? "—"}</span>
           {value && unit && <span className="mt-2 text-3xl text-muted">{unit}</span>}
         </p>
       )}
@@ -133,10 +133,10 @@ export default function SensorDetailPage() {
               {tab === "detail" && (
                 <div className="flex flex-col gap-5">
                   <div>
-                    <h3 className="mb-3 text-sm font-medium text-ink-2">Ubah nama atau satuan</h3>
+                    <h3 className="mb-3 text-sm font-semibold text-ink-2">Ubah nama atau satuan</h3>
                     <SensorEditForm key={s.id} sensor={s} />
                   </div>
-                  <details className="rounded-inner bg-card-2 px-3.5 py-2 text-sm">
+                  <details className="rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
                     <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
                     <KeyValue
                       className="mt-2"

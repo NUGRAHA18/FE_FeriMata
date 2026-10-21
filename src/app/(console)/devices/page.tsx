@@ -48,7 +48,7 @@ export default function DevicesPage() {
                   ))}
                 </ul>
               ) : (
-                <EmptyState icon={<Cpu aria-hidden className="size-5 text-muted" />} title="Belum ada alat terdaftar" />
+                <EmptyState icon={<Cpu aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada alat terdaftar" />
               )}
             </Card>
           </div>

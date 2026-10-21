@@ -49,7 +49,7 @@ export function SensorEditForm({ sensor: s }: { sensor: Sensor }) {
         />
       </div>
       <TextAreaField label="Deskripsi" value={description} onChange={(e) => (setDescription(e.target.value), setSaved(false))} error={fieldErrors.description} />
-      <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3">
+      <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3 ring-1 ring-line">
         <div>
           <p className="text-sm font-medium text-ink">Sensor aktif</p>
           <p className="text-xs text-muted">Sensor yang dimatikan tidak muncul di Beranda.</p>

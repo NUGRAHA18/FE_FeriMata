@@ -38,14 +38,14 @@ export function PageHeader({ title, subtitle, actions, backHref, className }: Pa
               }
             }}
             aria-label="Kembali"
-            className="grid size-10 shrink-0 place-items-center rounded-control bg-card text-ink-2 hover:bg-card-2"
+            className="grid size-10 shrink-0 place-items-center rounded-control bg-card text-accent shadow-card ring-1 ring-line transition hover:bg-accent-soft"
           >
-            <ArrowLeft aria-hidden className="size-[18px]" strokeWidth={1.6} />
+            <ArrowLeft aria-hidden className="size-[18px]" strokeWidth={2} />
           </Link>
         )}
         <div className="min-w-0">
-          <h1 className="truncate text-[26px] leading-tight font-normal tracking-tight text-ink md:text-[32px]">{title}</h1>
-          {subtitle && <p className="mt-0.5 truncate text-sm text-muted">{subtitle}</p>}
+          <h1 className="truncate text-[26px] leading-tight font-bold tracking-tight text-ink md:text-[32px]">{title}</h1>
+          {subtitle && <p className="mt-0.5 truncate text-sm text-ink-2 md:text-[15px]">{subtitle}</p>}
         </div>
       </div>
       <div className="flex w-full flex-wrap items-center gap-2 sm:w-auto">

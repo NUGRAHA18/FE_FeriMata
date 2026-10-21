@@ -207,6 +207,10 @@ export function detectionTypeLabel(type: string): string {
 const actuatorTypeLabels: Record<string, string> = {
   DISTRIBUTION_PUMP: "Pompa air utama",
   DOSING_PUMP: "Pompa pupuk",
+  STIRRER: "Pengaduk pupuk",
+  SENSOR_POWER: "Daya sensor EC",
+  CAMERA_PAN: "Arah kamera (timur/barat)",
+  // Tipe lama (sebelum Rev A); barisnya dinonaktifkan tapi masih muncul di riwayat.
   SAMPLING_PUMP: "Pompa pengambil sampel",
   FILL_VALVE: "Kran pengisian",
   ILLUMINATION: "Lampu kamera",
@@ -239,9 +243,17 @@ export function roleLabel(role: string | null | undefined): string {
   return roleLabels[role] ?? role;
 }
 
-/** Kode stasiun trolley: 0 → HOME, 1–12 → ST-01…ST-12. */
+/** Kode stasiun trolley: 0 → HOME, n → ST-0n (Rev A: 1–10). */
 export function stationCode(n: number): string {
   return n <= 0 ? "HOME" : `ST-${String(n).padStart(2, "0")}`;
+}
+
+const panDirectionLabels: Record<string, string> = { TIMUR: "Timur", BARAT: "Barat" };
+
+/** Arah kamera saat memotret (TIMUR/BARAT); arah lain ditampilkan apa adanya. */
+export function panDirectionLabel(dir: string | null | undefined): string | null {
+  if (!dir) return null;
+  return panDirectionLabels[dir.toUpperCase()] ?? dir;
 }
 
 /** Posisi kereta kamera untuk manusia: "di posisi awal", "di stasiun 3", "belum dilaporkan". */
@@ -249,4 +261,73 @@ export function stationLabel(n: number | null | undefined): string {
   if (n == null || !Number.isFinite(n)) return "belum dilaporkan";
   const r = Math.round(n);
   return r <= 0 ? "di posisi awal (HOME)" : `di stasiun ${r}`;
+}
+
+/** Detik → kalimat utuh: "2 menit", "90 detik", "1 jam". */
+function durationWords(seconds: number): string {
+  if (seconds % 3600 === 0) return `${seconds / 3600} jam`;
+  if (seconds % 60 === 0) return `${seconds / 60} menit`;
+  return `${seconds} detik`;
+}
+
+/** Judul peringatan backend (bahasa Inggris) → bahasa sehari-hari. Dipakai bila `type` tidak tersedia. */
+const alertTitleLabels: Record<string, string> = {
+  "Device offline": "Alat terputus",
+  "Device back online": "Alat terhubung kembali",
+  "Running on backup power": "Listrik PLN padam, memakai baterai",
+  "Normal power restored": "Listrik PLN kembali normal",
+  "Actuator command not delivered": "Perintah tidak terkirim ke alat",
+  "Actuator command failed on the device": "Perintah gagal dijalankan alat",
+};
+
+export function alertTitleLabel(title: string): string {
+  return alertTitleLabels[title] ?? title;
+}
+
+const commandWords: Record<string, string> = { ON: "menyalakan", OFF: "mematikan" };
+
+/*
+ * Pesan peringatan backend ditulis untuk developer. Pola yang dikenal diterjemahkan ke kalimat yang
+ * langsung menyebut langkah yang perlu dicek; pesan lain (mis. dari alat) ditampilkan apa adanya.
+ */
+const alertMessageRules: [RegExp, (m: RegExpExecArray) => string][] = [
+  [
+    /^No message received from (\S+) for more than (\d+) seconds$/,
+    (m) => `${m[1]} tidak memberi kabar selama lebih dari ${durationWords(Number(m[2]))}. Periksa listrik dan kabel alat ini.`,
+  ],
+  [/^Device (\S+) started reporting again$/, (m) => `${m[1]} kembali memberi kabar.`],
+  [
+    /^Device (\S+) reports power source (\S+)\. Commands .*refused\.$/,
+    (m) => `${m[1]} memakai listrik dari ${powerSourceLabel(m[2])}. Pompa dan alat besar dikunci sampai listrik PLN kembali.`,
+  ],
+  [/^Device (\S+) reports power source (\S+) again$/, (m) => `${m[1]} kembali memakai listrik ${powerSourceLabel(m[2])}.`],
+  [
+    /^Command (\S+) for actuator (\S+) could not be delivered: .*$/,
+    (m) => `Perintah ${commandWords[m[1].toUpperCase()] ?? m[1]} ${m[2]} tidak sampai ke alat. Periksa koneksi alat, lalu coba lagi.`,
+  ],
+  [
+    /^Device (\S+) reported that command (\S+) failed: (.*)$/,
+    (m) =>
+      `${m[1]} gagal ${commandWords[m[2].toUpperCase()] ?? `menjalankan ${m[2]}`}.` +
+      (m[3] === "Device reported failure" ? " Periksa alatnya, lalu coba lagi." : ` Alasan dari alat: ${m[3]}`),
+  ],
+];
+
+export function alertMessageLabel(message: string): string {
+  for (const [re, fmt] of alertMessageRules) {
+    const m = re.exec(message.trim());
+    if (m) return fmt(m);
+  }
+  return message;
+}
+
+/** Nama perangkat bawaan backend (bahasa Inggris/teknis) → nama yang dikenali petani. */
+const deviceNameLabels: Record<string, string> = {
+  "development edge device": "Komputer Simulasi (Dev)",
+  "greenhouse edge device": "Komputer Utama Greenhouse",
+};
+
+export function deviceNameLabel(name: string | null | undefined): string | null {
+  if (!name) return null;
+  return deviceNameLabels[name.trim().toLowerCase()] ?? name;
 }

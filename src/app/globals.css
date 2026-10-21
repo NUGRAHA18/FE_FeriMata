@@ -4,35 +4,50 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  --bg: #e9e9e9;
-  --card: #f4f4f4;
-  --card-2: #ffffff;
-  --sunken: #e2e2e2;
-  --ink: #1c1c1c;
-  --ink-2: #4a4a4a;
-  --muted: #8b8b8b;
-  --line: rgb(0 0 0 / 0.07);
+  /* Terang: putih bersih di atas latar mint pucat, teks hijau sangat gelap (mengikuti docs/referensi-ui). */
+  --bg: #eef5ef;
+  --card: #ffffff;
+  --card-2: #f6faf6;
+  --sunken: #e3eee6;
+  --ink: #13261b;
+  --ink-2: #3c5244;
+  --muted: #687c6f;
+  --line: rgb(19 60 35 / 0.09);
 
-  --active: #1c1c1c;
+  --active: #1d6b3f;
   --active-fg: #ffffff;
 
-  --accent: #2f9e55;
-  --accent-2: #52c07a;
+  --accent: #1f9a53;
+  --accent-2: #4cc27c;
   --accent-fg: #ffffff;
-  --accent-soft: #dcf1e3;
+  --accent-soft: #e0f3e6;
 
-  --warn: #d9920f;
-  --warn-soft: #fbf0d6;
+  --warn: #d98a0b;
+  --warn-soft: #fdf1d7;
   --warn-ink: #8a5a00;
 
-  --danger: #d23f36;
-  --danger-soft: #fbe2df;
-  --danger-ink: #9b221b;
+  --danger: #d6372e;
+  --danger-soft: #fde8e6;
+  --danger-ink: #a3221a;
 
   --info: #3a78c2;
   --info-soft: #e0ebf8;
 
-  --shadow: 0 1px 2px rgb(0 0 0 / 0.03);
+  --shadow: 0 1px 2px rgb(16 64 34 / 0.04), 0 10px 30px -14px rgb(16 64 34 / 0.16);
+
+  /* Ilustrasi dekoratif (daun, melon, greenhouse). */
+  --leaf-1: #2e9c57;
+  --leaf-2: #63bd7f;
+  --leaf-3: #b7e1c2;
+  --leaf-4: #dcf0e1;
+  --leaf-vein: rgb(255 255 255 / 0.55);
+  --melon: #cfe0a0;
+  --melon-net: rgb(255 255 255 / 0.7);
+  --flower: #f4c430;
+  --flower-core: #e08e0b;
+  --soil: #6f5643;
+  --glass: rgb(255 255 255 / 0.55);
+  --deco-opacity: 1;
   color-scheme: light;
 }
 
@@ -66,6 +81,19 @@
   --info-soft: #172a3f;
 
   --shadow: none;
+
+  --leaf-1: #2c7a49;
+  --leaf-2: #3f925d;
+  --leaf-3: #24563a;
+  --leaf-4: #1b3326;
+  --leaf-vein: rgb(255 255 255 / 0.25);
+  --melon: #6f7d48;
+  --melon-net: rgb(255 255 255 / 0.3);
+  --flower: #c9a227;
+  --flower-core: #9c6c0c;
+  --soil: #3d3027;
+  --glass: rgb(255 255 255 / 0.08);
+  --deco-opacity: 0.55;
   color-scheme: dark;
 }
 
@@ -103,6 +131,19 @@
   --info-soft: #dce8f4;
 
   --shadow: 0 1px 2px rgb(16 64 34 / 0.05);
+
+  --leaf-1: #23874a;
+  --leaf-2: #52ad70;
+  --leaf-3: #a5d4b2;
+  --leaf-4: #cbe6d3;
+  --leaf-vein: rgb(255 255 255 / 0.5);
+  --melon: #c6d891;
+  --melon-net: rgb(255 255 255 / 0.65);
+  --flower: #f0bd2a;
+  --flower-core: #d4840a;
+  --soil: #6a523f;
+  --glass: rgb(255 255 255 / 0.5);
+  --deco-opacity: 0.9;
   color-scheme: light;
 }
 
@@ -129,6 +170,10 @@
   --color-danger-ink: var(--danger-ink);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
+  --color-leaf-1: var(--leaf-1);
+  --color-leaf-2: var(--leaf-2);
+  --color-leaf-3: var(--leaf-3);
+  --color-leaf-4: var(--leaf-4);
 
   --radius-card: 22px;
   --radius-inner: 16px;
@@ -144,15 +189,20 @@ html {
 }
 
 body {
-  background: var(--bg);
+  /* Cahaya lembut di pojok, seperti latar referensi. */
+  background:
+    radial-gradient(1200px 520px at 85% -10%, color-mix(in srgb, var(--accent-soft) 70%, transparent), transparent 70%),
+    radial-gradient(900px 480px at -10% 110%, color-mix(in srgb, var(--accent-soft) 45%, transparent), transparent 70%),
+    var(--bg);
+  background-attachment: fixed;
   color: var(--ink);
   font-feature-settings: "cv11", "ss01";
 }
 
-/* Angka metrik: tipis, besar, lebar tetap supaya tidak "menari" saat realtime. */
+/* Angka metrik: tebal, besar, lebar tetap supaya tidak "menari" saat realtime. */
 .metric-value {
-  font-weight: 300;
-  letter-spacing: -0.03em;
+  font-weight: 600;
+  letter-spacing: -0.035em;
   font-variant-numeric: tabular-nums;
   line-height: 1;
 }

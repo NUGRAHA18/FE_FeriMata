@@ -110,7 +110,7 @@ function UserRow({ user, self }: { user: User; self: boolean }) {
           </span>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
-              <p className="font-medium text-ink">{user.fullName ?? user.username}</p>
+              <p className="font-semibold text-ink">{user.fullName ?? user.username}</p>
               <Badge tone={user.role === "ADMIN" ? "info" : user.role === "OPERATOR" ? "ok" : "neutral"}>{roleLabel(user.role)}</Badge>
               {self && <Badge tone="neutral">Anda</Badge>}
               {!user.enabled && <Badge tone="warn">Nonaktif</Badge>}
@@ -195,7 +195,7 @@ export default function UsersPage() {
           }
         />
         {adding && (
-          <div className="mb-4 rounded-inner bg-card-2 p-4">
+          <div className="mb-4 rounded-inner bg-card-2 p-4 ring-1 ring-line">
             <NewUserForm onClose={() => setAdding(false)} />
           </div>
         )}

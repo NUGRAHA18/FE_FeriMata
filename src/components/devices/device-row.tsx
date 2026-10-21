@@ -5,11 +5,12 @@ import { ChevronRight } from "lucide-react";
 import { Chip, StatusDot, type Tone } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import type { DeviceStatus } from "@/lib/api/types";
-import { deviceTypeLabel, formatDuration, livenessLabel, powerSourceLabel } from "@/lib/format";
+import { deviceNameLabel, deviceTypeLabel, formatDuration, livenessLabel, powerSourceLabel } from "@/lib/format";
 import { DeviceIcon } from "@/lib/icons";
 import { cn } from "@/lib/cn";
 
 export const livenessTone: Record<string, Tone> = { ONLINE: "ok", OFFLINE: "danger", UNKNOWN: "warn" };
+const livenessText: Record<string, string> = { ONLINE: "text-accent", OFFLINE: "text-danger-ink", UNKNOWN: "text-warn-ink" };
 
 /** Chip masalah alat: terputus, belum pernah terhubung, memakai baterai. */
 export function DeviceIssueChips({ s }: { s: Pick<DeviceStatus, "status" | "onBackupPower" | "powerSource" | "lastSeenAt"> }) {
@@ -46,20 +47,21 @@ type DeviceRowProps = {
 };
 
 /** Item alat: ikon jenis alat, nama, jenis dalam bahasa sehari-hari, status terhubung, chip masalah. */
-export function DeviceRow({ status: s, name, type, href, className }: DeviceRowProps) {
+export function DeviceRow({ status: s, name: rawName, type, href, className }: DeviceRowProps) {
+  const name = deviceNameLabel(rawName);
   const tone = s.onBackupPower ? "danger" : (livenessTone[s.status] ?? "neutral");
   const body = (
     <>
       <div className="flex items-start gap-3">
-        <span className="relative grid size-10 shrink-0 place-items-center rounded-full bg-sunken text-ink-2">
+        <span className="relative grid size-11 shrink-0 place-items-center rounded-full bg-active text-active-fg ring-4 ring-accent-soft dark:bg-accent dark:text-accent-fg">
           <DeviceIcon kind={type} aria-hidden className="size-5" strokeWidth={1.7} />
-          <StatusDot tone={tone} className="absolute -right-0.5 -bottom-0.5 size-3 ring-2 ring-card-2" pulse={s.status === "UNKNOWN"} />
+          <StatusDot tone={tone} className="absolute -right-1 -bottom-1 size-3.5 ring-2 ring-card" pulse={s.status === "UNKNOWN"} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-medium text-ink">{name ?? s.deviceCode}</p>
-          <p className="mt-0.5 truncate text-xs text-muted">{deviceTypeLabel(type) ?? s.deviceCode}</p>
-          <p className="mt-1 text-xs text-muted">
-            <span className="font-medium text-ink-2">{livenessLabel[s.status] ?? s.status}</span> · <LastSeen s={s} />
+          <p className="truncate font-semibold text-ink">{name ?? s.deviceCode}</p>
+          <p className="mt-0.5 truncate text-[13px] text-ink-2">{deviceTypeLabel(type) ?? s.deviceCode}</p>
+          <p className="mt-1 text-xs text-ink-2">
+            <span className={cn("font-semibold", livenessText[s.status] ?? "text-ink")}>{livenessLabel[s.status] ?? s.status}</span> · <LastSeen s={s} />
           </p>
           {(s.status !== "ONLINE" || s.onBackupPower) && (
             <div className="mt-2 flex flex-wrap gap-1.5">
@@ -67,11 +69,11 @@ export function DeviceRow({ status: s, name, type, href, className }: DeviceRowP
             </div>
           )}
         </div>
-        {href && <ChevronRight aria-hidden className="mt-1 size-4 shrink-0 text-muted" />}
+        {href && <ChevronRight aria-hidden className="mt-1 size-5 shrink-0 text-ink-2" strokeWidth={1.8} />}
       </div>
     </>
   );
-  const cls = cn("block rounded-inner bg-card-2 p-3.5", href && "transition hover:ring-1 hover:ring-line", className);
+  const cls = cn("block rounded-inner bg-card p-3.5 shadow-card ring-1 ring-line", href && "transition hover:ring-accent/40", className);
   return href ? (
     <Link href={href} className={cls} aria-label={`${name ?? s.deviceCode}, ${livenessLabel[s.status] ?? s.status}`}>
       {body}

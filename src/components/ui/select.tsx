@@ -13,7 +13,7 @@ export function Select({ label, hideLabel = true, className, wrapperClassName, c
         <select
           id={id}
           className={cn(
-            "h-10 min-w-32 cursor-pointer appearance-none rounded-control bg-card pr-9 pl-3.5 text-sm font-medium text-ink ring-1 ring-line transition outline-none hover:bg-card-2 focus-visible:ring-2 focus-visible:ring-accent",
+            "h-10 min-w-32 cursor-pointer appearance-none rounded-control bg-card pr-9 pl-3.5 text-sm font-medium text-ink shadow-card ring-1 ring-line transition outline-none hover:bg-card-2 focus-visible:ring-2 focus-visible:ring-accent",
             className,
           )}
           {...props}

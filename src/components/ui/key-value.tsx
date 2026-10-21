@@ -11,10 +11,10 @@ function display(v: unknown): string {
 /** Tabel key-value sederhana (detail entitas, metadata). */
 export function KeyValue({ rows, className }: { rows: [ReactNode, ReactNode][]; className?: string }) {
   return (
-    <dl className={cn("divide-y divide-line rounded-inner bg-card-2 text-sm", className)}>
+    <dl className={cn("divide-y divide-line rounded-inner bg-card-2 text-sm ring-1 ring-line", className)}>
       {rows.map(([k, v], i) => (
         <div key={i} className="grid grid-cols-[minmax(0,0.9fr)_minmax(0,1.4fr)] gap-3 px-3.5 py-2.5">
-          <dt className="text-muted">{k}</dt>
+          <dt className="text-ink-2">{k}</dt>
           <dd className="min-w-0 break-words text-ink">{v ?? "—"}</dd>
         </div>
       ))}
@@ -25,6 +25,6 @@ export function KeyValue({ rows, className }: { rows: [ReactNode, ReactNode][]; 
 /** Metadata informatif dari backend (alamat Modbus, kanal, model) — tidak dipakai untuk keputusan. */
 export function MetadataTable({ metadata }: { metadata: Record<string, unknown> | null }) {
   const entries = Object.entries(metadata ?? {});
-  if (!entries.length) return <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-muted">Tidak ada metadata.</p>;
+  if (!entries.length) return <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-muted ring-1 ring-line">Tidak ada metadata.</p>;
   return <KeyValue rows={entries.map(([k, v]) => [<span key={k} className="font-mono text-xs">{k}</span>, <span key={`${k}-v`} className="font-mono text-xs">{display(v)}</span>])} />;
 }

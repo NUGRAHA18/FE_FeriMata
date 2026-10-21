@@ -66,14 +66,14 @@ export function DevTools() {
         ))}
       </div>
       <div className="mt-5 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-ink-2">Outbox perintah (menunggu ack)</h3>
+        <h3 className="text-sm font-semibold text-ink-2">Outbox perintah (menunggu ack)</h3>
         <Button size="sm" variant="ghost" icon={RefreshCw} onClick={() => outbox.refetch()} loading={outbox.isFetching}>
           Muat ulang
         </Button>
       </div>
       <ul className="mt-2 flex flex-col gap-2">
         {(outbox.data ?? []).map((c) => (
-          <li key={c.commandUid} className="flex flex-wrap items-center justify-between gap-2 rounded-inner bg-card-2 px-3 py-2 text-xs">
+          <li key={c.commandUid} className="flex flex-wrap items-center justify-between gap-2 rounded-inner bg-card-2 px-3 py-2 text-xs ring-1 ring-line">
             <span className="font-mono">
               {c.actuatorCode} {c.commandType} · {c.commandUid}
             </span>

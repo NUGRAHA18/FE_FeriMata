@@ -67,7 +67,7 @@ function Shell({
       {open && (
         <div
           className={cn(
-            "flex flex-col bg-card shadow-2xl",
+            "flex flex-col bg-card shadow-2xl ring-1 ring-line",
             variant === "modal"
               ? "max-h-[92dvh] w-full rounded-t-[26px] sm:max-w-md sm:rounded-card"
               : "h-full w-full sm:w-[440px] sm:rounded-l-[26px]",
@@ -76,7 +76,7 @@ function Shell({
         >
           <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-3">
             <div className="min-w-0">
-              <h2 id={titleId} className="text-lg font-medium text-ink">
+              <h2 id={titleId} className="text-lg font-semibold text-ink">
                 {title}
               </h2>
               {description && (
@@ -90,7 +90,7 @@ function Shell({
               onClick={onClose}
               disabled={!dismissible}
               aria-label="Tutup"
-              className="grid size-9 shrink-0 place-items-center rounded-control bg-card-2 text-ink-2 hover:bg-sunken focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
+              className="grid size-9 shrink-0 place-items-center rounded-control bg-card-2 text-ink-2 ring-1 ring-line hover:bg-sunken focus-visible:outline-2 focus-visible:outline-accent disabled:opacity-40"
             >
               <X aria-hidden className="size-4" strokeWidth={1.8} />
             </button>

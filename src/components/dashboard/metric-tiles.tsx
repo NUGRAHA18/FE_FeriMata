@@ -1,7 +1,8 @@
 "use client";
 
 import { Activity, BatteryWarning, Beaker, type LucideIcon } from "lucide-react";
-import { MetricCard } from "@/components/ui/metric-card";
+import { MetricCard, type MetricStatus } from "@/components/ui/metric-card";
+import { Badge } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { tankKeys } from "@/config/dashboard-layout";
 import { useOverview, useReadingByMetric } from "@/lib/api/queries";
@@ -72,34 +73,95 @@ export function SystemStatusCard({ compact }: { compact?: boolean }) {
   );
 }
 
-/** EC & pH tangki pupuk (flow cell) dalam satu kartu. */
+/**
+ * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa siklus aktif atau
+ * target → null, karena frontend tidak mengarang rentang ideal.
+ */
+export function ecTargetStatus(
+  ec: { value: number | null; unit: string | null } | null | undefined,
+  target: { min: number | null; max: number | null } | null | undefined,
+): MetricStatus | null {
+  if (ec?.value == null || target?.min == null || target.max == null) return null;
+  const unit = ec.unit?.toLowerCase();
+  const ms = unit === "us/cm" || unit === "µs/cm" ? ec.value / 1000 : unit === "ms/cm" ? ec.value : null;
+  if (ms == null) return null;
+  // Label pendek agar muat di kartu dua kolom; angka target ada di kartu "Umur tanaman".
+  if (ms < target.min) return { tone: "warn", label: "Terlalu encer" };
+  if (ms > target.max) return { tone: "danger", label: "Terlalu pekat" };
+  return { tone: "ok", label: "Sesuai target" };
+}
+
+/**
+ * Float LOW drum → status air. 1 = air cukup; selain itu air rendah atau kabel putus, dan backend
+ * menolak pompa air utama, pompa pupuk & pengaduk. Tanpa pembacaan → null.
+ */
+export function floatLowStatus(r: { value: number | null; textValue?: string | null } | null | undefined): MetricStatus | null {
+  if (!r) return null;
+  const raw = r.value != null ? String(r.value) : (r.textValue ?? "").trim().toUpperCase();
+  const ok = raw === "1" || raw === "CLOSED" || raw === "TRUE";
+  return ok ? { tone: "ok", label: "Air drum cukup" } : { tone: "danger", label: "Air drum rendah" };
+}
+
+/** EC, pH & suhu larutan di drum pupuk, plus status float LOW, dalam satu kartu. */
 export function TankCard({ compact }: { compact?: boolean }) {
   const ec = useReadingByMetric(tankKeys.ec);
   const ph = useReadingByMetric(tankKeys.ph);
+  const temp = useReadingByMetric(tankKeys.waterTemperature);
+  const level = floatLowStatus(useReadingByMetric(tankKeys.floatLowOk));
   const stale = useConnectionState() !== "connected";
-  const latest = [ec, ph].filter(Boolean).sort((a, b) => (a!.recordedAt < b!.recordedAt ? 1 : -1))[0];
+  const target = useOverview((o) => {
+    const p = o.cultivation?.currentPhase;
+    return p ? { min: p.ecTargetMin, max: p.ecTargetMax } : null;
+  }).data;
+  const ecStatus = ecTargetStatus(ec, target);
+  const latest = [ec, ph, temp].filter(Boolean).sort((a, b) => (a!.recordedAt < b!.recordedAt ? 1 : -1))[0];
   const ecUnit = formatUnit(ec?.unit);
-  const valueCls = cn("metric-value truncate font-normal", compact ? "text-[28px]" : "text-[30px] sm:text-[40px]");
+  const valueCls = cn("metric-value truncate", compact ? "text-[clamp(1.375rem,17cqi,1.75rem)]" : "text-[clamp(1.5rem,19cqi,2.25rem)]");
   return (
-    <section aria-label="Tangki pupuk" className={cn("flex min-w-0 flex-col rounded-card bg-card shadow-card", compact ? "p-3.5" : "p-4 sm:p-5")}>
+    <section aria-label="Tangki pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5")}>
       <span className={cn("grid shrink-0 place-items-center rounded-full bg-info-soft text-info", compact ? "size-9" : "size-10 sm:size-11")}>
         <Beaker aria-hidden className={cn(compact ? "size-[18px]" : "size-5 sm:size-[22px]")} strokeWidth={1.8} />
       </span>
-      <p className={cn("mt-3 font-medium text-ink-2", compact ? "text-sm" : "text-sm sm:text-base")}>Tangki pupuk</p>
-      <dl className={cn("tabular mt-2 flex flex-col gap-1.5", stale && latest && "opacity-60")}>
-        <div className="flex items-baseline justify-between gap-2">
-          <dt className="text-sm text-muted">
-            Kepekatan (EC)
-            {ecUnit && <span className="block text-xs">{ecUnit}</span>}
-          </dt>
-          <dd className={valueCls}>{formatReading(ec) ?? "—"}</dd>
+      <p className={cn("mt-3 font-semibold text-ink-2", compact ? "text-sm" : "text-sm sm:text-[15px]")}>Tangki pupuk</p>
+      <dl className={cn("tabular mt-2 grid grid-cols-1 gap-2.5 @[12rem]:grid-cols-2", stale && latest && "opacity-60")}>
+        <div className="min-w-0">
+          <dt className="text-xs text-ink-2">Kepekatan (EC)</dt>
+          <dd className="mt-1 flex flex-wrap items-baseline gap-x-1">
+            <span className={valueCls}>{formatReading(ec) ?? "—"}</span>
+            {ec && ecUnit && <span className="text-xs font-medium text-ink-2">{ecUnit}</span>}
+          </dd>
         </div>
-        <div className="flex items-baseline justify-between gap-2">
-          <dt className="text-sm text-muted">Keasaman (pH)</dt>
-          <dd className={valueCls}>{formatReading(ph) ?? "—"}</dd>
+        <div className="min-w-0">
+          <dt className="text-xs text-ink-2">Keasaman (pH)</dt>
+          <dd className="mt-1">
+            <span className={valueCls}>{formatReading(ph) ?? "—"}</span>
+          </dd>
+        </div>
+        <div className="min-w-0">
+          <dt className="text-xs text-ink-2">Suhu larutan</dt>
+          <dd className="mt-1 flex flex-wrap items-baseline gap-x-1">
+            <span className={valueCls}>{formatReading(temp) ?? "—"}</span>
+            {temp && formatUnit(temp.unit) && <span className="text-xs font-medium text-ink-2">{formatUnit(temp.unit)}</span>}
+          </dd>
         </div>
       </dl>
-      <p className="mt-auto truncate pt-2 text-xs text-muted sm:pt-3 sm:text-[13px]">
+      {(ecStatus || level) && (
+        <div className="mt-2 flex flex-wrap gap-1.5">
+          {ecStatus && (
+            <Badge tone={ecStatus.tone} className="text-xs">
+              {ecStatus.label}
+            </Badge>
+          )}
+          {level && (
+            <span title={level.tone === "danger" ? "Air rendah atau kabel float putus — pompa air utama, pompa pupuk dan pengaduk tidak bisa dinyalakan." : undefined}>
+              <Badge tone={level.tone} className="text-xs">
+                {level.label}
+              </Badge>
+            </span>
+          )}
+        </div>
+      )}
+      <p className="mt-auto truncate pt-2 text-xs text-ink-2 sm:pt-3 sm:text-[13px]">
         {latest ? <RelativeTime iso={latest.recordedAt} prefix="diperbarui " /> : "belum ada data"}
       </p>
     </section>

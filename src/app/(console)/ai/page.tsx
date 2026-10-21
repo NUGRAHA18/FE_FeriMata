@@ -92,7 +92,7 @@ export default function AiPage() {
 
         <Card>
           <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
-            <h2 className="text-[15px] font-medium text-ink">{describe(filter)}</h2>
+            <h2 className="text-[15px] font-semibold text-ink">{describe(filter)}</h2>
             {filter.kind !== "none" && (
               <Button size="sm" icon={X} onClick={() => apply({ kind: "none" })}>
                 Tampilkan semua
@@ -108,12 +108,12 @@ export default function AiPage() {
           ) : q.error ? (
             <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
           ) : !q.data.content.length ? (
-            <EmptyState icon={<ScanEye aria-hidden className="size-5 text-muted" />} title="Belum ada foto" hint="Foto baru muncul sendiri begitu kamera selesai memeriksa tanaman." />
+            <EmptyState icon={<ScanEye aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada foto" hint="Foto baru muncul sendiri begitu kamera selesai memeriksa tanaman." />
           ) : (
             <div className="flex flex-col gap-4">
               <ul className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                 {q.data.content.map((d) => (
-                  <li key={d.id} className="flex flex-col rounded-inner bg-card-2 p-3">
+                  <li key={d.id} className="flex flex-col rounded-inner bg-card-2 p-3 ring-1 ring-line">
                     <DetectionImage detection={d} className="aspect-[4/3] w-full" />
                     <div className="mt-3 flex items-baseline justify-between gap-2">
                       <button

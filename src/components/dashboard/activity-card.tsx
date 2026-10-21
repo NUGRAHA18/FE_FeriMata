@@ -1,20 +1,21 @@
 "use client";
 
-import { AlertTriangle, CheckCircle2, CircleMinus, ListChecks, Loader2, OctagonAlert, XCircle } from "lucide-react";
+import Link from "next/link";
+import { AlertTriangle, CheckCircle2, ChevronRight, CircleMinus, ListChecks, Loader2, OctagonAlert, XCircle } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useLiveActivity, useOverview } from "@/lib/api/queries";
 import type { ActivityEntry } from "@/lib/api/types";
-import { commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
+import { alertMessageLabel, alertTitleLabel, alertTypeLabel, commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export function isOnState(state: string | null | undefined) {
   return !!state && state.toUpperCase() === "ON";
 }
 
-type FeedItem = { key: string; at: string; title: string; detail: string; icon: "EXECUTED" | "PENDING" | "FAILED" | "CANCELLED" | "WARNING" | "CRITICAL" | "INFO" };
+type FeedItem = { key: string; kind: "ALERT" | "COMMAND"; at: string; title: string; detail: string; icon: "EXECUTED" | "PENDING" | "FAILED" | "CANCELLED" | "WARNING" | "CRITICAL" | "INFO" };
 
 const icons = {
   EXECUTED: <CheckCircle2 aria-hidden className="size-5 text-accent" strokeWidth={1.8} />,
@@ -24,6 +25,17 @@ const icons = {
   WARNING: <AlertTriangle aria-hidden className="size-5 text-warn" strokeWidth={1.8} />,
   CRITICAL: <OctagonAlert aria-hidden className="size-5 text-danger" strokeWidth={1.8} />,
   INFO: <AlertTriangle aria-hidden className="size-5 text-info" strokeWidth={1.8} />,
+};
+
+/** Latar & warna judul per jenis kejadian: masalah tampil merah/kuning muda agar langsung terlihat. */
+const feedTone: Record<FeedItem["icon"], { box: string; title: string }> = {
+  EXECUTED: { box: "bg-card-2", title: "text-ink" },
+  PENDING: { box: "bg-card-2", title: "text-ink" },
+  CANCELLED: { box: "bg-card-2", title: "text-ink" },
+  INFO: { box: "bg-card-2", title: "text-ink" },
+  FAILED: { box: "bg-danger-soft/70", title: "text-danger-ink" },
+  CRITICAL: { box: "bg-danger-soft/70", title: "text-danger-ink" },
+  WARNING: { box: "bg-warn-soft/70", title: "text-warn-ink" },
 };
 
 const iconText: Record<FeedItem["icon"], string> = {
@@ -67,6 +79,7 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
     const actor = e.actor ?? d?.[2] ?? "";
     return {
       key,
+      kind: "COMMAND",
       at: e.at,
       title: actuatorCode ? `${actuatorCode} ${commandVerb(commandType)}` : e.summary,
       detail: `${commandStatusLabel[status] ?? status}${actor ? ` · oleh ${sourceLabel[actor] ?? actor}` : ""}`,
@@ -78,13 +91,14 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
     const msg = e.status ? (e.detail ?? "").replace(/^[A-Z]+:\s*/, "") : (e.detail ?? "").slice(sev.length + 1).trim();
     return {
       key,
+      kind: "ALERT",
       at: e.at,
-      title: e.summary,
-      detail: msg ? `${severityLabel[sev] ?? sev} · ${msg}` : (e.detail ?? ""),
+      title: alertTitleLabel(e.summary),
+      detail: msg ? `${severityLabel[sev] ?? sev} · ${alertMessageLabel(msg)}` : (e.detail ?? ""),
       icon: severityIcon(sev),
     };
   }
-  return { key, at: e.at, title: e.summary, detail: e.detail ?? "", icon: "INFO" };
+  return { key, kind: "ALERT", at: e.at, title: e.summary, detail: e.detail ?? "", icon: "INFO" };
 }
 
 /** Kartu Aktivitas: apa yang baru saja terjadi (perintah & peringatan) + berapa alat yang sedang menyala. */
@@ -102,6 +116,7 @@ export function ActivityCard({ className }: { className?: string }) {
       l.kind === "ACTUATOR_COMMAND"
         ? {
           key: l.key,
+          kind: "COMMAND",
           at: l.at,
           title: `${l.command.actuatorCode} ${commandVerb(l.command.commandType)}`,
           detail: `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}`,
@@ -109,9 +124,10 @@ export function ActivityCard({ className }: { className?: string }) {
         }
         : {
           key: l.key,
+          kind: "ALERT",
           at: l.at,
-          title: l.alert.title,
-          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${l.alert.message}`,
+          title: alertTypeLabel(l.alert.type) === l.alert.type ? alertTitleLabel(l.alert.title) : alertTypeLabel(l.alert.type),
+          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${alertMessageLabel(l.alert.message)}`,
           icon: severityIcon(l.alert.severity),
         },
     ),
@@ -138,8 +154,8 @@ export function ActivityCard({ className }: { className?: string }) {
         <>
           <div>
             <div className="flex items-baseline justify-between text-sm">
-              <span className="tabular font-medium text-ink">{pct}%</span>
-              <span className="text-muted">
+              <span className="tabular text-base font-bold text-ink">{pct}%</span>
+              <span className="text-ink-2">
                 <span className="tabular">
                   {d.on} dari {d.total}
                 </span>{" "}
@@ -147,7 +163,7 @@ export function ActivityCard({ className }: { className?: string }) {
               </span>
             </div>
             <div
-              className="mt-1.5 h-2 overflow-hidden rounded-full bg-sunken"
+              className="mt-2 h-2.5 overflow-hidden rounded-full bg-sunken"
               role="progressbar"
               aria-label="Alat yang sedang menyala"
               aria-valuemin={0}
@@ -160,20 +176,26 @@ export function ActivityCard({ className }: { className?: string }) {
           {feed.length === 0 ? (
             <EmptyState className="mt-3" title="Belum ada kejadian" hint="Perintah ke alat dan peringatan akan muncul di sini." />
           ) : (
-            <ol className="scroll-thin -mx-1 mt-3 flex max-h-[420px] flex-col gap-2 overflow-y-auto px-1">
+            <ol className="scroll-thin -mx-1 mt-4 flex max-h-[420px] flex-col gap-2 overflow-y-auto px-1 pb-1">
               {feed.map((f) => (
-                <li key={f.key} className="flex items-start gap-3 rounded-inner bg-card-2 p-3">
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm font-medium text-ink">{f.title}</p>
-                    <p className="mt-0.5 line-clamp-2 text-sm text-muted">{f.detail}</p>
-                    <p className="mt-1 text-xs text-muted">
-                      <RelativeTime iso={f.at} />
-                    </p>
-                  </div>
-                  <span className="mt-0.5 shrink-0">
-                    {icons[f.icon]}
-                    <span className="sr-only">{iconText[f.icon]}</span>
-                  </span>
+                <li key={f.key}>
+                  <Link
+                    href={f.kind === "ALERT" ? "/alerts" : "/actuators"}
+                    className={cn("flex items-start gap-3 rounded-inner p-3 ring-1 ring-line transition hover:ring-accent/40", feedTone[f.icon].box)}
+                  >
+                    <span className="mt-0.5 shrink-0">
+                      {icons[f.icon]}
+                      <span className="sr-only">{iconText[f.icon]}</span>
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className={cn("truncate text-sm font-semibold", feedTone[f.icon].title)}>{f.title}</p>
+                      <p className="mt-0.5 line-clamp-2 text-sm text-ink-2">{f.detail}</p>
+                      <p className="mt-1 text-xs text-ink-2">
+                        <RelativeTime iso={f.at} />
+                      </p>
+                    </div>
+                    <ChevronRight aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-2" strokeWidth={1.8} />
+                  </Link>
                 </li>
               ))}
             </ol>
