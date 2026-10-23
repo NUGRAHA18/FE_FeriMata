@@ -11,6 +11,7 @@ import { SensorEditForm } from "@/components/sensors/sensor-edit-form";
 import { PageHeader } from "@/components/shell/page-header";
 import { Card } from "@/components/ui/card";
 import { KeyValue, MetadataTable } from "@/components/ui/key-value";
+import { TechInfo } from "@/components/ui/tech-info";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/status";
 import { Tabs } from "@/components/ui/tabs";
@@ -136,8 +137,7 @@ export default function SensorDetailPage() {
                     <h3 className="mb-3 text-sm font-semibold text-ink-2">Ubah nama atau satuan</h3>
                     <SensorEditForm key={s.id} sensor={s} />
                   </div>
-                  <details className="rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
-                    <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+                  <TechInfo>
                     <KeyValue
                       className="mt-2"
                       rows={[
@@ -151,7 +151,7 @@ export default function SensorDetailPage() {
                     />
                     <h4 className="mt-3 mb-2 text-sm font-medium text-ink-2">Pemasangan (Modbus / kanal)</h4>
                     <MetadataTable metadata={s.metadata} />
-                  </details>
+                  </TechInfo>
                 </div>
               )}
               {tab === "device" && <DeviceTab sensor={s} />}

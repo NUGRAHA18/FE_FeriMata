@@ -1,13 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowUpRight, Info, Palette, Sprout, Users } from "lucide-react";
+import { ArrowUpRight, BookOpen, Info, Palette, Sprout, Users } from "lucide-react";
+import { useState } from "react";
 import { useSession } from "@/lib/auth/use-session";
+import { GuideDialog } from "@/components/onboarding/guide";
 import { DevTools } from "@/components/settings/dev-tools";
 import { PageHeader } from "@/components/shell/page-header";
 import { ThemeSwitcher } from "@/components/shell/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
 import { KeyValue } from "@/components/ui/key-value";
+import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/input";
+import { TechInfo, useSimpleMode } from "@/components/ui/tech-info";
 import { productName, siteConfig } from "@/config/site";
 import { useOverview } from "@/lib/api/queries";
 import { formatDateTime } from "@/lib/format";
@@ -25,6 +30,8 @@ export default function SettingsPage() {
   const role = useSession()?.user.role;
   const isAdmin = role === "ADMIN";
   const canWrite = isAdmin || role === "OPERATOR";
+  const [simpleMode, setSimpleMode] = useSimpleMode();
+  const [guideOpen, setGuideOpen] = useState(false);
 
   return (
     <>
@@ -67,6 +74,23 @@ export default function SettingsPage() {
           <p className="mt-3 text-xs text-muted">Pilihan tema disimpan di perangkat ini. &quot;Ikuti sistem&quot; memakai Terang/Gelap sesuai pengaturan HP/komputer.</p>
         </Card>
         <Card>
+          <CardHeader title="Petunjuk & tampilan sederhana" icon={BookOpen} />
+          <p className="text-sm text-ink-2">Arti tiap kartu di Beranda, dijelaskan langkah demi langkah.</p>
+          <Button variant="soft" icon={BookOpen} className="mt-3" onClick={() => setGuideOpen(true)}>
+            Buka petunjuk
+          </Button>
+          <div className="mt-5 flex items-start justify-between gap-4 border-t border-line pt-4">
+            <div className="min-w-0">
+              <p id="simple-mode-label" className="text-sm font-medium text-ink">
+                Mode sederhana
+              </p>
+              <p className="mt-0.5 text-xs text-muted">Sembunyikan panel &quot;Info teknis&quot; (kode alat, metric key, alamat Modbus) di semua halaman.</p>
+            </div>
+            <Switch checked={simpleMode} onChange={setSimpleMode} label="Mode sederhana" />
+          </div>
+          <GuideDialog open={guideOpen} onClose={() => setGuideOpen(false)} />
+        </Card>
+        <Card>
           <CardHeader title="Tentang" icon={Info} />
           <KeyValue
             rows={[
@@ -77,8 +101,7 @@ export default function SettingsPage() {
               ["Zona waktu", "WIB (Asia/Jakarta)"],
             ]}
           />
-          <details className="mt-3 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
-            <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+          <TechInfo className="mt-3">
             <KeyValue
               className="mt-2"
               rows={[
@@ -89,7 +112,7 @@ export default function SettingsPage() {
                 ["Overview dibuat", formatDateTime(system?.generatedAt)],
               ]}
             />
-          </details>
+          </TechInfo>
         </Card>
         {canWrite && system?.mode === "DEVELOPMENT" && (
           <div className="lg:col-span-2">

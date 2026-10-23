@@ -8,6 +8,7 @@ import { DeviceIssueChips, LastSeen, livenessTone } from "@/components/devices/d
 import { PageHeader } from "@/components/shell/page-header";
 import { Card, CardHeader } from "@/components/ui/card";
 import { KeyValue } from "@/components/ui/key-value";
+import { TechInfo } from "@/components/ui/tech-info";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { StatusDot } from "@/components/ui/status";
 import { errorMessage } from "@/lib/api/client";
@@ -82,8 +83,7 @@ export default function DeviceDetailPage() {
                 <Skeleton className="h-40" />
               )}
               {d.description && <p className="mt-4 text-sm text-ink-2">{d.description}</p>}
-              <details className="mt-4 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
-                <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+              <TechInfo className="mt-4">
                 <KeyValue
                   className="mt-2"
                   rows={[
@@ -92,7 +92,7 @@ export default function DeviceDetailPage() {
                     ["Terdaftar", formatDateTime(d.createdAt)],
                   ]}
                 />
-              </details>
+              </TechInfo>
             </Card>
             <Card>
               <CardHeader title={`Sensor (${sensors.data?.length ?? 0})`} icon={Gauge} href="/sensors" hrefLabel="Semua sensor" />

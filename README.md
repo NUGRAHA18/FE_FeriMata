@@ -2,7 +2,8 @@
 
 
 Aplikasi web (PWA) untuk petani/operator: memantau sensor, mengendalikan pompa dan kamera, dan menerima peringatan dari greenhouse melon dengan pemupukan otomatis. Bahasa antarmuka sederhana, tanpa istilah teknis.
-Spesifikasi lengkap: [`prompt-frontend.md`](prompt-frontend.md). Celah backend: [`docs/backend-gaps.md`](docs/backend-gaps.md).
+Status pekerjaan: [`docs/status-pekerjaan.md`](docs/status-pekerjaan.md). Celah backend: [`docs/backend-gaps.md`](docs/backend-gaps.md).
+Spesifikasi awal (arsip): [`docs/arsip/prompt-frontend-awal.md`](docs/arsip/prompt-frontend-awal.md).
 
 Stack: Next.js 16 (App Router) · TypeScript strict · Tailwind CSS 4 · TanStack Query · @stomp/stompjs ·
 Recharts · lucide-react · zod · Vitest.
@@ -45,6 +46,9 @@ src/lib/realtime              klien STOMP + penerapan event ke cache (apply.ts)
 src/lib/actuator-safety.ts    validasi durasi & terjemahan penolakan keamanan
 src/lib/icons.ts             ikon per tipe alat/sensor/aktuator
 src/lib/format.ts             angka, satuan, waktu WIB, label Indonesia
+src/lib/offline               snapshot angka terakhir untuk mode offline
+src/components/onboarding     petunjuk Beranda
+src/test                      bantuan test halaman (provider, sesi, fixture)
 ```
 
 ## Prinsip yang dijaga
@@ -57,4 +61,9 @@ src/lib/format.ts             angka, satuan, waktu WIB, label Indonesia
   STOP selalu aktif, interlock dijelaskan dalam Bahasa Indonesia, tombol kirim dikunci selama request.
 - **Jujur terhadap data:** tidak ada ambang agronomi, skor kesehatan, atau endpoint karangan. Data yang
   tidak ada tampil "—".
-- Service worker hanya meng-cache aset statis; respons API tidak pernah di-cache.
+- **Mode offline hanya-baca:** angka terakhir (overview + pembacaan) disimpan per pengguna di
+  localStorage (`src/lib/offline`) dan dimuat saat jaringan putus, dengan banner yang menyebut kapan
+  data itu diambil. Dihapus saat keluar. Service worker meng-cache aset statis dan HTML halaman
+  (jaringan dulu) supaya aplikasi tetap terbuka; respons API tidak pernah di-cache.
+- **Petunjuk & mode sederhana:** petunjuk Beranda terbuka sekali untuk pengguna baru (bisa dibuka
+  lagi di Pengaturan); mode sederhana menyembunyikan semua panel "Info teknis" (`TechInfo`).

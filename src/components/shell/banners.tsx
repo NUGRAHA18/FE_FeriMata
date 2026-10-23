@@ -1,11 +1,13 @@
 "use client";
 
-import { BatteryWarning, Clock, FlaskConical, RadioTower } from "lucide-react";
+import { BatteryWarning, Clock, FlaskConical, RadioTower, WifiOff } from "lucide-react";
 import type { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import type { Tone } from "@/components/ui/status";
-import { useOverview } from "@/lib/api/queries";
-import { formatDuration } from "@/lib/format";
+import { RelativeTime } from "@/components/ui/time";
+import { useLatestReceivedAt, useOverview } from "@/lib/api/queries";
+import { formatDateTime, formatDuration } from "@/lib/format";
+import { useIsOnline } from "@/lib/offline/use-offline-snapshot";
 import { LeafCorner } from "@/components/illustrations";
 import { cn } from "@/lib/cn";
 import { useNow } from "@/lib/use-now";
@@ -57,6 +59,32 @@ export function SystemBanners() {
         </p>
       )}
     </>
+  );
+}
+
+/**
+ * Data tidak bisa diperbarui (tanpa internet, atau server tidak menjawab): angka yang tampil adalah
+ * data terakhir yang tersimpan di HP ini — sebutkan kapan, supaya tidak dikira angka sekarang.
+ */
+export function OfflineBanner() {
+  const online = useIsOnline();
+  const q = useOverview((o) => o.system.generatedAt);
+  const lastReceived = useLatestReceivedAt();
+  const hasData = q.data !== undefined;
+  if (online && !(q.error && hasData)) return null;
+  const lastAt = Math.max(q.dataUpdatedAt, lastReceived);
+  return (
+    <Banner tone="warn" icon={<WifiOff aria-hidden className={iconCls} strokeWidth={1.8} />}>
+      <strong className="font-semibold">{online ? "Data belum bisa diperbarui dari server." : "Tidak ada sambungan internet."}</strong>{" "}
+      {hasData && lastAt > 0 ? (
+        <>
+          Angka yang tampil adalah data terakhir, {formatDateTime(lastAt)} (<RelativeTime iso={new Date(lastAt).toISOString()} />
+          ). Perintah ke alat belum bisa dikirim.
+        </>
+      ) : (
+        "Belum ada data tersimpan di perangkat ini."
+      )}
+    </Banner>
   );
 }
 

@@ -11,6 +11,7 @@ import { Card, CardHeader } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Field, Switch } from "@/components/ui/input";
 import { KeyValue, MetadataTable } from "@/components/ui/key-value";
+import { TechInfo } from "@/components/ui/tech-info";
 import { ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/status";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
@@ -119,8 +120,7 @@ export default function ActuatorDetailPage() {
               <ReportedState actuator={a} large />
               <ActuatorControls actuator={a} className="mt-5" />
               {a.description && <p className="mt-5 text-sm text-ink-2">{a.description}</p>}
-              <details className="mt-5 rounded-inner bg-card-2 px-3.5 py-2 text-sm ring-1 ring-line">
-                <summary className="cursor-pointer font-medium text-ink-2">Info teknis</summary>
+              <TechInfo className="mt-5">
                 <KeyValue
                   className="mt-2"
                   rows={[
@@ -133,7 +133,7 @@ export default function ActuatorDetailPage() {
                 />
                 <h3 className="mt-3 mb-2 text-sm font-semibold text-ink-2">Pemasangan (Modbus / kanal)</h3>
                 <MetadataTable metadata={a.metadata} />
-              </details>
+              </TechInfo>
             </Card>
             {canWrite && <Settings key={a.id} actuator={a} />}
             <Card className="lg:col-span-2">

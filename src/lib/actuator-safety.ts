@@ -1,7 +1,7 @@
 import { ApiRequestError } from "@/lib/api/client";
 
 /*
- * Aturan keselamatan kontrol aktuator (lihat prompt-frontend.md § Kontrol aktuator).
+ * Aturan keselamatan kontrol aktuator (lihat docs/arsip/prompt-frontend-awal.md § Kontrol aktuator).
  * Keputusan akhir selalu milik backend; fungsi di sini hanya menerjemahkan & memvalidasi input.
  * Pesan ditulis untuk petani: tanpa istilah "interlock", "dosing", "broker".
  */

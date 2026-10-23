@@ -3,12 +3,15 @@
 import dynamic from "next/dynamic";
 import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
+import { ExportButton } from "@/components/ui/export-button";
 import { Segmented } from "@/components/ui/segmented";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/api/client";
 import { qk } from "@/lib/api/query-keys";
+import { csvFilename } from "@/lib/csv";
 import { formatDateTime, formatNumber } from "@/lib/format";
 import { fetchHistory, RANGES, type RangeKey } from "@/lib/history";
+import { exportSensorHistory } from "@/lib/reports";
 
 // Recharts hanya dimuat di halaman detail sensor.
 const HistoryChart = dynamic(() => import("./history-chart"), { ssr: false, loading: () => <Skeleton className="size-full rounded-inner" /> });
@@ -28,16 +31,24 @@ export function HistoryPanel({ sensorId, unit, label }: { sensorId: number; unit
     <div className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <Segmented label="Rentang waktu" value={range} onChange={setRange} options={rangeOptions} size="sm" />
-        <Segmented
-          label="Tampilan"
-          value={view}
-          onChange={setView}
-          size="sm"
-          options={[
-            { value: "chart", label: "Grafik" },
-            { value: "table", label: "Tabel" },
-          ]}
-        />
+        <div className="flex flex-wrap items-center gap-2">
+          <Segmented
+            label="Tampilan"
+            value={view}
+            onChange={setView}
+            size="sm"
+            options={[
+              { value: "chart", label: "Grafik" },
+              { value: "table", label: "Tabel" },
+            ]}
+          />
+          <ExportButton
+            label="Unduh CSV"
+            run={(signal) => exportSensorHistory(sensorId, range, signal)}
+            filename={() => csvFilename(label, RANGES[range].label)}
+            truncatedHint="Pilih rentang yang lebih pendek untuk data lengkap."
+          />
+        </div>
       </div>
       {q.isPending ? (
         <Skeleton className="h-72 w-full rounded-inner" />

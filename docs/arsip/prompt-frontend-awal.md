@@ -1,3 +1,18 @@
+> **ARSIP — jangan dipakai sebagai acuan kontrak.** Ini prompt awal (nama lama "Smart Melon", kontrak
+> backend commit `4984e5e`) yang dipakai untuk membangun frontend pertama kali. Bagian "Kontrol aktuator
+> — aturan keselamatan" masih berlaku. Yang sudah berubah sejak itu, antara lain:
+>
+> - Nama produk **FertiMata**; antarmuka memakai bahasa petani ("Peringatan", "Nyalakan/Matikan", "Kereta kamera").
+> - Ada **refresh token** (sesi 7 hari), peran **ADMIN / OPERATOR / VIEWER**, halaman Akun & Pengguna.
+> - Ada siklus tanam, fase, tanaman perlakuan, dan pengamatan (`/api/cultivation`, `/api/plants`).
+> - Hardware Rev A: satu sensor tanah (`soil_a.*`, tanpa pemilih Plot A/B), 10 stasiun kamera
+>   (ST-01…ST-10), metric key tangki `tank.water_temperature` dan `tank.float_low_ok`.
+> - `recentActivity` terstruktur, event `ALERT_UPDATED`, filter alert per alat/sensor/aktuator.
+> - API & WebSocket same-origin (`/api`, `/ws`) untuk deploy di Jetson.
+>
+> Acuan terkini: kode di `src/lib/api/types.ts` + `endpoints.ts`, Swagger backend, `docs/backend-gaps.md`,
+> dan `docs/status-pekerjaan.md`.
+
 # Prompt untuk Claude Code — Frontend Smart Melon (FERTIMATA)
 
 > Salin seluruh isi di bawah garis ke sesi Claude Code di repositori frontend. Lampirkan juga

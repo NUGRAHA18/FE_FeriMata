@@ -55,7 +55,7 @@ export function downsample(points: Point[], maxPoints = MAX_POINTS): Point[] {
   return [...buckets.entries()].sort((a, b) => a[0] - b[0]).map(([, b]) => ({ t: Math.round(b.t / b.n), v: b.v / b.n }));
 }
 
-async function pool<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
+export async function pool<T>(tasks: (() => Promise<T>)[], limit: number): Promise<T[]> {
   const results: T[] = new Array(tasks.length);
   let next = 0;
   await Promise.all(
