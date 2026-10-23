@@ -6,6 +6,7 @@ import { CameraCard } from "@/components/dashboard/camera-card";
 import { ConditionsCard } from "@/components/dashboard/conditions-card";
 import { DevicesCard } from "@/components/dashboard/devices-card";
 import { ReadingMetricCard, SystemStatusCard, TankCard } from "@/components/dashboard/metric-tiles";
+import { FirstVisitGuide } from "@/components/onboarding/guide";
 import { GreenhouseScene, LeafCorner } from "@/components/illustrations";
 import { AlertPill, ConnectionIndicator } from "@/components/shell/header-status";
 import { useShell } from "@/components/shell/shell-context";
@@ -59,12 +60,15 @@ function DashboardHeader() {
 }
 
 export default function DashboardPage() {
-  const overviewError = useOverview((o) => o.system.generatedAt).error;
+  const overview = useOverview((o) => o.system.generatedAt);
+  const overviewError = overview.error;
 
   return (
     <>
       <DashboardHeader />
-      {overviewError && (
+      <FirstVisitGuide />
+      {/* Bila masih ada angka terakhir, banner offline di atas sudah menjelaskan masalahnya. */}
+      {overviewError && overview.data === undefined && (
         <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
       )}
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)]">

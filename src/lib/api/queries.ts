@@ -56,6 +56,19 @@ export function useReadingBySensor(sensorId: number): SensorReading | undefined 
   return useQuery(readingsQuery(select)).data;
 }
 
+/** Waktu (ms) backend terakhir menerima pembacaan sensor apa pun; 0 bila belum ada. */
+export function useLatestReceivedAt(): number {
+  return (
+    useQuery(
+      readingsQuery((m: ReadingMap) => {
+        let latest = 0;
+        for (const r of Object.values(m)) latest = Math.max(latest, Date.parse(r.receivedAt) || 0);
+        return latest;
+      }),
+    ).data ?? 0
+  );
+}
+
 export function useAllReadings(): ReadingMap {
   return useQuery(readingsQuery((m: ReadingMap) => m)).data ?? {};
 }

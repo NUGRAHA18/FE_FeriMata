@@ -1,4 +1,5 @@
 import type { User } from "@/lib/api/types";
+import { clearSnapshot } from "@/lib/offline/snapshot";
 
 /*
  * Sesi pengguna. Backend memberi dua token: token akses (60 menit, dikirim di header Authorization)
@@ -91,6 +92,8 @@ export function endSession(reason: EndReason) {
   } catch {
     // abaikan
   }
+  // Keluar sengaja (HP bisa dipakai bergantian): angka tersimpan untuk mode offline ikut dihapus.
+  if (reason === "logout") clearSnapshot();
   cachedRaw = undefined;
   cachedSession = null;
   emit();

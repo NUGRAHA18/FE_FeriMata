@@ -5,6 +5,7 @@ import { useState, type FormEvent } from "react";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader, Inset } from "@/components/ui/card";
+import { ExportButton } from "@/components/ui/export-button";
 import { Field, TextAreaField } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { Segmented } from "@/components/ui/segmented";
@@ -16,8 +17,10 @@ import type { PhaseInput, PlantInput } from "@/lib/api/endpoints";
 import { useAddObservation, useCreateCycle, useCreatePlant, useCycleToday, useObservations, usePlants, usePutPhases } from "@/lib/api/queries";
 import type { CycleToday, GrowthPhase, Plant } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
+import { csvFilename } from "@/lib/csv";
 import { formatDate, formatDateTime, formatNumber, formatUnit } from "@/lib/format";
 import { cn } from "@/lib/cn";
+import { exportObservations } from "@/lib/reports";
 
 /* ── Label domain penelitian (Protokol-Data.md §2, §6) ─────────────────────── */
 
@@ -433,7 +436,7 @@ function PlantRow({ plant }: { plant: Plant }) {
   );
 }
 
-function PlantsSection({ cycleId }: { cycleId: number }) {
+function PlantsSection({ cycleId, cycleCode }: { cycleId: number; cycleCode: string }) {
   const canWrite = useCanWrite();
   const [treatment, setTreatment] = useState<string>("ALL");
   const q = usePlants({ cycleId, treatmentCode: treatment === "ALL" ? undefined : treatment, active: true });
@@ -452,6 +455,12 @@ function PlantsSection({ cycleId }: { cycleId: number }) {
         onChange={setTreatment}
         className="mb-4"
         options={[{ value: "ALL", label: "Semua" }, ...treatments.map((t) => ({ value: t.value, label: t.label.split(" · ")[0] }))]}
+      />
+      <ExportButton
+        label="Unduh semua pengamatan (CSV)"
+        run={(signal) => exportObservations(cycleId, signal)}
+        filename={() => csvFilename("pengamatan", cycleCode)}
+        className="mb-4"
       />
       {q.isPending ? (
         <Skeleton className="h-40 w-full rounded-inner" />
@@ -500,7 +509,7 @@ export default function CultivationPage() {
       ) : (
         <div className="flex flex-col gap-4">
           <CycleCard today={today.data} />
-          <PlantsSection cycleId={today.data.cycle.id} />
+          <PlantsSection cycleId={today.data.cycle.id} cycleCode={today.data.cycle.code} />
         </div>
       )}
     </>

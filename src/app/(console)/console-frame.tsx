@@ -7,12 +7,13 @@ import { KeyRound } from "lucide-react";
 import { useEffect, type ReactNode } from "react";
 import { AlertDrawer } from "@/components/alerts/alert-drawer";
 import { AppShell } from "@/components/shell/app-shell";
-import { Banner, SessionExpiryBanner, SystemBanners } from "@/components/shell/banners";
+import { Banner, OfflineBanner, SessionExpiryBanner, SystemBanners } from "@/components/shell/banners";
 import { Logo } from "@/components/shell/logo";
 import { useOverview } from "@/lib/api/queries";
 import { ensureFreshToken, needsRefresh, REFRESH_LEEWAY_MS } from "@/lib/auth/refresh";
 import { endSession, type Session } from "@/lib/auth/session";
 import { useSession } from "@/lib/auth/use-session";
+import { useOfflineSnapshot } from "@/lib/offline/use-offline-snapshot";
 import { useRealtime, useConnectionState } from "@/lib/realtime/stomp";
 
 function initialsOf(s: Session) {
@@ -39,8 +40,10 @@ function Splash() {
 function AuthedConsole({ session, children }: { session: Session; children: ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  useRealtime(session.token);
   const connection = useConnectionState();
+  // Sebelum hook lain memakai overview: muat angka terakhir yang tersimpan untuk mode offline.
+  useOfflineSnapshot(session.user.username, connection);
+  useRealtime(session.token);
   const alertCount = useOverview((o) => o.alerts.unacknowledged).data ?? 0;
 
   // Perpanjang token akses diam-diam sebelum habis; sesi berakhir hanya saat refresh token habis.
@@ -87,6 +90,7 @@ function AuthedConsole({ session, children }: { session: Session; children: Reac
             </Banner>
           )}
           <SessionExpiryBanner expiresAt={session.refreshExpiresAt} onRelogin={relogin} />
+          <OfflineBanner />
           <SystemBanners />
         </>
       }

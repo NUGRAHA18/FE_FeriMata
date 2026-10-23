@@ -1,6 +1,6 @@
 # Celah backend (dicatat oleh frontend)
 
-Acuan: backend `BE-melonSmart` per 19 Oktober 2026 (setelah penyesuaian FertiMata). Frontend tidak
+Acuan: backend `BE-melonSmart` per 22 Oktober 2026 (setelah penyesuaian FertiMata). Frontend tidak
 mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini dicatat di tiap butir.
 
 ## Sudah ditutup backend (frontend sudah memakainya)
@@ -12,6 +12,7 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Tidak ada filter alert per sensor/perangkat/aktuator. | `GET /api/alerts?deviceId=&sensorId=&actuatorId=` (bisa digabung dengan `acknowledged` dan `severity`). Tab "Peringatan" di detail sensor memakainya. |
 | `DashboardOverview.latestAiDetection` disebut tidak ada. | Sudah ada di backend; skema zod menerimanya. Kartu kamera tetap memakai daftar deteksi agar bisa digeser antar foto. |
 | Tidak ada refresh token, ganti sandi, kelola pengguna. | `POST /api/auth/refresh`, `/logout`, `/change-password`, `/api/users` (ADMIN), peran ADMIN/OPERATOR/VIEWER. Frontend memperpanjang sesi diam-diam (7 hari); halaman Akun & Pengguna. |
+| Tidak ada siklus tanam / HST. | `/api/cultivation` (siklus, fase, HST hari ini) dan `/api/plants` (tanaman perlakuan, pengamatan). Halaman Tanaman + kartu "Umur tanaman" di Beranda; badge EC tangki memakai `ecTargetMin/Max` fase berjalan. |
 | Telemetri tumbuh tanpa batas. | Backend punya kebijakan retensi (hapus per batch). Tidak berdampak ke UI selain grafik riwayat hanya tersedia sepanjang masa retensi (dev 7 hari, Jetson 90 hari). |
 
 ## Fitur yang belum ada
@@ -22,7 +23,8 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Konfigurasi interlock (tipe wajib durasi, grup eksklusif) tidak diekspos lewat API. | Tidak di-hardcode sebagai validasi. Durasi hanya diwajibkan frontend bila `maxRunSeconds` tidak null; pesan `INVALID_COMMAND` / `SAFETY_INTERLOCK` dari backend diterjemahkan ke bahasa sehari-hari. |
 | Ambang agronomi / rentang ideal (suhu, kelembapan, cahaya, pH, NPK), skor kesehatan tanaman. | Tidak ditampilkan. Satu-satunya badge status: EC tangki dibanding `ecTargetMin/Max` fase tanam berjalan (Sesuai target / Terlalu encer / Terlalu pekat). Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). |
 | Data cuaca luar. | Diganti "Kondisi di dalam greenhouse" (suhu & kelembapan udara, cahaya). |
-| Task / jadwal / siklus tanam (HST). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan). |
+| Task / jadwal (capture terjadwal, aturan peringatan). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan) sebagai pengganti kartu task di referensi. |
+| Push notification. | Peringatan hanya terlihat saat aplikasi dibuka (pill/lonceng + drawer). |
 | Perintah "ambil foto" / capture trolley dan stream kamera live (CCTV). | Tidak ada tombol ambil foto; kartu kamera hanya menampilkan foto tersimpan. |
 | Event realtime untuk perubahan data master (rename/enable sensor/aktuator). | Cache diperbarui sendiri setelah `PATCH` berhasil. Operator lain baru melihat perubahan setelah reconnect / refetch overview. |
 | Endpoint agregasi riwayat (min/avg/max per interval). | `/sensors/{id}/history` dibatasi `size ≤ 1000`. Frontend mengambil semua halaman bila total ≤ 5.000 titik, selebihnya menyampel 48 jendela waktu dan merata-rata per jendela. |
