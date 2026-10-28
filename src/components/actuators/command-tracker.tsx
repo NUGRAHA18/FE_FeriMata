@@ -2,19 +2,13 @@
 
 import { AlertTriangle, CheckCircle2, CircleMinus, Loader2, XCircle } from "lucide-react";
 import { useTrackedCommand } from "@/lib/api/queries";
-import { ACK_WARNING_MS } from "@/lib/actuator-safety";
+import { commandSummary } from "@/lib/actuator-commands";
+import { ACK_WARNING_MS, describeCommandFailure } from "@/lib/actuator-safety";
 import { commandStatusLabel, formatDuration, formatTime } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/cn";
 
 export type TrackedCommand = { uid: string; sentAtLocal: number };
-
-function commandVerb(commandType: string) {
-  const c = commandType.toUpperCase();
-  if (c === "ON") return "Nyalakan";
-  if (c === "OFF") return "Matikan";
-  return commandType;
-}
 
 /**
  * Status perintah yang dilacak: 202 hanya berarti "terkirim". Menunggu event
@@ -29,6 +23,7 @@ export function CommandTracker({ tracked, className }: { tracked: TrackedCommand
   const elapsed = now ? now - tracked.sentAtLocal : 0;
   const late = waiting && elapsed > ACK_WARNING_MS;
   const duration = typeof cmd.parameters?.durationSeconds === "number" ? cmd.parameters.durationSeconds : null;
+  const failure = cmd.status === "FAILED" ? describeCommandFailure(cmd) : null;
 
   const tone =
     cmd.status === "EXECUTED" ? "bg-accent-soft text-accent" : cmd.status === "FAILED" ? "bg-danger-soft text-danger-ink" : late ? "bg-warn-soft text-warn-ink" : "bg-card-2 text-ink-2";
@@ -39,11 +34,15 @@ export function CommandTracker({ tracked, className }: { tracked: TrackedCommand
       <Icon aria-hidden className={cn("mt-0.5 size-4 shrink-0", waiting && !late && "animate-spin")} strokeWidth={1.9} />
       <div className="min-w-0">
         <p className="font-medium">
-          {commandVerb(cmd.commandType)}
+          {commandSummary(cmd.commandType, cmd.parameters)}
           {duration != null && ` ${formatDuration(duration)}`} — {commandStatusLabel[cmd.status] ?? cmd.status}
         </p>
         {late && <p className="mt-0.5 text-xs">Alat belum menjawab setelah {formatDuration(Math.round(elapsed / 1000))}. Periksa alat sebelum menganggap berhasil.</p>}
-        {cmd.status === "FAILED" && cmd.errorMessage && <p className="mt-0.5 text-xs">{cmd.errorMessage}</p>}
+        {failure && (
+          <p className="mt-0.5 text-xs" title={failure.detail ?? undefined}>
+            {failure.message}
+          </p>
+        )}
         <p className="mt-0.5 text-xs opacity-70">{formatTime(cmd.executedAt ?? cmd.sentAt ?? cmd.requestedAt, true)} WIB</p>
       </div>
     </div>

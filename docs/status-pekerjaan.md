@@ -1,4 +1,4 @@
-# Status Pekerjaan Frontend FertiMata — 22 Oktober 2026
+# Status Pekerjaan Frontend FertiMata — 28 Oktober 2026
 
 Pelacak pekerjaan frontend. Disusun dari `BE-melonSmart/docs/status-pekerjaan.md` (bagian 3),
 `BE-melonSmart/docs/rencana-pengembangan.md` (Fase 3–6), dan `docs/backend-gaps.md`.
@@ -19,6 +19,16 @@ Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah
 
 ---
 
+## 2a. Selesai — 28 Oktober 2026 (integrasi BE-1, BE-2, BE-7)
+
+| Prio | Pekerjaan | Hasil |
+|---|---|---|
+| P2 | **Aktuator virtual (BE-1)** | Tombol per tipe dari `src/lib/actuator-commands.ts`, disaring `supportedCommands`: Patroli kamera (`TROLLEY-PATROL` START/STOP), Kereta kamera pindah stasiun (`TROLLEY-GOTO` GOTO_STATION dengan tombol stasiun 1–10, HOME, STOP), Campur pupuk otomatis (`DOSING-LOOP` DOSE_TO_TARGET dengan target EC + fase, STOP). Target EC & fase diisi dari fase tanam berjalan (tengah rentang EC target; kode `VEGETATIVE/YOUNG_FRUIT/FRUIT_ENLARGEMENT` dipetakan ke `vegetatif/buah_muda/pembesaran_buah`). Status "Sedang berjalan / Tidak berjalan". Tombol Hentikan tidak pernah dinonaktifkan. Tipe virtual baru yang belum dikenal mendapat tombol mentah per perintah. Penolakan 400 `INVALID_COMMAND` dari kosakata backend dijelaskan per isian. |
+| P2 | **"Patroli sekarang"** di kartu kamera Beranda | Menggantikan rencana "Ambil foto sekarang" (`CAPTURE_RUN` tidak dibuat; patroli manual = `TROLLEY-PATROL START`). Saat patroli berjalan tombolnya menjadi "Hentikan". Pelihat hanya melihat status. |
+| P2 | **Foto patroli (BE-2)** | `/captures/**` diambil dengan `fetchProtectedBlob` (token + perpanjang sesi sekali saat 401) lalu ditampilkan sebagai object URL yang di-cache per URL 10 menit; URL di luar `/captures` origin backend tetap `<img src>` biasa. Gagal → placeholder. |
+| P2 | **Kode alasan gagal (BE-7)** | `failureCode` (atau awalan `KODE:` di `errorMessage` untuk backend lama) diterjemahkan ke bahasa petani di pelacak perintah, riwayat perintah, dan aktivitas Beranda; teks asli alat di tooltip. Pesan peringatan "gagal menjalankan" membuang awalan kode. Label tipe peringatan dari edge (patroli, disk, trolley, dosing, …) ditambahkan. |
+| P3 | Test | `actuator-commands.test.ts`, test dialog (pindah stasiun, campur pupuk, alasan gagal), `detection-parts.test.tsx`. 63 → 84 test. |
+
 ## 2. Selesai — 22 Oktober 2026
 
 | Prio | Pekerjaan | Hasil |
@@ -37,9 +47,8 @@ Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah
 
 | Prio / Fase | Pekerjaan frontend | Menunggu |
 |---|---|---|
-| P2 | Tombol **"Ambil foto sekarang"** dan status capture terakhir di kartu kamera | Perintah `CAPTURE_RUN` (Fase 4) |
 | P2 | **Notifikasi push** untuk peringatan darurat (listrik padam, pompa kering) | Infrastruktur push di backend |
-| — | Gambar hasil AI (sekarang placeholder) | Endpoint penyajian berkas gambar |
+| — | Ringkasan patroli terakhir (foto tersimpan/terlewat) di kartu kamera | Saat ini hanya lewat peringatan INFO `PATROL_DONE`; perlu `metadata` alert di API atau entitas `capture_run` |
 | — | Badge rentang ideal untuk sensor selain EC tangki | Ambang dari tim agronomi |
 | — | Grafik riwayat jangka panjang yang akurat | Endpoint agregasi min/avg/max |
 | — | Perubahan data master langsung terlihat operator lain | Event realtime data master |

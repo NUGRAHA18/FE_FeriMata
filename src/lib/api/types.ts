@@ -124,6 +124,9 @@ export const actuatorSchema = z.object({
   currentState: z.string().nullable(),
   stateUpdatedAt: instant.nullable(),
   maxRunSeconds: z.number().nullable(),
+  // Perintah yang diterima tipe ini (BE-1), mis. ["START", "STOP"] untuk patroli. Null = bebas.
+  // Opsional supaya backend lama tetap terbaca.
+  supportedCommands: z.array(z.string()).nullable().optional(),
   description: z.string().nullable(),
   metadata: json.nullable(),
   createdAt: instant,
@@ -160,6 +163,8 @@ export const actuatorCommandSchema = z.object({
   sentAt: instant.nullable(),
   executedAt: instant.nullable(),
   errorMessage: z.string().nullable(),
+  // Kode alasan dari ACK gagal alat (BE-7), mis. INTERLOCK_POWER. Opsional untuk backend lama.
+  failureCode: z.string().nullable().optional(),
 });
 export type ActuatorCommand = z.infer<typeof actuatorCommandSchema>;
 

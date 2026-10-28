@@ -1,8 +1,10 @@
 "use client";
 
 import { Camera } from "lucide-react";
+import { useQuery, useQueryClient, type QueryCache } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { apiOrigin } from "@/config/site";
+import { fetchProtectedBlob } from "@/lib/api/client";
 import type { AiDetection } from "@/lib/api/types";
 import { formatPercent } from "@/lib/format";
 import { cn } from "@/lib/cn";
@@ -18,12 +20,57 @@ export function resolveImageUrl(url: string | null): string | null {
   }
 }
 
+/** Foto patroli di backend sendiri (`/captures/**`) butuh token; URL lain dimuat langsung. */
+export function isProtectedCapture(url: string | null): boolean {
+  if (!url) return false;
+  try {
+    const u = new URL(url);
+    return u.origin === new URL(apiOrigin()).origin && u.pathname.startsWith("/captures/");
+  } catch {
+    return false;
+  }
+}
+
+const CAPTURE_KEY = "capture-file";
+const watchedCaches = new WeakSet<QueryCache>();
+
+/** Object URL foto dilepas saat entri cache-nya dibuang (gcTime), bukan saat komponen hilang. */
+function revokeOnRemoval(cache: QueryCache) {
+  if (watchedCaches.has(cache)) return;
+  watchedCaches.add(cache);
+  cache.subscribe((e) => {
+    if (e.type === "removed" && e.query.queryKey[0] === CAPTURE_KEY && typeof e.query.state.data === "string") URL.revokeObjectURL(e.query.state.data);
+  });
+}
+
 /**
- * Gambar deteksi. Backend belum menyajikan berkas gambar (lihat docs/backend-gaps.md), jadi
- * bila gagal dimuat tampil placeholder bergaya: ikon kamera + kode stasiun.
+ * Sumber `<img>` siap pakai: foto `/captures` diambil sebagai blob (dengan token) lalu dijadikan
+ * object URL yang di-cache per URL (berkas foto tidak pernah ditimpa edge), jadi menggeser foto
+ * bolak-balik tidak mengunduh ulang.
+ */
+function useImageSource(src: string | null): { url: string | null; loading: boolean } {
+  const qc = useQueryClient();
+  revokeOnRemoval(qc.getQueryCache());
+  const isProtected = isProtectedCapture(src);
+  const q = useQuery({
+    queryKey: [CAPTURE_KEY, src],
+    queryFn: async ({ signal }) => URL.createObjectURL(await fetchProtectedBlob(src!, signal)),
+    enabled: isProtected,
+    staleTime: Infinity,
+    gcTime: 10 * 60_000,
+    retry: 1,
+  });
+  if (!isProtected) return { url: src, loading: false };
+  return { url: q.data ?? null, loading: q.isPending };
+}
+
+/**
+ * Gambar deteksi. Foto patroli diambil dengan token (BE-2); bila gagal dimuat tampil placeholder
+ * bergaya: ikon kamera + kode stasiun.
  */
 export function DetectionImage({ detection, className, children }: { detection: AiDetection | null; className?: string; children?: ReactNode }) {
-  const src = resolveImageUrl(detection?.imageUrl ?? null);
+  const resolved = resolveImageUrl(detection?.imageUrl ?? null);
+  const { url: src, loading } = useImageSource(resolved);
   const [failed, setFailed] = useState<string | null>(null);
   const showImage = src && failed !== src;
   return (
@@ -36,7 +83,7 @@ export function DetectionImage({ detection, className, children }: { detection: 
           <Camera aria-hidden className="size-8" strokeWidth={1.3} />
           <p className="font-mono text-sm font-medium">{detection?.stationCode ?? "—"}</p>
           <p className="max-w-[80%] text-center text-[11px] text-muted">
-            {detection ? (src ? "Gambar tidak dapat dimuat dari server" : "Tidak ada gambar") : "Belum ada deteksi"}
+            {!detection ? "Belum ada deteksi" : !resolved ? "Tidak ada gambar" : loading ? "Memuat foto…" : "Gambar tidak dapat dimuat dari server"}
           </p>
         </div>
       )}

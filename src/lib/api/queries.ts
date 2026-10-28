@@ -215,8 +215,8 @@ export function useDetections(f: api.DetectionFilter, page = 0, size = 20) {
 
 // ── Siklus tanam & tanaman ───────────────────────────────────────────────────
 
-export function useCycleToday() {
-  return useQuery({ queryKey: qk.cycleToday, queryFn: ({ signal }) => api.getCycleToday(signal), staleTime: 60_000 });
+export function useCycleToday(enabled = true) {
+  return useQuery({ queryKey: qk.cycleToday, queryFn: ({ signal }) => api.getCycleToday(signal), staleTime: 60_000, enabled });
 }
 
 export function useCycles() {

@@ -179,6 +179,24 @@ const alertTypeLabels: Record<string, string> = {
   DOSING_NOT_CONVERGING: "Campuran pupuk tidak mencapai target",
   TROLLEY_LIMIT_HIT: "Kereta kamera menyentuh ujung rel",
   MODBUS_TIMEOUT: "Alat tidak menjawab",
+  // Dari edge agent (kontrak MQTT §4.4).
+  RELAY_MISMATCH: "Saklar tidak berpindah sesuai perintah",
+  OUTPUT_TIMEOUT: "Alat dimatikan otomatis karena terlalu lama menyala",
+  BUS_DOWN: "Semua modul tidak menjawab",
+  FLOAT_LOW: "Air di drum pupuk rendah",
+  TROLLEY_NO_REED: "Kereta kamera tidak bergerak",
+  TROLLEY_LIMIT_WIRE: "Kabel sensor ujung rel bermasalah",
+  TROLLEY_TIMEOUT: "Kereta kamera terlalu lama di jalan",
+  TROLLEY_ARRIVED: "Kereta kamera sampai tujuan",
+  TROLLEY_GOTO_FAILED: "Kereta kamera tidak sampai tujuan",
+  CAMERA_FAIL: "Sebagian foto gagal diambil",
+  PATROL_DONE: "Patroli kamera selesai",
+  PATROL_FAILED: "Patroli kamera gagal",
+  DISK_LOW: "Penyimpanan foto hampir penuh",
+  DISK_FULL: "Penyimpanan foto penuh",
+  SOC_HOT: "Komputer utama terlalu panas",
+  EC_PH_INVALID: "Bacaan EC/pH drum tidak masuk akal",
+  DOSING_DONE: "Campur pupuk selesai",
 };
 
 /** Label Indonesia untuk tipe peringatan yang dikenal; tipe lain ditampilkan mentah. */
@@ -216,6 +234,10 @@ const actuatorTypeLabels: Record<string, string> = {
   ILLUMINATION: "Lampu kamera",
   TROLLEY_MOTOR: "Kereta kamera (jalan)",
   TROLLEY_DIRECTION: "Kereta kamera (arah)",
+  // Aktuator virtual (BE-1): urutan yang dijalankan edge agent.
+  TROLLEY_PATROL: "Patroli kamera",
+  TROLLEY_POSITION: "Kereta kamera (pindah stasiun)",
+  DOSING_LOOP: "Campur pupuk otomatis",
 };
 
 export function actuatorTypeLabel(type: string | null | undefined): string | null {
@@ -284,7 +306,21 @@ export function alertTitleLabel(title: string): string {
   return alertTitleLabels[title] ?? title;
 }
 
-const commandWords: Record<string, string> = { ON: "menyalakan", OFF: "mematikan" };
+const commandWords: Record<string, string> = {
+  ON: "menyalakan",
+  OFF: "mematikan",
+  START: "memulai",
+  STOP: "menghentikan",
+  HOME: "mengembalikan",
+  GOTO_STATION: "memindahkan",
+  DOSE_TO_TARGET: "memulai campur pupuk",
+};
+
+/** "KODE: teks" dari alat → teks saja (kodenya untuk panel teknis, bukan untuk petani). */
+function deviceReason(raw: string): string {
+  const m = /^[A-Z][A-Z0-9_]{2,63}:\s*([\s\S]+)$/.exec(raw.trim());
+  return m ? m[1] : raw;
+}
 
 /*
  * Pesan peringatan backend ditulis untuk developer. Pola yang dikenal diterjemahkan ke kalimat yang
@@ -309,7 +345,7 @@ const alertMessageRules: [RegExp, (m: RegExpExecArray) => string][] = [
     /^Device (\S+) reported that command (\S+) failed: (.*)$/,
     (m) =>
       `${m[1]} gagal ${commandWords[m[2].toUpperCase()] ?? `menjalankan ${m[2]}`}.` +
-      (m[3] === "Device reported failure" ? " Periksa alatnya, lalu coba lagi." : ` Alasan dari alat: ${m[3]}`),
+      (m[3] === "Device reported failure" ? " Periksa alatnya, lalu coba lagi." : ` Alasan dari alat: ${deviceReason(m[3])}`),
   ],
 ];
 

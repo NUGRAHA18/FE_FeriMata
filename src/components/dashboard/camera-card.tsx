@@ -1,15 +1,21 @@
 "use client";
 
-import { Bell, ChevronLeft, ChevronRight, ScanEye } from "lucide-react";
+import { Bell, ChevronLeft, ChevronRight, Play, ScanEye, Square } from "lucide-react";
 import { useState } from "react";
+import { CommandDialog } from "@/components/actuators/command-dialog";
+import { CommandTracker, type TrackedCommand } from "@/components/actuators/command-tracker";
 import { DetectionImage, ScoreBars } from "@/components/ai/detection-parts";
+import { Button } from "@/components/ui/button";
+import { StatusDot } from "@/components/ui/status";
+import { patrolActuatorCode } from "@/config/dashboard-layout";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { GreenhouseScene } from "@/components/illustrations";
 import { useShell } from "@/components/shell/shell-context";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
-import { useDetections } from "@/lib/api/queries";
+import { useActuators, useDetections } from "@/lib/api/queries";
 import { detectionTypeLabel, panDirectionLabel } from "@/lib/format";
 
 const PAGER_SIZE = 10;
@@ -19,9 +25,47 @@ const overlayBtn =
   "grid size-9 place-items-center rounded-[10px] bg-black/35 text-white backdrop-blur-md transition hover:bg-black/50 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-white";
 
 /**
- * Kartu Kamera AI: gambar deteksi terbaru, pager antardeteksi (1/N), bar skor N/P/K.
- * Tidak ada tombol "ambil foto" — backend belum punya perintah capture.
+ * Baris patroli di bawah foto: status aktuator virtual TROLLEY-PATROL dan tombol "Patroli sekarang"
+ * (atau "Hentikan" selama patroli berjalan). Tidak tampil bila katalog tidak punya aktuator patroli.
  */
+function PatrolBar() {
+  const patrol = useActuators((list) => list.find((a) => a.code === patrolActuatorCode) ?? null).data;
+  const canWrite = useCanWrite();
+  const [dialog, setDialog] = useState<"START" | "STOP" | null>(null);
+  const [lastCommand, setLastCommand] = useState<"START" | "STOP">("START");
+  const [tracked, setTracked] = useState<TrackedCommand | null>(null);
+  if (!patrol) return null;
+  const running = patrol.currentState?.toUpperCase() === "ON";
+  const open = (c: "START" | "STOP") => {
+    setLastCommand(c);
+    setDialog(c);
+  };
+
+  return (
+    <div className="mt-3 rounded-inner bg-card-2 px-3.5 py-3 ring-1 ring-line">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <p className="flex items-center gap-2 text-sm text-ink-2">
+          <StatusDot tone={running ? "ok" : "neutral"} pulse={running} />
+          {running ? "Patroli kamera sedang berjalan" : "Patroli kamera tidak berjalan"}
+        </p>
+        {canWrite &&
+          (running ? (
+            <Button variant="danger" size="sm" icon={Square} onClick={() => open("STOP")}>
+              Hentikan
+            </Button>
+          ) : (
+            <Button variant="accent" size="sm" icon={Play} onClick={() => open("START")} disabled={!patrol.enabled}>
+              Patroli sekarang
+            </Button>
+          ))}
+      </div>
+      {tracked && <CommandTracker tracked={tracked} className="mt-2.5" />}
+      <CommandDialog actuator={patrol} command={dialog ?? lastCommand} open={dialog !== null} onClose={() => setDialog(null)} onSent={setTracked} />
+    </div>
+  );
+}
+
+/** Kartu Kamera AI: gambar deteksi terbaru, pager antardeteksi (1/N), bar skor N/P/K, tombol patroli. */
 export function CameraCard() {
   const q = useDetections(noFilter, 0, PAGER_SIZE);
   const { openAlertDrawer } = useShell();
@@ -85,6 +129,7 @@ export function CameraCard() {
           <ScoreBars detection={d} className="mt-2.5" />
         </>
       )}
+      <PatrolBar />
     </Card>
   );
 }

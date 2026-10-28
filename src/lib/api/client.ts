@@ -143,6 +143,25 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
   return result.data as never;
 }
 
+/**
+ * Berkas terlindungi di luar `/api` (foto patroli di `/captures/**`, BE-2). Backend meminta token yang
+ * sama dengan API, sedangkan `<img src>` tidak bisa mengirim header, jadi gambar diambil sebagai blob.
+ * 401 dicoba sekali lagi setelah perpanjang sesi; gagal tidak mengakhiri sesi (cukup placeholder).
+ */
+export async function fetchProtectedBlob(url: string, signal?: AbortSignal): Promise<Blob> {
+  await ensureFreshToken();
+  const send = () => {
+    const token = getToken();
+    return fetch(url, { headers: token ? { Authorization: `Bearer ${token}` } : {}, signal, cache: "no-store" });
+  };
+  let res = await send();
+  if (res.status === 401 && getSession()?.refreshToken && (await refreshSession())) res = await send();
+  if (!res.ok) {
+    throw new ApiRequestError({ status: res.status, code: `HTTP_${res.status}`, message: fallbackMessages[res.status] ?? `Kesalahan HTTP ${res.status}.`, path: url });
+  }
+  return res.blob();
+}
+
 /** Pesan ramah untuk ditampilkan di kartu error. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {

@@ -57,5 +57,11 @@ export const trolleyLayout = {
   stationSpacingCm: 60,
 };
 
-/** Kode aktuator kereta kamera (ditampilkan sebagai aktuator biasa; tidak ada d-pad). */
-export const trolleyActuatorCodes = ["TROLLEY-RUN", "TROLLEY-DIR"];
+/**
+ * Kode aktuator kereta kamera (ditampilkan sebagai aktuator biasa; tidak ada d-pad). TROLLEY-GOTO dan
+ * TROLLEY-PATROL adalah aktuator virtual JETSON-01 (BE-1).
+ */
+export const trolleyActuatorCodes = ["TROLLEY-RUN", "TROLLEY-DIR", "TROLLEY-GOTO", "TROLLEY-PATROL"];
+
+/** Aktuator virtual patroli kamera; tombol "Patroli sekarang" di kartu kamera memakainya. */
+export const patrolActuatorCode = "TROLLEY-PATROL";

@@ -1,5 +1,6 @@
 import {
   Atom,
+  Beaker,
   Camera,
   Cpu,
   Droplets,
@@ -7,9 +8,11 @@ import {
   Gauge,
   Leaf,
   Lightbulb,
+  MapPin,
   Move,
   PlugZap,
   RefreshCw,
+  ScanEye,
   Sprout,
   Sun,
   Thermometer,
@@ -40,6 +43,9 @@ const actuatorIcons: Record<string, LucideIcon> = {
   ILLUMINATION: Lightbulb,
   TROLLEY_MOTOR: Move,
   TROLLEY_DIRECTION: Move,
+  TROLLEY_PATROL: ScanEye,
+  TROLLEY_POSITION: MapPin,
+  DOSING_LOOP: Beaker,
 };
 
 export function ActuatorIcon({ kind, ...props }: TypeIconProps) {

@@ -4,6 +4,8 @@ import { useState } from "react";
 import { Badge, type Tone } from "@/components/ui/status";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
+import { commandSummary } from "@/lib/actuator-commands";
+import { describeCommandFailure } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { useActuatorCommands } from "@/lib/api/queries";
 import { commandStatusLabel, formatDateTime, formatDuration, sourceLabel } from "@/lib/format";
@@ -36,17 +38,23 @@ export function CommandHistory({ actuatorId }: { actuatorId: number }) {
           <tbody className="divide-y divide-line">
             {q.data.content.map((c) => {
               const d = typeof c.parameters?.durationSeconds === "number" ? c.parameters.durationSeconds : null;
+              const failure = describeCommandFailure(c);
               return (
                 <tr key={c.id} className="align-top">
                   <td className="tabular px-3.5 py-2.5 whitespace-nowrap text-ink-2">{formatDateTime(c.requestedAt)}</td>
                   <td className="px-3.5 py-2.5">
-                    <span className="font-medium text-ink">{c.commandType}</span>
+                    <span className="font-medium text-ink">{commandSummary(c.commandType, c.parameters)}</span>
                     {d != null && <span className="text-muted"> · {formatDuration(d)}</span>}
                     <p className="font-mono text-[11px] text-muted">{c.commandUid}</p>
                   </td>
                   <td className="px-3.5 py-2.5">
                     <Badge tone={statusTone[c.status] ?? "neutral"}>{shortStatus[c.status] ?? c.status}</Badge>
-                    {c.errorMessage && <p className="mt-1 max-w-56 text-xs text-danger-ink">{c.errorMessage}</p>}
+                    {failure && (
+                      <p className="mt-1 max-w-56 text-xs text-danger-ink" title={failure.detail ?? undefined}>
+                        {failure.message}
+                        {failure.code && <span className="mt-0.5 block font-mono text-[10px] opacity-70">{failure.code}</span>}
+                      </p>
+                    )}
                   </td>
                   <td className="px-3.5 py-2.5 text-ink-2">{c.requestedBy ?? sourceLabel[c.source] ?? c.source}</td>
                   <td className="tabular px-3.5 py-2.5 whitespace-nowrap text-ink-2">{c.executedAt ? formatDateTime(c.executedAt) : "—"}</td>

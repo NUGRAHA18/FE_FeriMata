@@ -5,9 +5,10 @@ import { AlertTriangle, CheckCircle2, ChevronRight, CircleMinus, ListChecks, Loa
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { RelativeTime } from "@/components/ui/time";
+import { describeCommandFailure } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { useLiveActivity, useOverview } from "@/lib/api/queries";
-import type { ActivityEntry } from "@/lib/api/types";
+import type { ActivityEntry, ActuatorCommand } from "@/lib/api/types";
 import { alertMessageLabel, alertTitleLabel, alertTypeLabel, commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
@@ -53,11 +54,24 @@ function commandIcon(status: string): FeedItem["icon"] {
   return "PENDING";
 }
 
+const commandVerbs: Record<string, string> = {
+  ON: "dinyalakan",
+  OFF: "dimatikan",
+  START: "dimulai",
+  STOP: "dihentikan",
+  HOME: "dikembalikan ke posisi awal",
+  GOTO_STATION: "dipindahkan ke stasiun",
+  DOSE_TO_TARGET: "mulai campur pupuk",
+};
+
 function commandVerb(commandType: string) {
-  const c = commandType.toUpperCase();
-  if (c === "ON") return "dinyalakan";
-  if (c === "OFF") return "dimatikan";
-  return commandType;
+  return commandVerbs[commandType.toUpperCase()] ?? commandType;
+}
+
+/** " · alasan" untuk perintah gagal (BE-7), kosong selain itu. */
+function failureSuffix(c: ActuatorCommand): string {
+  const f = c.status === "FAILED" ? describeCommandFailure(c) : null;
+  return f ? ` · ${f.message}` : "";
 }
 
 function severityIcon(sev: string | null | undefined): FeedItem["icon"] {
@@ -119,7 +133,9 @@ export function ActivityCard({ className }: { className?: string }) {
           kind: "COMMAND",
           at: l.at,
           title: `${l.command.actuatorCode} ${commandVerb(l.command.commandType)}`,
-          detail: `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}`,
+          detail:
+            `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}` +
+            failureSuffix(l.command),
           icon: commandIcon(l.command.status),
         }
         : {

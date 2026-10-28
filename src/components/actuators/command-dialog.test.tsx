@@ -1,6 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import type { ComponentProps } from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { qk } from "@/lib/api/query-keys";
 import type { ActuatorCommand } from "@/lib/api/types";
@@ -18,16 +19,18 @@ function json(status: number, body: unknown) {
   return Promise.resolve(new Response(JSON.stringify(body), { status, headers: { "Content-Type": "application/json" } }));
 }
 
-function setup(command: "ON" | "OFF" = "ON") {
-  const qc = new QueryClient({ defaultOptions: { mutations: { retry: false } } });
+function renderDialog(a: ComponentProps<typeof CommandDialog>["actuator"], command: string) {
+  const qc = new QueryClient({ defaultOptions: { mutations: { retry: false }, queries: { retry: false } } });
   const onSent = vi.fn();
   render(
     <QueryClientProvider client={qc}>
-      <CommandDialog actuator={actuator} command={command} open onClose={() => {}} onSent={onSent} />
+      <CommandDialog actuator={a} command={command} open onClose={() => {}} onSent={onSent} />
     </QueryClientProvider>,
   );
   return { qc, onSent, user: userEvent.setup() };
 }
+
+const setup = (command: "ON" | "OFF" = "ON") => renderDialog(actuator, command);
 
 afterEach(() => vi.unstubAllGlobals());
 
@@ -70,6 +73,45 @@ describe("CommandDialog", () => {
     await user.click(screen.getByRole("button", { name: /nyalakan sekarang/i }));
     expect(await screen.findByText(/listrik pln padam/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /nyalakan sekarang/i })).toBeEnabled();
+  });
+
+  it("pindah kereta: wajib pilih stasiun, lalu mengirim GOTO_STATION dengan station angka", async () => {
+    const fetchMock = vi.fn(() => json(202, { ...sent, commandType: "GOTO_STATION", parameters: { station: 4 } }));
+    vi.stubGlobal("fetch", fetchMock);
+    const { user } = renderDialog({ ...actuator, code: "TROLLEY-GOTO", type: "TROLLEY_POSITION", supportedCommands: ["HOME", "GOTO_STATION", "STOP"] }, "GOTO_STATION");
+    await user.click(screen.getByRole("button", { name: /^pindahkan$/i }));
+    expect(await screen.findByText(/pilih nomor stasiun/i)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Stasiun 4" }));
+    await user.click(screen.getByRole("button", { name: /^pindahkan$/i }));
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const [, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(init.body as string)).toEqual({ command: "GOTO_STATION", parameters: { station: 4 } });
+  });
+
+  it("campur pupuk: target EC dari fase tanam berjalan, dikirim sebagai angka + phase dosing", async () => {
+    const today = {
+      cycle: { id: 1, code: "C1", name: "Musim 1", variety: null, transplantDate: "2026-10-01", expectedHarvestDate: null, endedAt: null, status: "ACTIVE", notes: null, phases: [], createdAt: "x", updatedAt: "x" },
+      today: "2026-10-28", hst: 27, nextPhase: null, daysUntilNextPhase: null, plantCount: 0, treatmentPlantCount: 0,
+      currentPhase: { code: "YOUNG_FRUIT", name: "Buah muda", startHst: 25, endHst: 44, ecTargetMin: 1.8, ecTargetMax: 2.0, ratioN: 4.1, ratioP: 1, ratioK: 7.9, notes: null },
+    };
+    const fetchMock = vi.fn((url: string) => (url.includes("/cultivation/") ? json(200, today) : json(202, { ...sent, commandType: "DOSE_TO_TARGET" })));
+    vi.stubGlobal("fetch", fetchMock);
+    const { user } = renderDialog({ ...actuator, code: "DOSING-LOOP", type: "DOSING_LOOP", supportedCommands: ["DOSE_TO_TARGET", "STOP"] }, "DOSE_TO_TARGET");
+    expect(await screen.findByDisplayValue("1,9")).toBeInTheDocument();
+    expect(screen.getByLabelText(/fase tanam/i)).toHaveValue("buah_muda");
+    await user.click(screen.getByRole("button", { name: /mulai campur/i }));
+    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => (u as string).endsWith("/commands"))).toBe(true));
+    const call = fetchMock.mock.calls.find(([u]) => (u as string).endsWith("/commands")) as unknown as [string, RequestInit];
+    expect(JSON.parse(call[1].body as string)).toEqual({ command: "DOSE_TO_TARGET", parameters: { targetEc: 1.9, phase: "buah_muda" } });
+  });
+
+  it("patroli: alasan gagal dari alat diterjemahkan dari failureCode", async () => {
+    vi.stubGlobal("fetch", vi.fn(() => json(202, { ...sent, commandType: "START", parameters: null })));
+    const { user, qc } = renderDialog({ ...actuator, code: "TROLLEY-PATROL", type: "TROLLEY_PATROL", supportedCommands: ["START", "STOP"] }, "START");
+    await user.click(screen.getByRole("button", { name: /mulai patroli/i }));
+    expect(await screen.findByText(/menunggu jawaban alat/i)).toBeInTheDocument();
+    qc.setQueryData(qk.command("uid-abc"), { ...sent, commandType: "START", parameters: null, status: "FAILED", errorMessage: "BUSY: trolley sedang dipakai", failureCode: "BUSY" });
+    expect(await screen.findByText(/sedang menjalankan tugas lain/i)).toBeInTheDocument();
   });
 
   it("Matikan tidak meminta durasi", async () => {

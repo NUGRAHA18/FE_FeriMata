@@ -1,12 +1,13 @@
 "use client";
 
-import { Power, RotateCcw, Square } from "lucide-react";
+import { FlaskConical, Home, MapPin, Play, Power, RotateCcw, Square, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CornerLink } from "@/components/ui/card";
 import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { Badge, StatusDot } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
+import { commandSpecsFor, isSequenceActuator } from "@/lib/actuator-commands";
 import { reportedStateLabel } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { usePatchActuator } from "@/lib/api/queries";
@@ -18,14 +19,20 @@ import { cn } from "@/lib/cn";
 import { CommandDialog } from "./command-dialog";
 import { CommandTracker, type TrackedCommand } from "./command-tracker";
 
-export function ReportedState({ actuator: a, large }: { actuator: Pick<Actuator, "currentState" | "stateUpdatedAt">; large?: boolean }) {
+export function ReportedState({
+  actuator: a,
+  large,
+}: {
+  actuator: Pick<Actuator, "currentState" | "stateUpdatedAt"> & Partial<Pick<Actuator, "type" | "supportedCommands">>;
+  large?: boolean;
+}) {
   const on = a.currentState?.toUpperCase() === "ON";
   const tone = a.currentState == null ? "neutral" : on ? "ok" : "neutral";
   return (
     <div>
       <p className={cn("flex items-center gap-2 font-semibold text-ink", large ? "text-2xl" : "text-base")}>
         <StatusDot tone={tone} pulse={on} className={large ? "size-3" : "size-2.5"} />
-        {reportedStateLabel(a.currentState)}
+        {reportedStateLabel(a.currentState, isSequenceActuator(a))}
       </p>
       <p className="mt-0.5 text-xs text-muted">
         {a.stateUpdatedAt ? <RelativeTime iso={a.stateUpdatedAt} prefix="dilaporkan alat " /> : "alat belum melaporkan status"}
@@ -34,35 +41,54 @@ export function ReportedState({ actuator: a, large }: { actuator: Pick<Actuator,
   );
 }
 
-/** Tombol Nyalakan/Matikan + dialog + pelacak perintah terakhir. Matikan tidak pernah dinonaktifkan. */
+const startIcons: Record<string, LucideIcon> = { ON: Power, START: Play, HOME: Home, GOTO_STATION: MapPin, DOSE_TO_TARGET: FlaskConical };
+
+/**
+ * Tombol perintah (Nyalakan/Matikan untuk relay; Patroli/Pindah/Campur pupuk + Hentikan untuk aktuator
+ * berurutan) + dialog + pelacak perintah terakhir. Tombol berhenti tidak pernah dinonaktifkan.
+ */
 export function ActuatorControls({ actuator: a, className }: { actuator: Actuator; className?: string }) {
   const canWrite = useCanWrite();
-  const [dialog, setDialog] = useState<"ON" | "OFF" | null>(null);
+  const [dialog, setDialog] = useState<string | null>(null);
+  const [lastCommand, setLastCommand] = useState("OFF");
   const [confirmEnable, setConfirmEnable] = useState(false);
   const [tracked, setTracked] = useState<TrackedCommand | null>(null);
   const patch = usePatchActuator(a.id);
   // Pelihat hanya melihat status; tidak ada tombol yang bisa ditekan lalu ditolak.
   if (!canWrite) return null;
 
+  const specs = commandSpecsFor(a);
+  const starts = specs.filter((s) => !s.stop);
+  const stops = specs.filter((s) => s.stop);
+  const openDialog = (command: string) => {
+    setLastCommand(command);
+    setDialog(command);
+  };
+
   return (
     <div className={className}>
       <div className="flex flex-wrap gap-2">
         {a.enabled ? (
-          <Button variant="accent" size="lg" icon={Power} onClick={() => setDialog("ON")} className="flex-1">
-            Nyalakan
-          </Button>
-        ) : (
+          starts.map((s) => (
+            <Button key={s.command} variant="accent" size="lg" icon={startIcons[s.command] ?? Play} onClick={() => openDialog(s.command)} className="flex-1">
+              {s.label}
+            </Button>
+          ))
+        ) : starts.length ? (
           <Button variant="soft" size="lg" icon={RotateCcw} onClick={() => setConfirmEnable(true)} className="flex-1">
             Aktifkan lagi
           </Button>
-        )}
-        <Button variant="danger" size="lg" icon={Square} onClick={() => setDialog("OFF")} className="flex-1" aria-label={`Matikan ${a.name}`}>
-          Matikan
-        </Button>
+        ) : null}
+        {stops.map((s) => (
+          <Button key={s.command} variant="danger" size="lg" icon={Square} onClick={() => openDialog(s.command)} className="flex-1" aria-label={`${s.label} ${a.name}`}>
+            {s.label}
+          </Button>
+        ))}
       </div>
       {tracked && <CommandTracker tracked={tracked} className="mt-3" />}
 
-      <CommandDialog actuator={a} command={dialog ?? "OFF"} open={dialog !== null} onClose={() => setDialog(null)} onSent={setTracked} />
+      {/* lastCommand menahan isi dialog selama animasi tutup. */}
+      <CommandDialog actuator={a} command={dialog ?? lastCommand} open={dialog !== null} onClose={() => setDialog(null)} onSent={setTracked} />
       <ConfirmDialog
         open={confirmEnable}
         onClose={() => {
