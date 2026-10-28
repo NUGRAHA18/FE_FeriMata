@@ -5,20 +5,19 @@ import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog } from "@/components/ui/dialog";
 import { Field } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { trolleyLayout } from "@/config/dashboard-layout";
-import { commandSpec, dosingPhaseFor, dosingPhases, suggestedTargetEc, validateStation, validateTargetEc } from "@/lib/actuator-commands";
+import { commandSpec, validateStation } from "@/lib/actuator-commands";
 import { buildCommand, describeCommandError, validateDuration, type CommandErrorView } from "@/lib/actuator-safety";
 import type { CommandRequest } from "@/lib/api/endpoints";
-import { useCycleToday, useSendCommand } from "@/lib/api/queries";
-import type { Actuator, GrowthPhase } from "@/lib/api/types";
-import { formatDuration, formatNumber } from "@/lib/format";
+import { useSendCommand } from "@/lib/api/queries";
+import type { Actuator } from "@/lib/api/types";
+import { formatDuration } from "@/lib/format";
 import { cn } from "@/lib/cn";
 import { CommandTracker, type TrackedCommand } from "./command-tracker";
 
 type CommandDialogProps = {
   actuator: Pick<Actuator, "id" | "code" | "name" | "deviceCode" | "maxRunSeconds"> & Partial<Pick<Actuator, "type" | "supportedCommands">>;
-  /** ON/OFF untuk relay; START, GOTO_STATION, DOSE_TO_TARGET, STOP, … untuk aktuator berurutan. */
+  /** ON/OFF untuk relay; START, GOTO_STATION, STOP, … untuk aktuator berurutan. */
   command: string;
   open: boolean;
   onClose: () => void;
@@ -31,34 +30,27 @@ function trackCommand(uid: string): TrackedCommand {
   return { uid, sentAtLocal: Date.now() };
 }
 
-type FieldErrors =Partial<Record<"duration" | "station" | "targetEc" | "phase", string>>;
+type FieldErrors = Partial<Record<"duration" | "station", string>>;
 
 /**
  * Dialog konfirmasi perintah. Nyalakan selalu menampilkan isian durasi (wajib bila ada maxRunSeconds);
- * pindah kereta meminta nomor stasiun; campur pupuk meminta target EC + fase (diisi dari fase tanam
- * berjalan). Perintah berhenti cukup konfirmasi ringan. Tombol kirim nonaktif selama request berjalan.
+ * pindah kereta meminta nomor stasiun. Perintah berhenti cukup konfirmasi ringan. Tombol kirim nonaktif selama request berjalan.
  */
 export function CommandDialog({ actuator, command, open, onClose, onSent }: CommandDialogProps) {
   const send = useSendCommand(actuator.id);
   const spec = commandSpec(actuator, command);
   const [duration, setDuration] = useState("");
   const [station, setStation] = useState("");
-  const [dosing, setDosing] = useState<{ targetEc: string; phase: string } | null>(null);
   const [errors, setErrors] = useState<FieldErrors>({});
   const [failure, setFailure] = useState<CommandErrorView | null>(null);
   const [tracked, setTracked] = useState<TrackedCommand | null>(null);
 
   const max = actuator.maxRunSeconds;
-  // Campur pupuk: selama pengguna belum mengubah isian, nilainya mengikuti fase tanam berjalan.
-  const phase = useCycleToday(spec.params === "dosing").data?.currentPhase ?? null;
-  const suggestedEc = suggestedTargetEc(phase);
-  const dosingValue = dosing ?? { targetEc: suggestedEc == null ? "" : (formatNumber(suggestedEc, 2) ?? ""), phase: dosingPhaseFor(phase) ?? "" };
 
   function close() {
     if (send.isPending) return;
     setDuration("");
     setStation("");
-    setDosing(null);
     setErrors({});
     setFailure(null);
     setTracked(null);
@@ -76,12 +68,6 @@ export function CommandDialog({ actuator, command, open, onClose, onSent }: Comm
       case "station": {
         const v = validateStation(station);
         return v.ok ? { req: { command: spec.command, parameters: { station: v.value } } } : { errors: { station: v.error } };
-      }
-      case "dosing": {
-        const ec = validateTargetEc(dosingValue.targetEc);
-        const p = dosingValue.phase;
-        if (ec.ok && p) return { req: { command: spec.command, parameters: { targetEc: ec.value, phase: p } } };
-        return { errors: { targetEc: ec.ok ? undefined : ec.error, phase: p ? undefined : "Pilih fase tanam." } };
       }
       default:
         return { req: { command: spec.command } };
@@ -148,8 +134,6 @@ export function CommandDialog({ actuator, command, open, onClose, onSent }: Comm
 
           {spec.params === "station" && <StationPicker value={station} onChange={setStation} error={errors.station} />}
 
-          {spec.params === "dosing" && <DosingFields value={dosingValue} phase={phase} onChange={setDosing} errors={errors} />}
-
           {failure && (
             <div role="alert" className="rounded-inner bg-danger-soft p-3.5 text-danger-ink">
               <p className="flex items-center gap-2 font-medium">
@@ -202,57 +186,5 @@ function StationPicker({ value, onChange, error }: { value: string; onChange: (v
         <p className="text-xs text-muted">Stasiun 1 paling dekat dengan posisi awal (ujung selatan rel).</p>
       )}
     </fieldset>
-  );
-}
-
-/** Target EC + fase; usulan awal dari fase tanam berjalan (tengah rentang EC target). */
-function DosingFields({
-  value: current,
-  phase,
-  onChange,
-  errors,
-}: {
-  value: { targetEc: string; phase: string };
-  phase: GrowthPhase | null;
-  onChange: (v: { targetEc: string; phase: string }) => void;
-  errors: FieldErrors;
-}) {
-  const range =
-    phase && phase.ecTargetMin != null && phase.ecTargetMax != null
-      ? `Target fase ${phase.name.toLowerCase()}: ${formatNumber(phase.ecTargetMin, 2)}–${formatNumber(phase.ecTargetMax, 2)} mS/cm.`
-      : "Belum ada target dari fase tanam; isi sesuai anjuran.";
-
-  return (
-    <div className="flex flex-col gap-3">
-      <Field
-        label="Target kepekatan pupuk (EC)"
-        inputMode="decimal"
-        value={current.targetEc}
-        onChange={(e) => onChange({ ...current, targetEc: e.target.value })}
-        suffix="mS/cm"
-        error={errors.targetEc}
-        hint={range}
-      />
-      <div className="flex flex-col gap-1.5">
-        <Select
-          label="Fase tanam (menentukan perbandingan N:P:K)"
-          hideLabel={false}
-          id="dosing-phase"
-          value={current.phase}
-          onChange={(e) => onChange({ ...current, phase: e.target.value })}
-          wrapperClassName="flex-col items-start gap-1.5"
-          className="w-full"
-          aria-invalid={errors.phase ? true : undefined}
-        >
-          <option value="">Pilih fase…</option>
-          {dosingPhases.map((p) => (
-            <option key={p.value} value={p.value}>
-              {p.label}
-            </option>
-          ))}
-        </Select>
-        {errors.phase && <p className="text-xs text-danger-ink">{errors.phase}</p>}
-      </div>
-    </div>
   );
 }

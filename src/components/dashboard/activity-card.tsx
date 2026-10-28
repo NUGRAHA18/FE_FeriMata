@@ -61,7 +61,6 @@ const commandVerbs: Record<string, string> = {
   STOP: "dihentikan",
   HOME: "dikembalikan ke posisi awal",
   GOTO_STATION: "dipindahkan ke stasiun",
-  DOSE_TO_TARGET: "mulai campur pupuk",
 };
 
 function commandVerb(commandType: string) {

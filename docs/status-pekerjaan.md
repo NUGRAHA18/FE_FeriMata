@@ -23,11 +23,11 @@ Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah
 
 | Prio | Pekerjaan | Hasil |
 |---|---|---|
-| P2 | **Aktuator virtual (BE-1)** | Tombol per tipe dari `src/lib/actuator-commands.ts`, disaring `supportedCommands`: Patroli kamera (`TROLLEY-PATROL` START/STOP), Kereta kamera pindah stasiun (`TROLLEY-GOTO` GOTO_STATION dengan tombol stasiun 1–10, HOME, STOP), Campur pupuk otomatis (`DOSING-LOOP` DOSE_TO_TARGET dengan target EC + fase, STOP). Target EC & fase diisi dari fase tanam berjalan (tengah rentang EC target; kode `VEGETATIVE/YOUNG_FRUIT/FRUIT_ENLARGEMENT` dipetakan ke `vegetatif/buah_muda/pembesaran_buah`). Status "Sedang berjalan / Tidak berjalan". Tombol Hentikan tidak pernah dinonaktifkan. Tipe virtual baru yang belum dikenal mendapat tombol mentah per perintah. Penolakan 400 `INVALID_COMMAND` dari kosakata backend dijelaskan per isian. |
+| P2 | **Aktuator virtual (BE-1)** | Tombol per tipe dari `src/lib/actuator-commands.ts`, disaring `supportedCommands`: Patroli kamera (`TROLLEY-PATROL` START/STOP), Kereta kamera pindah stasiun (`TROLLEY-GOTO` GOTO_STATION dengan tombol stasiun 1–10, HOME, STOP). Campur pupuk otomatis (`DOSING-LOOP`) dicabut 28 Okt 2026: jadwal siram/dosing dan campur otomatis milik layanan terpisah tim AI; aktuator lama disembunyikan dari daftar. Status "Sedang berjalan / Tidak berjalan". Tombol Hentikan tidak pernah dinonaktifkan. Tipe virtual baru yang belum dikenal mendapat tombol mentah per perintah. Penolakan 400 `INVALID_COMMAND` dari kosakata backend dijelaskan per isian. |
 | P2 | **"Patroli sekarang"** di kartu kamera Beranda | Menggantikan rencana "Ambil foto sekarang" (`CAPTURE_RUN` tidak dibuat; patroli manual = `TROLLEY-PATROL START`). Saat patroli berjalan tombolnya menjadi "Hentikan". Pelihat hanya melihat status. |
 | P2 | **Foto patroli (BE-2)** | `/captures/**` diambil dengan `fetchProtectedBlob` (token + perpanjang sesi sekali saat 401) lalu ditampilkan sebagai object URL yang di-cache per URL 10 menit; URL di luar `/captures` origin backend tetap `<img src>` biasa. Gagal → placeholder. |
 | P2 | **Kode alasan gagal (BE-7)** | `failureCode` (atau awalan `KODE:` di `errorMessage` untuk backend lama) diterjemahkan ke bahasa petani di pelacak perintah, riwayat perintah, dan aktivitas Beranda; teks asli alat di tooltip. Pesan peringatan "gagal menjalankan" membuang awalan kode. Label tipe peringatan dari edge (patroli, disk, trolley, dosing, …) ditambahkan. |
-| P3 | Test | `actuator-commands.test.ts`, test dialog (pindah stasiun, campur pupuk, alasan gagal), `detection-parts.test.tsx`. 63 → 84 test. |
+| P3 | Test | `actuator-commands.test.ts`, test dialog (pindah stasiun, alasan gagal), `detection-parts.test.tsx`. 63 → 84 → 81 test (test campur pupuk dihapus). |
 
 ## 2. Selesai — 22 Oktober 2026
 
@@ -54,5 +54,5 @@ Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah
 | — | Perubahan data master langsung terlihat operator lain | Event realtime data master |
 | Fase 3 | Form kalibrasi sensor & pompa, tabel panen per tanaman (+ kolomnya di ekspor CSV), metrik sistem | Data lab & kalibrasi |
 | Fase 4 | Halaman "Aturan peringatan" | `/api/automation/rules` |
-| Fase 5 | Halaman "Campur pupuk" (target hari ini, riwayat, grafik konvergensi EC) | Fase 3–4 + timer relay |
+| ~~Fase 5~~ | ~~Halaman "Campur pupuk"~~ — milik layanan tim AI (28 Okt 2026) | — |
 | Fase 6 | Kartu kamera berisi angka per stasiun (skor N/P/K, luas daun, tren) | Kontrak output final tim AI |

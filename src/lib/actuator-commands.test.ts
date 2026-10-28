@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiRequestError } from "@/lib/api/client";
-import { commandSpecsFor, commandSummary, dosingPhaseFor, isSequenceActuator, suggestedTargetEc, validateStation, validateTargetEc } from "./actuator-commands";
+import { commandSpecsFor, commandSummary, isRetiredActuator, isSequenceActuator, validateStation } from "./actuator-commands";
 import { describeCommandError, describeCommandFailure, reportedStateLabel, splitFailureMessage } from "./actuator-safety";
 
 const cmds = (a: Parameters<typeof commandSpecsFor>[0]) => commandSpecsFor(a).map((s) => s.command);
@@ -10,11 +10,15 @@ describe("commandSpecsFor — aktuator virtual (BE-1)", () => {
     expect(cmds({ type: "DOSING_PUMP", supportedCommands: ["ON", "OFF"] })).toEqual(["ON", "OFF"]);
     expect(cmds({ type: null })).toEqual(["ON", "OFF"]);
   });
-  it("patroli, pindah stasiun, campur pupuk; berhenti selalu terakhir", () => {
+  it("patroli dan pindah stasiun; berhenti selalu terakhir", () => {
     expect(cmds({ type: "TROLLEY_PATROL", supportedCommands: ["START", "STOP"] })).toEqual(["START", "STOP"]);
     expect(cmds({ type: "TROLLEY_POSITION", supportedCommands: ["HOME", "GOTO_STATION", "STOP"] })).toEqual(["GOTO_STATION", "HOME", "STOP"]);
-    expect(cmds({ type: "DOSING_LOOP" })).toEqual(["DOSE_TO_TARGET", "STOP"]);
-    expect(commandSpecsFor({ type: "DOSING_LOOP" }).find((s) => s.command === "STOP")?.stop).toBe(true);
+    expect(commandSpecsFor({ type: "TROLLEY_PATROL" }).find((s) => s.command === "STOP")?.stop).toBe(true);
+  });
+  it("campur pupuk otomatis milik layanan tim AI: aktuator lamanya disembunyikan", () => {
+    expect(isRetiredActuator({ type: "DOSING_LOOP" })).toBe(true);
+    expect(isRetiredActuator({ type: "DOSING_PUMP" })).toBe(false);
+    expect(isRetiredActuator({ type: null })).toBe(false);
   });
   it("mengikuti supportedCommands bila backend mempersempit", () => {
     expect(cmds({ type: "TROLLEY_POSITION", supportedCommands: ["HOME", "STOP"] })).toEqual(["HOME", "STOP"]);
@@ -33,24 +37,8 @@ describe("isian perintah", () => {
     expect(validateStation("11").ok).toBe(false);
     expect(validateStation("").ok).toBe(false);
   });
-  it("target EC menerima koma, rentang 0,5–4,0", () => {
-    expect(validateTargetEc("1,8")).toEqual({ ok: true, value: 1.8 });
-    expect(validateTargetEc("22").ok).toBe(false);
-    expect(validateTargetEc("abc").ok).toBe(false);
-  });
-  it("fase tanam backend → nilai phase dosing", () => {
-    expect(dosingPhaseFor({ code: "YOUNG_FRUIT", name: "Buah muda" })).toBe("buah_muda");
-    expect(dosingPhaseFor({ code: "X", name: "Pembesaran buah" })).toBe("pembesaran_buah");
-    expect(dosingPhaseFor({ code: "X", name: "Lain" })).toBeNull();
-  });
-  it("usulan target = tengah rentang fase", () => {
-    expect(suggestedTargetEc({ ecTargetMin: 1.5, ecTargetMax: 1.8 })).toBe(1.7);
-    expect(suggestedTargetEc({ ecTargetMin: null, ecTargetMax: 2 })).toBe(2);
-    expect(suggestedTargetEc(null)).toBeNull();
-  });
   it("ringkasan perintah untuk riwayat", () => {
     expect(commandSummary("GOTO_STATION", { station: 4 })).toBe("Pindah ke stasiun 4");
-    expect(commandSummary("DOSE_TO_TARGET", { targetEc: 1.8, phase: "buah_muda" })).toBe("Campur pupuk ke EC 1,8 (fase buah muda)");
     expect(commandSummary("START", null)).toBe("Mulai patroli");
   });
   it("status aktuator berurutan", () => {

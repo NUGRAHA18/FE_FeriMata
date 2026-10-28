@@ -3,6 +3,7 @@
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
 import { applyAcknowledged, mergeReadings, type ReadingMap } from "@/lib/realtime/apply";
+import { isRetiredActuator } from "@/lib/actuator-commands";
 import * as api from "./endpoints";
 import { qk, type LiveActivity } from "./query-keys";
 import type { Actuator, ActuatorCommand, DashboardOverview, Device, Sensor, SensorReading } from "./types";
@@ -138,7 +139,11 @@ export function usePatchSensor(id: number) {
 // ── Aktuator ─────────────────────────────────────────────────────────────────
 
 export function useActuators<T = Actuator[]>(select?: (a: Actuator[]) => T) {
-  return useQuery({ queryKey: qk.actuators, queryFn: ({ signal }) => api.getActuators(undefined, signal), select });
+  return useQuery({
+    queryKey: qk.actuators,
+    queryFn: async ({ signal }) => (await api.getActuators(undefined, signal)).filter((a) => !isRetiredActuator(a)),
+    select,
+  });
 }
 
 export function useActuator(id: number) {

@@ -88,23 +88,6 @@ describe("CommandDialog", () => {
     expect(JSON.parse(init.body as string)).toEqual({ command: "GOTO_STATION", parameters: { station: 4 } });
   });
 
-  it("campur pupuk: target EC dari fase tanam berjalan, dikirim sebagai angka + phase dosing", async () => {
-    const today = {
-      cycle: { id: 1, code: "C1", name: "Musim 1", variety: null, transplantDate: "2026-10-01", expectedHarvestDate: null, endedAt: null, status: "ACTIVE", notes: null, phases: [], createdAt: "x", updatedAt: "x" },
-      today: "2026-10-28", hst: 27, nextPhase: null, daysUntilNextPhase: null, plantCount: 0, treatmentPlantCount: 0,
-      currentPhase: { code: "YOUNG_FRUIT", name: "Buah muda", startHst: 25, endHst: 44, ecTargetMin: 1.8, ecTargetMax: 2.0, ratioN: 4.1, ratioP: 1, ratioK: 7.9, notes: null },
-    };
-    const fetchMock = vi.fn((url: string) => (url.includes("/cultivation/") ? json(200, today) : json(202, { ...sent, commandType: "DOSE_TO_TARGET" })));
-    vi.stubGlobal("fetch", fetchMock);
-    const { user } = renderDialog({ ...actuator, code: "DOSING-LOOP", type: "DOSING_LOOP", supportedCommands: ["DOSE_TO_TARGET", "STOP"] }, "DOSE_TO_TARGET");
-    expect(await screen.findByDisplayValue("1,9")).toBeInTheDocument();
-    expect(screen.getByLabelText(/fase tanam/i)).toHaveValue("buah_muda");
-    await user.click(screen.getByRole("button", { name: /mulai campur/i }));
-    await waitFor(() => expect(fetchMock.mock.calls.some(([u]) => (u as string).endsWith("/commands"))).toBe(true));
-    const call = fetchMock.mock.calls.find(([u]) => (u as string).endsWith("/commands")) as unknown as [string, RequestInit];
-    expect(JSON.parse(call[1].body as string)).toEqual({ command: "DOSE_TO_TARGET", parameters: { targetEc: 1.9, phase: "buah_muda" } });
-  });
-
   it("patroli: alasan gagal dari alat diterjemahkan dari failureCode", async () => {
     vi.stubGlobal("fetch", vi.fn(() => json(202, { ...sent, commandType: "START", parameters: null })));
     const { user, qc } = renderDialog({ ...actuator, code: "TROLLEY-PATROL", type: "TROLLEY_PATROL", supportedCommands: ["START", "STOP"] }, "START");

@@ -15,7 +15,7 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Tidak ada siklus tanam / HST. | `/api/cultivation` (siklus, fase, HST hari ini) dan `/api/plants` (tanaman perlakuan, pengamatan). Halaman Tanaman + kartu "Umur tanaman" di Beranda; badge EC tangki memakai `ecTargetMin/Max` fase berjalan. |
 | Telemetri tumbuh tanpa batas. | Backend punya kebijakan retensi (hapus per batch). Tidak berdampak ke UI selain grafik riwayat hanya tersedia sepanjang masa retensi (dev 7 hari, Jetson 90 hari). |
 | Berkas gambar AI tidak disajikan. | BE-2: `/captures/**` dengan token yang sama. Frontend mengambilnya sebagai blob (`fetchProtectedBlob`), bukan `<img src>`. |
-| Tidak ada perintah patroli/pindah kereta/campur pupuk. | BE-1: aktuator virtual `TROLLEY-PATROL`, `TROLLEY-GOTO`, `DOSING-LOOP` + `supportedCommands`. Tombol per tipe di halaman Kontrol, "Patroli sekarang" di Beranda. |
+| Tidak ada perintah patroli/pindah kereta/campur pupuk. | BE-1: aktuator virtual `TROLLEY-PATROL`, `TROLLEY-GOTO` + `supportedCommands`. Tombol per tipe di halaman Kontrol, "Patroli sekarang" di Beranda. Campur pupuk otomatis (`DOSING-LOOP`) dicabut 28 Okt: milik layanan tim AI, aktuatornya disembunyikan (`isRetiredActuator`). |
 | Alasan gagal dari alat hanya teks bebas. | BE-7: `failureCode` di perintah; diterjemahkan ke bahasa petani. |
 
 ## Fitur yang belum ada

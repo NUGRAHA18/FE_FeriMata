@@ -1,6 +1,6 @@
 "use client";
 
-import { FlaskConical, Home, MapPin, Play, Power, RotateCcw, Square, type LucideIcon } from "lucide-react";
+import { Home, MapPin, Play, Power, RotateCcw, Square, type LucideIcon } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CornerLink } from "@/components/ui/card";
@@ -41,10 +41,10 @@ export function ReportedState({
   );
 }
 
-const startIcons: Record<string, LucideIcon> = { ON: Power, START: Play, HOME: Home, GOTO_STATION: MapPin, DOSE_TO_TARGET: FlaskConical };
+const startIcons: Record<string, LucideIcon> = { ON: Power, START: Play, HOME: Home, GOTO_STATION: MapPin };
 
 /**
- * Tombol perintah (Nyalakan/Matikan untuk relay; Patroli/Pindah/Campur pupuk + Hentikan untuk aktuator
+ * Tombol perintah (Nyalakan/Matikan untuk relay; Patroli/Pindah + Hentikan untuk aktuator
  * berurutan) + dialog + pelacak perintah terakhir. Tombol berhenti tidak pernah dinonaktifkan.
  */
 export function ActuatorControls({ actuator: a, className }: { actuator: Actuator; className?: string }) {

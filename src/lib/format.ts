@@ -196,7 +196,6 @@ const alertTypeLabels: Record<string, string> = {
   DISK_FULL: "Penyimpanan foto penuh",
   SOC_HOT: "Komputer utama terlalu panas",
   EC_PH_INVALID: "Bacaan EC/pH drum tidak masuk akal",
-  DOSING_DONE: "Campur pupuk selesai",
 };
 
 /** Label Indonesia untuk tipe peringatan yang dikenal; tipe lain ditampilkan mentah. */
@@ -237,7 +236,6 @@ const actuatorTypeLabels: Record<string, string> = {
   // Aktuator virtual (BE-1): urutan yang dijalankan edge agent.
   TROLLEY_PATROL: "Patroli kamera",
   TROLLEY_POSITION: "Kereta kamera (pindah stasiun)",
-  DOSING_LOOP: "Campur pupuk otomatis",
 };
 
 export function actuatorTypeLabel(type: string | null | undefined): string | null {
@@ -313,7 +311,6 @@ const commandWords: Record<string, string> = {
   STOP: "menghentikan",
   HOME: "mengembalikan",
   GOTO_STATION: "memindahkan",
-  DOSE_TO_TARGET: "memulai campur pupuk",
 };
 
 /** "KODE: teks" dari alat → teks saja (kodenya untuk panel teknis, bukan untuk petani). */

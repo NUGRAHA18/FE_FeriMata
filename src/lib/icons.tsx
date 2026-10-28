@@ -1,6 +1,5 @@
 import {
   Atom,
-  Beaker,
   Camera,
   Cpu,
   Droplets,
@@ -45,7 +44,6 @@ const actuatorIcons: Record<string, LucideIcon> = {
   TROLLEY_DIRECTION: Move,
   TROLLEY_PATROL: ScanEye,
   TROLLEY_POSITION: MapPin,
-  DOSING_LOOP: Beaker,
 };
 
 export function ActuatorIcon({ kind, ...props }: TypeIconProps) {
