@@ -44,7 +44,8 @@ export function CornerLink({ href, label, className }: { href: string; label: st
       aria-label={label}
       title={label}
       className={cn(
-        "grid size-8 place-items-center rounded-[10px] bg-accent-soft text-accent transition hover:bg-active hover:text-active-fg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+        // Navigasi kecil, bukan aksi utama: transparan, ikon hijau tua, hover hijau sangat muda.
+        "grid size-8 shrink-0 place-items-center rounded-[10px] text-accent-ink ring-1 ring-line transition hover:bg-accent-soft hover:ring-transparent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
         className,
       )}
     >

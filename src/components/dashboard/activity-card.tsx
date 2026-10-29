@@ -1,15 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { AlertTriangle, CheckCircle2, ChevronRight, CircleMinus, ListChecks, Loader2, OctagonAlert, XCircle } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ChevronDown, ChevronRight, ChevronUp, CircleMinus, Info, ListChecks, Loader2, OctagonAlert, XCircle, type LucideIcon } from "lucide-react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
+import { softTone, type Tone } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
-import { describeCommandFailure } from "@/lib/actuator-safety";
+import { commandStatusText, describeCommandFailure, isNoResponse } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { useLiveActivity, useOverview } from "@/lib/api/queries";
-import type { ActivityEntry, ActuatorCommand } from "@/lib/api/types";
-import { alertMessageLabel, alertTitleLabel, alertTypeLabel, commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
+import type { ActivityEntry } from "@/lib/api/types";
+import { alertBody, alertFailureCode, alertHeadline, commandStatusLabel, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export function isOnState(state: string | null | undefined) {
@@ -18,26 +21,26 @@ export function isOnState(state: string | null | undefined) {
 
 type FeedItem = { key: string; kind: "ALERT" | "COMMAND"; at: string; title: string; detail: string; icon: "EXECUTED" | "PENDING" | "FAILED" | "CANCELLED" | "WARNING" | "CRITICAL" | "INFO" };
 
-const icons = {
-  EXECUTED: <CheckCircle2 aria-hidden className="size-5 text-accent" strokeWidth={1.8} />,
-  PENDING: <Loader2 aria-hidden className="size-5 animate-spin text-ink-2" strokeWidth={1.8} />,
-  FAILED: <XCircle aria-hidden className="size-5 text-danger" strokeWidth={1.8} />,
-  CANCELLED: <CircleMinus aria-hidden className="size-5 text-muted" strokeWidth={1.8} />,
-  WARNING: <AlertTriangle aria-hidden className="size-5 text-warn" strokeWidth={1.8} />,
-  CRITICAL: <OctagonAlert aria-hidden className="size-5 text-danger" strokeWidth={1.8} />,
-  INFO: <AlertTriangle aria-hidden className="size-5 text-info" strokeWidth={1.8} />,
+/*
+ * Semua kejadian memakai kartu putih yang sama; warnanya hanya di kotak ikon kecil. Warna diambil
+ * dari status perintah / tingkat peringatan di data (bukan ditebak dari teks judul), dan bentuk
+ * ikonnya berbeda per jenis supaya tidak hanya mengandalkan warna.
+ */
+const feedIcon: Record<FeedItem["icon"], { icon: LucideIcon; tone: Tone; spin?: boolean }> = {
+  EXECUTED: { icon: CheckCircle2, tone: "ok" },
+  PENDING: { icon: Loader2, tone: "neutral", spin: true },
+  FAILED: { icon: XCircle, tone: "danger" },
+  CANCELLED: { icon: CircleMinus, tone: "neutral" },
+  WARNING: { icon: AlertTriangle, tone: "warn" },
+  CRITICAL: { icon: OctagonAlert, tone: "danger" },
+  INFO: { icon: Info, tone: "info" },
 };
 
-/** Latar & warna judul per jenis kejadian: masalah tampil merah/kuning muda agar langsung terlihat. */
-const feedTone: Record<FeedItem["icon"], { box: string; title: string }> = {
-  EXECUTED: { box: "bg-card-2", title: "text-ink" },
-  PENDING: { box: "bg-card-2", title: "text-ink" },
-  CANCELLED: { box: "bg-card-2", title: "text-ink" },
-  INFO: { box: "bg-card-2", title: "text-ink" },
-  FAILED: { box: "bg-danger-soft/70", title: "text-danger-ink" },
-  CRITICAL: { box: "bg-danger-soft/70", title: "text-danger-ink" },
-  WARNING: { box: "bg-warn-soft/70", title: "text-warn-ink" },
-};
+/** Jumlah kejadian yang langsung tampil; sisanya di balik tombol "Tampilkan N lagi". */
+const FEED_PREVIEW = 5;
+
+/** Judul berupa kode mentah (mis. SMOKE_WARN_1793032988) — belum ada terjemahannya, tampil apa adanya. */
+const isCode = (t: string) => /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(t.trim());
 
 const iconText: Record<FeedItem["icon"], string> = {
   EXECUTED: "Berhasil",
@@ -68,7 +71,7 @@ function commandVerb(commandType: string) {
 }
 
 /** " · alasan" untuk perintah gagal (BE-7), kosong selain itu. */
-function failureSuffix(c: ActuatorCommand): string {
+function failureSuffix(c: { status: string; failureCode?: string | null; errorMessage: string | null }): string {
   const f = c.status === "FAILED" ? describeCommandFailure(c) : null;
   return f ? ` · ${f.message}` : "";
 }
@@ -95,8 +98,10 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
       kind: "COMMAND",
       at: e.at,
       title: actuatorCode ? `${actuatorCode} ${commandVerb(commandType)}` : e.summary,
-      detail: `${commandStatusLabel[status] ?? status}${actor ? ` · oleh ${sourceLabel[actor] ?? actor}` : ""}`,
-      icon: commandIcon(status),
+      detail:
+        `${commandStatusText({ status, failureCode: e.failureCode }, commandStatusLabel)}${actor ? ` · oleh ${sourceLabel[actor] ?? actor}` : ""}` +
+        failureSuffix({ status, failureCode: e.failureCode ?? null, errorMessage: null }),
+      icon: isNoResponse({ status, failureCode: e.failureCode }) ? "WARNING" : commandIcon(status),
     };
   }
   if (e.kind === "ALERT") {
@@ -106,8 +111,10 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
       key,
       kind: "ALERT",
       at: e.at,
-      title: alertTitleLabel(e.summary),
-      detail: msg ? `${severityLabel[sev] ?? sev} · ${alertMessageLabel(msg)}` : (e.detail ?? ""),
+      title: alertHeadline(e.alertType ?? null, e.summary, e.failureCode),
+      detail: msg
+        ? `${severityLabel[sev] ?? sev} · ${alertBody(msg, { failureCode: e.failureCode, deviceCode: e.deviceCode, actuatorCode: e.actuatorCode, type: e.alertType })}`
+        : (e.detail ?? ""),
       icon: severityIcon(sev),
     };
   }
@@ -122,6 +129,7 @@ export function ActivityCard({ className }: { className?: string }) {
     entries: o.recentActivity,
   }));
   const live = useLiveActivity();
+  const [showAll, setShowAll] = useState(false);
   const d = overview.data;
 
   const feed: FeedItem[] = [
@@ -133,16 +141,22 @@ export function ActivityCard({ className }: { className?: string }) {
           at: l.at,
           title: `${l.command.actuatorCode} ${commandVerb(l.command.commandType)}`,
           detail:
-            `${commandStatusLabel[l.command.status] ?? l.command.status} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}` +
+            `${commandStatusText(l.command, commandStatusLabel)} · oleh ${l.command.requestedBy ?? sourceLabel[l.command.source] ?? l.command.source}` +
             failureSuffix(l.command),
-          icon: commandIcon(l.command.status),
+          icon: isNoResponse(l.command) ? "WARNING" : commandIcon(l.command.status),
         }
         : {
           key: l.key,
           kind: "ALERT",
           at: l.at,
-          title: alertTypeLabel(l.alert.type) === l.alert.type ? alertTitleLabel(l.alert.title) : alertTypeLabel(l.alert.type),
-          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${alertMessageLabel(l.alert.message)}`,
+          title: alertHeadline(l.alert.type, l.alert.title, alertFailureCode(l.alert.metadata)),
+          detail: `${severityLabel[l.alert.severity] ?? l.alert.severity} · ${alertBody(l.alert.message, {
+            failureCode: alertFailureCode(l.alert.metadata),
+            deviceCode: l.alert.relatedDeviceCode,
+            actuatorCode: l.alert.relatedActuatorCode,
+            type: l.alert.type,
+            metadata: l.alert.metadata,
+          })}`,
           icon: severityIcon(l.alert.severity),
         },
     ),
@@ -191,28 +205,40 @@ export function ActivityCard({ className }: { className?: string }) {
           {feed.length === 0 ? (
             <EmptyState className="mt-3" title="Belum ada kejadian" hint="Perintah ke alat dan peringatan akan muncul di sini." />
           ) : (
-            <ol className="scroll-thin -mx-1 mt-4 flex max-h-[420px] flex-col gap-2 overflow-y-auto px-1 pb-1">
-              {feed.map((f) => (
-                <li key={f.key}>
-                  <Link
-                    href={f.kind === "ALERT" ? "/alerts" : "/actuators"}
-                    className={cn("flex items-start gap-3 rounded-inner p-3 ring-1 ring-line transition hover:ring-accent/40", feedTone[f.icon].box)}
-                  >
-                    <span className="mt-0.5 shrink-0">
-                      {icons[f.icon]}
-                      <span className="sr-only">{iconText[f.icon]}</span>
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <p className={cn("truncate text-sm font-semibold", feedTone[f.icon].title)}>{f.title}</p>
-                      <p className="mt-0.5 line-clamp-2 text-sm text-ink-2">{f.detail}</p>
-                      <p className="mt-1 text-xs text-ink-2">
-                        <RelativeTime iso={f.at} />
-                      </p>
-                    </div>
-                    <ChevronRight aria-hidden className="mt-0.5 size-4 shrink-0 text-ink-2" strokeWidth={1.8} />
-                  </Link>
+            // Tanpa area gulir di dalam kartu (scrollbar ganda di dalam halaman yang juga bergulir):
+            // tampilkan beberapa kejadian terbaru, sisanya lewat tombol.
+            <ol className="mt-4 flex flex-col gap-2">
+              {(showAll ? feed : feed.slice(0, FEED_PREVIEW)).map((f) => {
+                const { icon: Icon, tone, spin } = feedIcon[f.icon];
+                return (
+                  <li key={f.key}>
+                    <Link
+                      href={f.kind === "ALERT" ? "/alerts" : "/actuators"}
+                      className="flex items-start gap-3 rounded-inner bg-card p-3 ring-1 ring-line transition hover:bg-card-2 hover:ring-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      <span className={cn("grid size-8 shrink-0 place-items-center rounded-[10px]", softTone[tone])}>
+                        <Icon aria-hidden className={cn("size-4", spin && "animate-spin")} strokeWidth={2} />
+                        <span className="sr-only">{iconText[f.icon]}</span>
+                      </span>
+                      <div className="min-w-0 flex-1">
+                        <p className={cn("text-[13px] leading-5 font-semibold break-words text-ink", isCode(f.title) && "font-mono text-xs break-all")}>{f.title}</p>
+                        <p className="mt-0.5 text-xs leading-[18px] break-words text-ink-2">{f.detail}</p>
+                        <p className="mt-1 text-[11px] leading-4 text-muted">
+                          <RelativeTime iso={f.at} />
+                        </p>
+                      </div>
+                      <ChevronRight aria-hidden className="mt-2 size-4 shrink-0 text-muted" strokeWidth={2} />
+                    </Link>
+                  </li>
+                );
+              })}
+              {feed.length > FEED_PREVIEW && (
+                <li>
+                  <Button variant="ghost" size="sm" className="w-full" icon={showAll ? ChevronUp : ChevronDown} onClick={() => setShowAll((v) => !v)}>
+                    {showAll ? "Tampilkan lebih sedikit" : `Tampilkan ${feed.length - FEED_PREVIEW} lagi`}
+                  </Button>
                 </li>
-              ))}
+              )}
             </ol>
           )}
         </>

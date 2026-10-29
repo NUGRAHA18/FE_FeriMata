@@ -17,6 +17,11 @@ const interlockText: Record<string, string> = {
   DEVICE_NOT_ONLINE: "Alat sedang terputus, perintah tidak bisa dikirim.",
 };
 
+/** Penjelasan panjang satu kode interlock (juga dipakai alasan jadwal siram), atau null bila bukan interlock. */
+export function interlockExplanation(code: string | null | undefined): string | null {
+  return (code && interlockText[code]) || null;
+}
+
 export type CommandErrorView = { kind: "interlock"; interlock: string | null; title: string; message: string } | { kind: "error"; title: string; message: string };
 
 /** Terjemahkan error POST /commands menjadi pesan untuk pengguna. */
@@ -90,7 +95,7 @@ const failureCodeText: Record<string, string> = {
   NOT_READY: "Alat belum siap. Tunggu sebentar lalu coba lagi.",
   BUSY: "Alat sedang menjalankan tugas lain (patroli, pindah kereta, atau campur pupuk). Tunggu selesai atau hentikan dulu.",
   INTERLOCK_EXCLUSIVE: "Tidak bisa berjalan bersamaan dengan alat lain yang sedang menyala.",
-  INTERLOCK_FLOAT: "Air di drum pupuk rendah atau kabel pelampungnya putus.",
+  INTERLOCK_FLOAT: "Air di drum pupuk rendah atau kabel pelampungnya putus. Pompa air utama, pompa pupuk, dan pengaduk dikunci sampai air cukup.",
   INTERLOCK_MOVING: "Kereta kamera sedang bergerak. Tunggu sampai berhenti.",
   INTERLOCK_LIMIT: "Kereta kamera sudah di ujung rel ke arah itu.",
   INTERLOCK_POWER: "Listrik PLN padam atau belum terbaca. Pompa dan alat besar dikunci sampai listrik PLN normal.",
@@ -99,7 +104,19 @@ const failureCodeText: Record<string, string> = {
   RELAY_MISMATCH: "Saklar tidak berpindah seperti yang diperintahkan. Periksa panel saklar.",
   TROLLEY_LOCKED: "Kereta kamera dikunci karena kabel sensor ujung rel bermasalah. Periksa kabelnya.",
   DISK_FULL: "Penyimpanan foto di komputer utama penuh, patroli tidak dijalankan.",
+  // Ditetapkan backend (bukan alat): tidak ada ACK dalam 2 menit. Hasilnya tidak diketahui.
+  NO_RESPONSE: "Alat tidak menjawab dalam 2 menit. Perintah mungkin tidak dijalankan; periksa keadaan alat.",
 };
+
+/** Perintah ditutup backend karena alat tidak menjawab — hasilnya tidak diketahui, bukan ditolak. */
+export function isNoResponse(cmd: { status: string; failureCode?: string | null }): boolean {
+  return cmd.status === "FAILED" && cmd.failureCode === "NO_RESPONSE";
+}
+
+/** Label status perintah: "Alat tidak menjawab" untuk NO_RESPONSE, selain itu label biasa. */
+export function commandStatusText(cmd: { status: string; failureCode?: string | null }, labels: Record<string, string>): string {
+  return isNoResponse(cmd) ? "Alat tidak menjawab" : (labels[cmd.status] ?? cmd.status);
+}
 
 export type CommandFailureView = { code: string | null; message: string; detail: string | null };
 

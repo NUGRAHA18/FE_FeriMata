@@ -45,10 +45,11 @@ function selectSystem(o: {
 }
 
 /**
- * Kartu hero "Alat terhubung": jumlah alat yang terhubung + sumber listrik.
- * Hijau bila semua terhubung & PLN; kuning bila ada yang terputus; merah bila memakai baterai.
+ * Kartu "Alat terhubung": jumlah alat yang terhubung + sumber listrik. Kartu putih seperti yang lain;
+ * kotak ikon & badge hijau bila semua terhubung & PLN, kuning bila ada yang terputus, merah bila
+ * memakai baterai.
  */
-export function SystemStatusCard({ compact }: { compact?: boolean }) {
+export function SystemStatusCard({ compact, className }: { compact?: boolean; className?: string }) {
   const s = useOverview(selectSystem).data;
   const tone = !s ? "accent" : s.backup ? "danger" : s.issues > 0 ? "warn" : "accent";
   const status = !s ? "memuat…" : s.backup ? "Memakai baterai" : s.issues > 0 ? `${s.issues} alat terputus` : "Semua alat terhubung";
@@ -61,20 +62,15 @@ export function SystemStatusCard({ compact }: { compact?: boolean }) {
       tone={tone}
       href="/devices"
       compact={compact}
-      badge={
-        s && (
-          <span className="mb-1 rounded-full bg-white/25 px-2.5 py-0.5 text-xs font-medium whitespace-nowrap">
-            Listrik: {powerSourceLabel(s.power)}
-          </span>
-        )
-      }
-      hint={status}
+      className={className}
+      status={s ? { tone: tone === "accent" ? "ok" : tone, label: status } : null}
+      hint={s ? `Listrik: ${powerSourceLabel(s.power)}` : status}
     />
   );
 }
 
 /**
- * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa siklus aktif atau
+ * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa tanggal tanam atau
  * target → null, karena frontend tidak mengarang rentang ideal.
  */
 export function ecTargetStatus(
@@ -103,7 +99,7 @@ export function floatLowStatus(r: { value: number | null; textValue?: string | n
 }
 
 /** EC, pH & suhu larutan di drum pupuk, plus status float LOW, dalam satu kartu. */
-export function TankCard({ compact }: { compact?: boolean }) {
+export function TankCard({ compact, className }: { compact?: boolean; className?: string }) {
   const ec = useReadingByMetric(tankKeys.ec);
   const ph = useReadingByMetric(tankKeys.ph);
   const temp = useReadingByMetric(tankKeys.waterTemperature);
@@ -118,12 +114,12 @@ export function TankCard({ compact }: { compact?: boolean }) {
   const ecUnit = formatUnit(ec?.unit);
   const valueCls = cn("metric-value truncate", compact ? "text-[clamp(1.375rem,17cqi,1.75rem)]" : "text-[clamp(1.5rem,19cqi,2.25rem)]");
   return (
-    <section aria-label="Tangki pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5")}>
-      <span className={cn("grid shrink-0 place-items-center rounded-full bg-info-soft text-info", compact ? "size-9" : "size-10 sm:size-11")}>
+    <section aria-label="Tangki pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5", className)}>
+      <span className={cn("grid shrink-0 place-items-center rounded-[12px] bg-info-soft text-info-ink", compact ? "size-9" : "size-10 sm:size-11")}>
         <Beaker aria-hidden className={cn(compact ? "size-[18px]" : "size-5 sm:size-[22px]")} strokeWidth={1.8} />
       </span>
       <p className={cn("mt-3 font-semibold text-ink-2", compact ? "text-sm" : "text-sm sm:text-[15px]")}>Tangki pupuk</p>
-      <dl className={cn("tabular mt-2 grid grid-cols-1 gap-2.5 @[12rem]:grid-cols-2", stale && latest && "opacity-60")}>
+      <dl className={cn("tabular mt-2 grid grid-cols-1 gap-2.5 @[12rem]:grid-cols-2 @[26rem]:grid-cols-3", stale && latest && "opacity-60")}>
         <div className="min-w-0">
           <dt className="text-xs text-ink-2">Kepekatan (EC)</dt>
           <dd className="mt-1 flex flex-wrap items-baseline gap-x-1">

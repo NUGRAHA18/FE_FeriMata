@@ -173,7 +173,7 @@ function StationPicker({ value, onChange, error }: { value: string; onChange: (v
             onClick={() => onChange(n)}
             className={cn(
               "tabular h-11 rounded-control text-base font-semibold ring-1 ring-line transition focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none",
-              value === n ? "bg-accent text-white ring-accent" : "bg-card-2 text-ink hover:bg-card",
+              value === n ? "bg-accent text-accent-fg ring-accent" : "bg-card-2 text-ink hover:bg-card",
             )}
           >
             {n}

@@ -29,7 +29,7 @@ export function Segmented<T extends string>({ value, onChange, options, label, s
             aria-checked={selected}
             onClick={() => onChange(o.value)}
             className={cn(
-              "inline-flex shrink-0 items-center gap-1.5 rounded-[9px] font-medium whitespace-nowrap transition",
+              "inline-flex shrink-0 items-center justify-center gap-1.5 rounded-[9px] font-medium whitespace-nowrap transition",
               "focus-visible:outline-2 focus-visible:outline-offset-1 focus-visible:outline-accent",
               size === "sm" ? "h-7 px-2.5 text-xs" : "h-9 px-3.5 text-sm",
               selected ? "bg-active text-active-fg" : "text-ink-2 hover:bg-sunken",

@@ -49,7 +49,7 @@ export function AlertPill({ count }: { count: number }) {
         {count > 0 && <span aria-hidden className="absolute -top-0.5 -right-0.5 size-2 rounded-full bg-danger ring-2 ring-card" />}
       </span>
       <span className="tabular">{count} Peringatan</span>
-      <span className="hidden size-6 place-items-center rounded-full bg-accent-soft text-accent sm:grid">
+      <span className="hidden size-6 place-items-center rounded-[12px] bg-accent-soft text-accent-ink sm:grid">
         <ArrowUpRight aria-hidden className="size-3.5" strokeWidth={1.8} />
       </span>
     </button>

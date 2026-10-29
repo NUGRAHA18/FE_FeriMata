@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { KeyRound, LogOut, Save, Settings, UserRound, Users } from "lucide-react";
 import { Suspense, useState, type FormEvent } from "react";
+import { PushCard } from "@/components/push/push-card";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -17,6 +18,7 @@ import { useChangePassword, useMe } from "@/lib/api/queries";
 import { endSession, getSession, saveSession } from "@/lib/auth/session";
 import { useSession } from "@/lib/auth/use-session";
 import { formatDateTime, roleLabel } from "@/lib/format";
+import { disablePushOnLogout } from "@/lib/push";
 
 function ChangePasswordForm({ highlighted }: { highlighted: boolean }) {
   const change = useChangePassword();
@@ -81,6 +83,8 @@ function ProfileContent() {
   const highlight = useSearchParams().get("ganti-sandi") === "1";
 
   async function logout() {
+    // Selagi token masih ada: cabut langganan notifikasi HP ini dari akun ini.
+    await disablePushOnLogout();
     const s = getSession();
     if (s?.refreshToken) {
       try {
@@ -146,6 +150,7 @@ function ProfileContent() {
           )}
         </div>
       </Card>
+      <PushCard />
       <div className="lg:col-span-2">
         <ChangePasswordForm highlighted={highlight || !!session?.user.mustChangePassword} />
       </div>

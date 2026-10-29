@@ -1,8 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import type { Plant, PlantObservation } from "@/lib/api/types";
-import { json, reading, signIn, t } from "@/test/utils";
+import { json, reading, signIn } from "@/test/utils";
 import { csvCell, csvTime, toCsv } from "./csv";
-import { exportObservations, exportSensorHistory, HISTORY_EXPORT_LIMIT } from "./reports";
+import { countCsvRows, exportSensorHistory, HISTORY_EXPORT_LIMIT, serverCsv } from "./reports";
 
 const lines = (csv: string) => csv.replace(/^﻿/, "").trimEnd().split("\r\n");
 
@@ -50,7 +49,7 @@ describe("ekspor laporan", () => {
     expect(r.rows).toBe(3);
     expect(r.truncated).toBe(false);
     const out = lines(r.csv);
-    expect(out[0]).toBe("waktu_wib,nilai,satuan,kode_sensor,metric_key,kode_alat,diterima_wib");
+    expect(out[0]).toBe("waktu_wib,nilai,nilai_terkoreksi,satuan,kode_sensor,metric_key,kode_alat,diterima_wib");
     expect(out.slice(1).map((l) => l.split(",")[1])).toEqual(["1", "2", "3"]);
   });
 
@@ -63,36 +62,11 @@ describe("ekspor laporan", () => {
     expect(r.truncated).toBe(true);
   });
 
-  it("pengamatan: satu baris per catatan, kolom tanah dari snapshot", async () => {
-    const plant = (id: number, code: string, active = true): Plant => ({
-      id, code, name: code, description: null, cycleId: 5, cycleCode: "MT-1", treatmentCode: "N-", blockCode: "B1", rowCode: null, plotCode: "A",
-      stationCode: null, positionInRow: null, comparisonGroup: "FERTIMATA", taggedLeaves: null, active, metadata: null, lastObservation: null,
-      createdAt: t(0), updatedAt: t(0),
-    });
-    const obs = (plantId: number, sec: number, extra: Partial<PlantObservation> = {}): PlantObservation => ({
-      id: plantId * 10 + sec, plantId, plantCode: `P${plantId}`, observedAt: t(sec), hst: 20, heightCm: 30.5, leafCount: 8, leaf3LengthCm: null,
-      leaf3WidthCm: null, visualNotes: null, soilSnapshot: null, observedBy: "operator", createdAt: t(sec), ...extra,
-    });
-    const pageOf = (content: PlantObservation[]) => ({ content, page: 0, size: 200, totalElements: content.length, totalPages: 1, last: true });
-
-    vi.stubGlobal(
-      "fetch",
-      vi.fn((url: string) => {
-        if (url.includes("/plants/2/observations")) return json(200, pageOf([obs(2, 1, { visualNotes: "tepi daun kuning, keriting", soilSnapshot: { "soil.a.moisture": { value: 41.2, unit: "%" } } })]));
-        if (url.includes("/plants/1/observations")) return json(200, pageOf([obs(1, 9), obs(1, 2)]));
-        return json(200, [plant(2, "B1-N-02", false), plant(1, "B1-N-01")]);
-      }),
-    );
-
-    const r = await exportObservations(5);
-    expect(r.rows).toBe(3);
-    const out = lines(r.csv);
-    expect(out[0]).toContain("tanah_soil_a_moisture (%)");
-    expect(out[1]).toMatch(/^MT-1,B1-N-01,N-,B1,/);
-    expect(out[1]).toContain("14:00:02");
-    expect(out[2]).toContain("14:00:09");
-    expect(out[3]).toContain('"tepi daun kuning, keriting"');
-    expect(out[3]).toMatch(/,41\.2$/);
-    expect(out[3]).toContain(",tidak,"); // tanaman nonaktif tetap ikut
+  it("CSV backend: menghitung baris data dan menjamin BOM", async () => {
+    expect(countCsvRows('﻿a,b\r\n1,"x\r\ny"\r\n2,z\r\n')).toBe(2);
+    expect(countCsvRows("a,b\r\n")).toBe(0);
+    const r = await serverCsv(Promise.resolve("a\r\n1\r\n"));
+    expect(r.csv.startsWith("﻿")).toBe(true);
+    expect(r.rows).toBe(1);
   });
 });

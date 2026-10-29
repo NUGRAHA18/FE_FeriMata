@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 export type Tone = "ok" | "warn" | "danger" | "info" | "neutral";
 
 const dotTone: Record<Tone, string> = {
-  ok: "bg-accent",
+  ok: "bg-success",
   warn: "bg-warn",
   danger: "bg-danger",
   info: "bg-info",
@@ -22,13 +22,15 @@ export function StatusDot({ tone, pulse, className }: { tone: Tone; pulse?: bool
   );
 }
 
-const chipTone: Record<Tone, string> = {
-  ok: "bg-accent-soft text-accent",
+/** Latar lembut + teks gelap setema (kontras ≥ 4.5:1 di ketiga tema). Dipakai Chip, Badge, ikon status. */
+export const softTone: Record<Tone, string> = {
+  ok: "bg-accent-soft text-accent-ink",
   warn: "bg-warn-soft text-warn-ink",
   danger: "bg-danger-soft text-danger-ink",
-  info: "bg-info-soft text-info",
+  info: "bg-info-soft text-info-ink",
   neutral: "bg-sunken text-ink-2",
 };
+const chipTone = softTone;
 
 const chipIcon: Partial<Record<Tone, LucideIcon>> = {
   warn: AlertTriangle,
@@ -55,11 +57,38 @@ export function Chip({ tone = "neutral", icon, className, children, ...props }: 
   );
 }
 
-/** Badge kecil berbentuk pill (mis. "Good" di referensi). */
-export function Badge({ tone = "neutral", className, children }: { tone?: Tone; className?: string; children: ReactNode }) {
+/**
+ * Badge status (tidak bisa diklik, jadi tidak boleh mirip tombol): pill ringkas, titik + teks.
+ * `dot={false}` untuk label yang bukan status (mis. nama perlakuan).
+ */
+export function Badge({ tone = "neutral", dot = false, className, children }: { tone?: Tone; dot?: boolean; className?: string; children: ReactNode }) {
   return (
-    <span className={cn("inline-flex items-center rounded-full px-2 py-0.5 text-[11px] font-medium", chipTone[tone], className)}>
-      {children}
+    <span className={cn("inline-flex max-w-full items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] leading-4 font-medium", chipTone[tone], className)}>
+      {dot && <StatusDot tone={tone} className="size-1.5" />}
+      <span className="truncate">{children}</span>
     </span>
+  );
+}
+
+/** Status satu baris: "● Terhubung · 34 detik lalu". Warna + teks + titik, tidak hanya warna. */
+const statusText: Record<Tone, string> = {
+  ok: "text-accent-ink",
+  warn: "text-warn-ink",
+  danger: "text-danger-ink",
+  info: "text-info-ink",
+  neutral: "text-ink-2",
+};
+export function StatusLine({ tone, label, pulse, children, className }: { tone: Tone; label: string; pulse?: boolean; children?: ReactNode; className?: string }) {
+  return (
+    <p className={cn("flex min-w-0 items-center gap-1.5 text-xs text-muted", className)}>
+      <StatusDot tone={tone} pulse={pulse} />
+      <span className={cn("shrink-0 font-semibold", statusText[tone])}>{label}</span>
+      {children && (
+        <>
+          <span aria-hidden>·</span>
+          <span className="min-w-0 truncate">{children}</span>
+        </>
+      )}
+    </p>
   );
 }

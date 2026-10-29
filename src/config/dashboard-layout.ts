@@ -65,3 +65,6 @@ export const trolleyActuatorCodes = ["TROLLEY-RUN", "TROLLEY-DIR", "TROLLEY-GOTO
 
 /** Aktuator virtual patroli kamera; tombol "Patroli sekarang" di kartu kamera memakainya. */
 export const patrolActuatorCode = "TROLLEY-PATROL";
+
+/** Pompa siram yang dinyalakan jadwal siram; batas lama siram = maxRunSeconds-nya. */
+export const irrigationPumpCode = "DIST-PUMP";

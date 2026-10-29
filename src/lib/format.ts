@@ -1,4 +1,5 @@
 import { siteConfig } from "@/config/site";
+import { irrigationReasonText, isSafetyCode } from "@/lib/irrigation-reasons";
 
 /*
  * Formatter tampilan: angka, satuan, waktu (WIB) — semua dalam Bahasa Indonesia yang sederhana.
@@ -24,6 +25,16 @@ export function formatUnit(unit: string | null | undefined): string {
     default:
       return unit;
   }
+}
+
+/**
+ * Isian angka dari ponsel: koma desimal diterima ("13,5"). Kosong → undefined; bukan angka → NaN
+ * (pemanggil menampilkan pesan per isian).
+ */
+export function parseDecimal(v: string): number | undefined {
+  const t = v.trim().replace(",", ".");
+  if (t === "") return undefined;
+  return /^-?\d+(\.\d+)?$/.test(t) ? Number(t) : Number.NaN;
 }
 
 /** Angka berformat id-ID; jumlah desimal menyesuaikan besarnya nilai. */
@@ -170,6 +181,7 @@ const alertTypeLabels: Record<string, string> = {
   DEVICE_OFFLINE: "Alat terputus",
   DEVICE_RECOVERED: "Alat terhubung kembali",
   ACTUATOR_COMMAND_FAILED: "Perintah gagal dijalankan",
+  IRRIGATION_SKIPPED: "Penyiraman terjadwal dibatalkan",
   TELEMETRY_REJECTED: "Data sensor ditolak",
   POWER_BACKUP: "Listrik PLN padam, memakai baterai",
   POWER_RESTORED: "Listrik PLN kembali normal",
@@ -298,10 +310,58 @@ const alertTitleLabels: Record<string, string> = {
   "Normal power restored": "Listrik PLN kembali normal",
   "Actuator command not delivered": "Perintah tidak terkirim ke alat",
   "Actuator command failed on the device": "Perintah gagal dijalankan alat",
+  "Scheduled irrigation skipped": "Penyiraman terjadwal dibatalkan",
 };
 
 export function alertTitleLabel(title: string): string {
   return alertTitleLabels[title] ?? title;
+}
+
+/** `metadata.failureCode` peringatan (backend ≥ 30 Okt 2026), atau null. */
+export function alertFailureCode(metadata: Record<string, unknown> | null | undefined): string | null {
+  const v = metadata?.failureCode;
+  return typeof v === "string" && v ? v : null;
+}
+
+/**
+ * Judul peringatan: dari kode di data bila ada (NO_RESPONSE → "Alat tidak menjawab perintah"), lalu
+ * label tipe, lalu terjemahan judul lama, lalu judul apa adanya. Tidak menebak dari teks pesan.
+ */
+export function alertHeadline(type: string | null, title: string, failureCode?: string | null): string {
+  if (failureCode === "NO_RESPONSE") return "Alat tidak menjawab perintah";
+  const byType = type ? alertTypeLabel(type) : null;
+  if (byType && byType !== type) return byType;
+  return alertTitleLabel(title);
+}
+
+type AlertBodyContext = {
+  failureCode?: string | null;
+  deviceCode?: string | null;
+  actuatorCode?: string | null;
+  type?: string | null;
+  metadata?: Record<string, unknown> | null;
+};
+
+const str = (v: unknown) => (typeof v === "string" && v ? v : null);
+
+/**
+ * Isi peringatan disusun dari kode di data bila ada (NO_RESPONSE, IRRIGATION_SKIPPED + reasonCode),
+ * selain itu terjemahan pesan backend.
+ */
+export function alertBody(message: string, ctx: AlertBodyContext): string {
+  if (ctx.type === "IRRIGATION_SKIPPED") {
+    const m = ctx.metadata ?? {};
+    const reason = irrigationReasonText(str(m.reasonCode) ?? ctx.failureCode, str(m.conflictingActuatorCode));
+    const at = str(m.time) ? ` jam ${str(m.time)}` : "";
+    // Tanpa metadata (entri overview) hasilnya ditebak dari kode: kode aturan keselamatan = dibatalkan.
+    const failed = m.result ? m.result === "FAILED" : !!ctx.failureCode && !isSafetyCode(ctx.failureCode);
+    const what = failed ? "gagal" : "dibatalkan demi keamanan";
+    return `Penyiraman${at} ${what}${reason ? `: ${reason}` : ""}. Jadwal berikutnya tetap berjalan.`;
+  }
+  if (ctx.failureCode === "NO_RESPONSE") {
+    return `${ctx.deviceCode ?? "Alat"} tidak menjawab perintah${ctx.actuatorCode ? ` untuk ${ctx.actuatorCode}` : ""}. Perintah mungkin tidak dijalankan; periksa keadaan alat.`;
+  }
+  return alertMessageLabel(message);
 }
 
 const commandWords: Record<string, string> = {

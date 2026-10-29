@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ApiRequestError } from "@/lib/api/client";
-import { buildCommand, describeCommandError, reportedStateLabel, validateDuration } from "./actuator-safety";
-import { downsample } from "./history";
+import { buildCommand, commandStatusText, describeCommandError, describeCommandFailure, isNoResponse, reportedStateLabel, validateDuration } from "./actuator-safety";
 
 const apiErr = (status: number, code: string, message: string, details?: Record<string, unknown>) =>
   new ApiRequestError({ status, code, message, details, path: "/actuators/1/commands" });
@@ -52,13 +51,13 @@ describe("validateDuration", () => {
   });
 });
 
-describe("downsample riwayat", () => {
-  it("membatasi jumlah titik dengan rata-rata per ember dan mempertahankan urutan", () => {
-    const pts = Array.from({ length: 1000 }, (_, i) => ({ t: i * 1000, v: i }));
-    const out = downsample(pts, 100);
-    expect(out.length).toBeLessThanOrEqual(100);
-    expect(out[0].v).toBeCloseTo(4.5);
-    expect(out.every((p, i) => i === 0 || p.t > out[i - 1].t)).toBe(true);
-    expect(downsample(pts.slice(0, 10), 100)).toHaveLength(10);
+describe("perintah tanpa jawaban (NO_RESPONSE)", () => {
+  it("dikenali dari failureCode, bukan teks; labelnya 'Alat tidak menjawab'", () => {
+    const cmd = { status: "FAILED", failureCode: "NO_RESPONSE", errorMessage: "teks apa pun" };
+    expect(isNoResponse(cmd)).toBe(true);
+    expect(commandStatusText(cmd, { FAILED: "Gagal" })).toBe("Alat tidak menjawab");
+    expect(describeCommandFailure(cmd)?.message).toMatch(/tidak menjawab dalam 2 menit/);
+    expect(isNoResponse({ status: "EXECUTED", failureCode: null })).toBe(false);
+    expect(commandStatusText({ status: "FAILED", failureCode: "BUSY" }, { FAILED: "Gagal" })).toBe("Gagal");
   });
 });

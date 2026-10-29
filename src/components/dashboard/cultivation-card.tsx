@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { Sprout } from "lucide-react";
 import { GardenStrip } from "@/components/illustrations";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -7,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useOverview } from "@/lib/api/queries";
 import { formatDate, formatNumber } from "@/lib/format";
 
-/** Kartu ringkas umur tanaman: HST hari ini, fase berjalan, target EC dan rasio N:P:K fase itu. */
+/** Kartu ringkas umur tanaman: HST hari ini, fase berjalan, dan target kepekatan pupuk fase itu (acuan kartu tangki). */
 export function CultivationCard() {
   const q = useOverview((o) => o.cultivation ?? null);
   const c = q.data;
@@ -19,9 +20,15 @@ export function CultivationCard() {
       {q.isPending ? (
         <Skeleton className="h-16 w-full" />
       ) : !c ? (
-        <p className="text-sm text-ink-2">Belum ada siklus tanam yang aktif. Buka halaman Tanaman untuk mencatat tanggal tanam.</p>
+        <p className="text-sm text-ink-2">
+          Tanggal tanam belum diisi.{" "}
+          <Link href="/cultivation?tambah=1" className="font-semibold text-accent-ink underline-offset-2 hover:underline">
+            Tambahkan tanaman pertama
+          </Link>{" "}
+          untuk mulai menghitung hari tanam.
+        </p>
       ) : (
-        <div className="relative grid grid-cols-2 gap-x-4 gap-y-4 @2xl:grid-cols-4 @2xl:gap-0 @2xl:divide-x @2xl:divide-line @2xl:[&>div]:px-4 @2xl:[&>div:first-child]:pl-0">
+        <div className="relative grid grid-cols-2 gap-x-4 gap-y-4 @2xl:grid-cols-3 @2xl:gap-0 @2xl:divide-x @2xl:divide-line @2xl:[&>div]:px-4 @2xl:[&>div:first-child]:pl-0">
           <div>
             <p className="text-sm text-ink-2">Hari setelah tanam</p>
             <p className="tabular metric-value mt-1 text-[40px] text-ink">
@@ -44,17 +51,6 @@ export function CultivationCard() {
               {phase && phase.ecTargetMin != null && phase.ecTargetMax != null
                 ? `${formatNumber(phase.ecTargetMin, 2)}–${formatNumber(phase.ecTargetMax, 2)} mS/cm`
                 : "—"}
-            </p>
-          </div>
-          <div>
-            <p className="text-sm text-ink-2">Perbandingan N : P : K</p>
-            <p className="tabular mt-1 text-xl font-semibold text-ink">
-              {phase && phase.ratioN != null && phase.ratioP != null && phase.ratioK != null
-                ? `${formatNumber(phase.ratioN, 1)} : ${formatNumber(phase.ratioP, 1)} : ${formatNumber(phase.ratioK, 1)}`
-                : "—"}
-            </p>
-            <p className="mt-0.5 text-xs text-ink-2">
-              {c.treatmentPlantCount} tanaman perlakuan dari {c.plantCount}
             </p>
           </div>
         </div>

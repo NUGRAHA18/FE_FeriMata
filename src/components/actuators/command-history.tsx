@@ -5,9 +5,10 @@ import { Badge, type Tone } from "@/components/ui/status";
 import { Pagination } from "@/components/ui/pagination";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { commandSummary } from "@/lib/actuator-commands";
-import { describeCommandFailure } from "@/lib/actuator-safety";
+import { commandStatusText, describeCommandFailure, isNoResponse } from "@/lib/actuator-safety";
 import { errorMessage } from "@/lib/api/client";
 import { useActuatorCommands } from "@/lib/api/queries";
+import { cn } from "@/lib/cn";
 import { commandStatusLabel, formatDateTime, formatDuration, sourceLabel } from "@/lib/format";
 
 const statusTone: Record<string, Tone> = { EXECUTED: "ok", FAILED: "danger", SENT: "info", PENDING: "neutral", CANCELLED: "neutral" };
@@ -48,9 +49,9 @@ export function CommandHistory({ actuatorId }: { actuatorId: number }) {
                     <p className="font-mono text-[11px] text-muted">{c.commandUid}</p>
                   </td>
                   <td className="px-3.5 py-2.5">
-                    <Badge tone={statusTone[c.status] ?? "neutral"}>{shortStatus[c.status] ?? c.status}</Badge>
+                    <Badge tone={isNoResponse(c) ? "warn" : (statusTone[c.status] ?? "neutral")}>{commandStatusText(c, shortStatus)}</Badge>
                     {failure && (
-                      <p className="mt-1 max-w-56 text-xs text-danger-ink" title={failure.detail ?? undefined}>
+                      <p className={cn("mt-1 max-w-56 text-xs", isNoResponse(c) ? "text-warn-ink" : "text-danger-ink")} title={failure.detail ?? undefined}>
                         {failure.message}
                         {failure.code && <span className="mt-0.5 block font-mono text-[10px] opacity-70">{failure.code}</span>}
                       </p>

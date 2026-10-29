@@ -1,6 +1,6 @@
 # Celah backend (dicatat oleh frontend)
 
-Acuan: backend `BE-melonSmart` per 28 Oktober 2026 (setelah BE-1…BE-7). Frontend tidak
+Acuan: backend `BE-melonSmart` per 29 Oktober 2026 (setelah BE-1…BE-7, Fase 3, agregasi riwayat). Frontend tidak
 mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini dicatat di tiap butir.
 
 ## Sudah ditutup backend (frontend sudah memakainya)
@@ -17,6 +17,10 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Berkas gambar AI tidak disajikan. | BE-2: `/captures/**` dengan token yang sama. Frontend mengambilnya sebagai blob (`fetchProtectedBlob`), bukan `<img src>`. |
 | Tidak ada perintah patroli/pindah kereta/campur pupuk. | BE-1: aktuator virtual `TROLLEY-PATROL`, `TROLLEY-GOTO` + `supportedCommands`. Tombol per tipe di halaman Kontrol, "Patroli sekarang" di Beranda. Campur pupuk otomatis (`DOSING-LOOP`) dicabut 28 Okt: milik layanan tim AI, aktuatornya disembunyikan (`isRetiredActuator`). |
 | Alasan gagal dari alat hanya teks bebas. | BE-7: `failureCode` di perintah; diterjemahkan ke bahasa petani. |
+| Tidak ada endpoint agregasi riwayat. | `GET /sensors/{id}/history/aggregate` (min/avg/max, interval otomatis). Grafik riwayat memakainya; rentang 30 & 90 hari ditambahkan. |
+| Tidak ada event realtime data master. | `SENSOR_UPDATED`, `ACTUATOR_UPDATED`; cache daftar & detail diperbarui. |
+| Tidak ada push notification. | `/api/push/*` (VAPID). Kartu "Notifikasi di HP ini" di Akun, service worker menampilkan & membuka notifikasi. |
+| Kalibrasi belum ada. | `/calibration-samples` (+ CSV di `/sensors/{id}/calibration-samples.csv`), `/calibrations(/fit)`, `/drift-checks`, kalibrasi pompa + `/dispensed`. Dipakai frontend. Modul riset (`/research/*`) dan metrik sistem (`/metrics/system`) dihapus backend 29 Okt 2026 bersama UI-nya. |
 
 ## Fitur yang belum ada
 
@@ -26,9 +30,12 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Ambang agronomi / rentang ideal (suhu, kelembapan, cahaya, pH, NPK), skor kesehatan tanaman. | Tidak ditampilkan. Satu-satunya badge status: EC tangki dibanding `ecTargetMin/Max` fase tanam berjalan (Sesuai target / Terlalu encer / Terlalu pekat). Skor AI tampil apa adanya (bar netral, tanpa warna "baik/buruk"). |
 | Data cuaca luar. | Diganti "Kondisi di dalam greenhouse" (suhu & kelembapan udara, cahaya). |
 | Task / jadwal (capture terjadwal, aturan peringatan). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan) sebagai pengganti kartu task di referensi. |
-| Push notification. | Peringatan hanya terlihat saat aplikasi dibuka (pill/lonceng + drawer). |
+| Push hanya jalan di https (atau localhost). | Jetson diakses lewat http://IP: kartu notifikasi meminta admin memasang domain. |
 | Stream kamera live (CCTV). | Kartu kamera hanya menampilkan foto tersimpan; patroli manual lewat "Patroli sekarang". |
-| Event realtime untuk perubahan data master (rename/enable sensor/aktuator). | Cache diperbarui sendiri setelah `PATCH` berhasil. Operator lain baru melihat perubahan setelah reconnect / refetch overview. |
-| Endpoint agregasi riwayat (min/avg/max per interval). | `/sensors/{id}/history` dibatasi `size ≤ 1000`. Frontend mengambil semua halaman bila total ≤ 5.000 titik, selebihnya menyampel 48 jendela waktu dan merata-rata per jendela. |
+| Ubah/hapus catatan panen (`/plants/{id}/harvests`) dan cek drift. Hanya GET/POST. | Salah ketik tidak bisa diperbaiki dari aplikasi. Sampel lab bisa dihapus (DELETE ada). |
+| Agregasi riwayat hanya nilai mentah (tanpa `calibratedValue`). | Keterangan grafik menyebut "angka mentah, belum dikoreksi kalibrasi". |
+| Tipe pompa yang dikalibrasi (`calibration.pump.types`) tidak diekspos. | Kartu "Takaran pompa" hanya untuk `type === "DOSING_PUMP"` (bawaan backend). Bila daftar tipe diubah di konfigurasi, frontend perlu ikut diubah. Usul: flag di `ActuatorResponse`. |
+| Pesan `BUSINESS_RULE_VIOLATION` kalibrasi & `notes` metrik berbahasa Inggris tanpa kode. | Pesan yang sering muncul dicocokkan dengan regex (`lib/calibration.ts`) lalu diterjemahkan; sisanya tampil apa adanya. `notes` metrik hanya di "Info teknis". Usul: kode alasan di `details`. |
+| Daftar metric key kovariat yang valid untuk satu sensor. | Isian teks bebas (dipisah koma) di "Info teknis". |
 | Daftar tipe deteksi AI. | Pilihan = daftar tetap (`NUTRIENT_DEFICIENCY`, `DISEASE`) + tipe yang terlihat di data; label Indonesia di `lib/format.ts`. |
 | Endpoint `/api/dev/outbox` tidak terdokumentasi bentuk responsnya. | Dev Tools memvalidasi tiap item sebagai `ActuatorCommand` dan mengabaikan yang tidak cocok. |

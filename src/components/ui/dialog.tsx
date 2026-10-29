@@ -59,15 +59,17 @@ function Shell({
       }}
       className={cn(
         "m-0 max-h-none max-w-none bg-transparent p-0 text-ink backdrop:bg-black/40 backdrop:backdrop-blur-[2px]",
+        // w-full (bukan w-screen yang ikut menghitung lebar scrollbar) dan grid-cols-1 = minmax(0, 1fr):
+        // tanpa itu lebar kolom grid mengikuti isi terlebar dan panel meluap di layar sempit.
         variant === "modal"
-          ? "fixed inset-0 h-dvh w-screen place-items-end open:grid sm:place-items-center"
-          : "fixed inset-0 h-dvh w-screen justify-end open:flex",
+          ? "fixed inset-0 h-dvh w-full grid-cols-1 place-items-end open:grid sm:place-items-center"
+          : "fixed inset-0 h-dvh w-full justify-end open:flex",
       )}
     >
       {open && (
         <div
           className={cn(
-            "flex flex-col bg-card shadow-2xl ring-1 ring-line",
+            "flex min-w-0 flex-col bg-card shadow-2xl ring-1 ring-line",
             variant === "modal"
               ? "max-h-[92dvh] w-full rounded-t-[26px] sm:max-w-md sm:rounded-card"
               : "h-full w-full sm:w-[440px] sm:rounded-l-[26px]",
@@ -95,7 +97,7 @@ function Shell({
               <X aria-hidden className="size-4" strokeWidth={1.8} />
             </button>
           </div>
-          <div className="scroll-thin min-h-0 flex-1 overflow-y-auto px-5 pb-5">{children}</div>
+          <div className={cn("scroll-thin min-h-0 flex-1 overflow-y-auto px-5", footer ? "pb-5" : "pb-[max(20px,env(safe-area-inset-bottom))]")}>{children}</div>
           {footer && (
             <div className="flex flex-wrap justify-end gap-2 border-t border-line px-5 py-4 pb-[max(16px,env(safe-area-inset-bottom))]">
               {footer}

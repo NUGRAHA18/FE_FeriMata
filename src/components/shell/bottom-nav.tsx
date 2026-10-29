@@ -24,8 +24,8 @@ function Slot({ item, active }: { item: NavItem; active: boolean }) {
 }
 
 /**
- * Bottom navigation (< 768 px) seperti referensi: dua menu, tombol bulat Tanaman di tengah, satu menu,
- * lalu "Lainnya" yang membuka lembar berisi menu sisanya (Kamera, Peringatan, Pengaturan, Akun, tema).
+ * Bottom navigation (< 768 px): dua menu, tombol bulat "Siram" (jadwal siram) di tengah, satu menu,
+ * lalu "Lainnya" yang membuka lembar berisi menu sisanya (Kamera, Peringatan, Tanaman, Pengaturan, …).
  */
 export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
   const pathname = usePathname();
@@ -50,13 +50,17 @@ export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
             <Link
               href={mobileFab.href}
               aria-current={fabActive ? "page" : undefined}
-              aria-label={mobileFab.label}
-              className={cn(
-                "-mt-7 grid size-[62px] place-items-center rounded-full bg-gradient-to-br from-accent-2 to-accent text-accent-fg shadow-[0_8px_20px_-4px_rgb(31_154_83/0.55)] ring-4 ring-bg transition active:scale-95",
-                fabActive && "from-accent to-active",
-              )}
+              className="group -mt-7 flex flex-col items-center gap-1 transition active:scale-95"
             >
-              <FabIcon aria-hidden className="size-7" strokeWidth={2} />
+              <span
+                className={cn(
+                  "grid size-[58px] place-items-center rounded-full bg-accent text-accent-fg shadow-[0_8px_20px_-6px_rgb(33_134_83/0.6)] ring-4 ring-bg transition group-hover:bg-accent-hover",
+                  fabActive && "bg-accent-hover",
+                )}
+              >
+                <FabIcon aria-hidden className="size-7" strokeWidth={2} />
+              </span>
+              <span className={cn("text-[10.5px] leading-none", fabActive ? "font-semibold text-accent-ink" : "font-medium text-ink-2")}>{mobileFab.label}</span>
             </Link>
           </li>
           {right.map((item) => (
@@ -80,7 +84,8 @@ export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
       </nav>
 
       <Dialog open={moreOpen} onClose={() => setMoreOpen(false)} title="Menu lainnya">
-        <ul className="grid grid-cols-2 gap-2.5">
+        {/* p-0.5: garis tepi (ring) baris pertama tidak terpotong oleh area gulir. */}
+        <ul className="grid grid-cols-2 gap-2 p-0.5">
           {more.map((item) => {
             const Icon = item.icon;
             const active = isActive(pathname, item.href);
@@ -92,14 +97,15 @@ export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
                   onClick={() => setMoreOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "flex items-center gap-3 rounded-inner p-3.5 ring-1 ring-line transition",
-                    active ? "bg-accent-soft text-accent" : "bg-card-2 text-ink hover:bg-sunken",
+                    // HP sempit: ikon di atas label supaya kata panjang ("Pengaturan") tidak terpotong.
+                    "flex min-h-14 min-w-0 flex-col items-start gap-2 rounded-inner p-3 ring-1 ring-line transition min-[400px]:flex-row min-[400px]:items-center min-[400px]:gap-2.5",
+                    active ? "bg-accent-soft text-accent-ink" : "bg-card-2 text-ink hover:bg-sunken",
                   )}
                 >
-                  <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+                  <span className="grid size-9 shrink-0 place-items-center rounded-[10px] bg-accent-soft text-accent-ink">
                     <Icon aria-hidden className="size-5" strokeWidth={1.9} />
                   </span>
-                  <span className="min-w-0 text-sm font-medium">
+                  <span className="min-w-0 text-sm font-medium break-words">
                     {item.label}
                     {count > 0 && <span className="tabular block text-xs font-normal text-danger-ink">{count} belum ditangani</span>}
                   </span>

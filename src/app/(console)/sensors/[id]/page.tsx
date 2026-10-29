@@ -6,6 +6,7 @@ import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { AlertItem } from "@/components/alerts/alert-item";
 import { DeviceRow } from "@/components/devices/device-row";
+import { CalibrationPanel } from "@/components/sensors/calibration-panel";
 import { HistoryPanel } from "@/components/sensors/history-panel";
 import { SensorEditForm } from "@/components/sensors/sensor-edit-form";
 import { PageHeader } from "@/components/shell/page-header";
@@ -19,14 +20,15 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useAlerts, useDevices, useOverview, useSensor, useSensorLatest } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { formatDateTime, formatReading, formatUnit } from "@/lib/format";
+import { formatDateTime, formatNumber, formatReading, formatUnit } from "@/lib/format";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
-type Tab = "history" | "detail" | "device" | "activity";
+type Tab = "history" | "calibration" | "detail" | "device" | "activity";
 const allTabs: { value: Tab; label: string; writeOnly?: boolean }[] = [
   { value: "history", label: "Riwayat" },
+  { value: "calibration", label: "Kalibrasi" },
   { value: "detail", label: "Pengaturan", writeOnly: true },
   { value: "device", label: "Alat" },
   { value: "activity", label: "Peringatan" },
@@ -47,6 +49,12 @@ function LatestValue({ sensor: s }: { sensor: Sensor }) {
         <p className={cn("tabular mt-2 flex items-start text-ink", stale && r && "opacity-60")}>
           <span className="metric-value text-[72px] sm:text-[88px]">{value ?? "—"}</span>
           {value && unit && <span className="mt-2 text-3xl text-muted">{unit}</span>}
+        </p>
+      )}
+      {r?.calibratedValue != null && (
+        <p className="tabular mt-1 rounded-control bg-accent-soft px-3 py-1 text-sm text-ink">
+          Setelah dikoreksi lab: <span className="font-semibold">{formatNumber(r.calibratedValue)}</span>
+          {unit && ` ${unit}`}
         </p>
       )}
       <p className="mt-2 text-sm text-muted">
@@ -131,6 +139,7 @@ export default function SensorDetailPage() {
             <Card>
               <Tabs value={tab} onChange={setTab} tabs={tabs} label="Bagian detail sensor" className="mb-4" />
               {tab === "history" && <HistoryPanel sensorId={s.id} unit={formatUnit(s.unit)} label={s.name} />}
+              {tab === "calibration" && <CalibrationPanel sensor={s} unit={formatUnit(s.unit)} />}
               {tab === "detail" && (
                 <div className="flex flex-col gap-5">
                   <div>

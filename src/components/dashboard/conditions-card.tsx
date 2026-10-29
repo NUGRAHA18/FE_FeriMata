@@ -33,7 +33,7 @@ function SmallStat({ icon: Icon, label, metricKey, iconCls }: { icon: typeof Sun
   return (
     <div className="min-w-0">
       <p className="flex items-center gap-2 text-sm text-ink-2">
-        <span className={cn("grid size-7 shrink-0 place-items-center rounded-full", iconCls)}>
+        <span className={cn("grid size-7 shrink-0 place-items-center rounded-[8px]", iconCls)}>
           <Icon aria-hidden className="size-4" strokeWidth={2} />
         </span>
         {label}
@@ -70,7 +70,7 @@ export function ConditionsCard() {
       <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] sm:gap-5">
         <div className="flex min-w-0 flex-col">
           <p className="flex items-center gap-2 text-sm font-medium text-ink-2">
-            <span className="grid size-8 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+            <span className="grid size-8 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
               <Thermometer aria-hidden className="size-[18px]" strokeWidth={2} />
             </span>
             Suhu udara di dalam greenhouse
@@ -82,8 +82,8 @@ export function ConditionsCard() {
           <p className="mt-1 text-xs text-ink-2">{air ? <RelativeTime iso={air.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
 
           <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-1">
-            <SmallStat icon={Droplet} label="Kelembapan udara" metricKey={conditionKeys.airHumidity} iconCls="bg-info-soft text-info" />
-            <SmallStat icon={Sun} label="Cahaya" metricKey={conditionKeys.illuminance} iconCls="bg-warn-soft text-warn" />
+            <SmallStat icon={Droplet} label="Kelembapan udara" metricKey={conditionKeys.airHumidity} iconCls="bg-info-soft text-info-ink" />
+            <SmallStat icon={Sun} label="Cahaya" metricKey={conditionKeys.illuminance} iconCls="bg-warn-soft text-warn-ink" />
           </div>
 
           <div className="mt-auto flex flex-col items-start gap-2 pt-5">

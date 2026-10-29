@@ -32,7 +32,7 @@ export function ThemeToggle({ className }: { className?: string }) {
 
 const options: ThemePreference[] = ["light", "dark", "green", "system"];
 
-/** Pemilih tema lengkap untuk halaman Pengaturan. */
+/** Pemilih tema lengkap (Pengaturan & menu Lainnya). Ponsel: 2×2 supaya keempat pilihan terlihat. */
 export function ThemeSwitcher() {
   const { preference, setPreference } = useTheme();
   return (
@@ -40,6 +40,7 @@ export function ThemeSwitcher() {
       label="Tema tampilan"
       value={preference}
       onChange={setPreference}
+      className="grid w-full grid-cols-2 sm:inline-flex sm:w-auto"
       options={options.map((v) => ({ value: v, label: themeLabels[v], icon: icons[v] }))}
     />
   );

@@ -44,7 +44,7 @@ function DashboardHeader() {
         </div>
       </div>
       {/* Desktop */}
-      <LeafCorner className="pointer-events-none absolute -top-6 -right-8 hidden h-36 w-52 md:block lg:-right-8" />
+      <LeafCorner className="pointer-events-none absolute -top-6 -right-6 hidden h-36 w-52 md:block lg:-right-8" />
       <div className="relative hidden flex-wrap items-end justify-between gap-4 md:flex md:pr-40">
         <div className="min-w-0">
           <h1 className="text-[34px] leading-tight font-bold tracking-tight text-ink">{siteConfig.name}</h1>
@@ -71,17 +71,24 @@ export default function DashboardPage() {
       {overviewError && overview.data === undefined && (
         <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
       )}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)]">
+      {/* items-start: tiap kolom setinggi isinya sendiri. Tanpa ini kartu Alat ikut memanjang setinggi
+          kolom kiri dan menyisakan kotak putih kosong yang panjang di bagian bawah. */}
+      <div className="grid items-start gap-4 md:grid-cols-2 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)]">
         <div className="flex min-w-0 flex-col gap-4 md:col-span-2 lg:col-span-1">
           <ConditionsCard />
           <CultivationCard />
-          {/* Dua kolom di ponsel supaya angkanya besar dan terbaca; tiga kolom mulai tablet. */}
+          {/*
+            Dua kolom di ponsel supaya angkanya besar dan terbaca; tiga kolom mulai tablet. Status alat
+            + 7 sensor tanah mengisi baris penuh (di tiga kolom kartu status selebar dua), lalu tangki
+            pupuk satu baris sendiri. Dengan begitu tidak ada sel kosong dan tidak ada kartu yang
+            ikut memanjang mengikuti kartu tangki yang lebih tinggi.
+          */}
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
-            <SystemStatusCard />
+            <SystemStatusCard className="sm:col-span-2" />
             {soilMetricCards.map((m) => (
               <ReadingMetricCard key={m.suffix} metricKey={soilMetricKey(m.suffix)} label={m.label} icon={m.icon} />
             ))}
-            <TankCard />
+            <TankCard className="col-span-2 sm:col-span-3" />
           </div>
         </div>
         <DevicesCard />

@@ -2,7 +2,7 @@
 
 import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useCallback } from "react";
-import { applyAcknowledged, mergeReadings, type ReadingMap } from "@/lib/realtime/apply";
+import { applyAcknowledged, applyActuator, applySensor, mergeReadings, type ReadingMap } from "@/lib/realtime/apply";
 import { isRetiredActuator } from "@/lib/actuator-commands";
 import * as api from "./endpoints";
 import { qk, type LiveActivity } from "./query-keys";
@@ -100,6 +100,11 @@ export function useSensors<T = Sensor[]>(select?: (s: Sensor[]) => T) {
   return useQuery({ queryKey: qk.sensors, queryFn: ({ signal }) => api.getSensors(undefined, signal), select });
 }
 
+/** Semua sensor termasuk yang dimatikan (`includeDisabled`), untuk ditinjau di Pengaturan. */
+export function useAllSensors() {
+  return useQuery({ queryKey: qk.sensorsAll, queryFn: ({ signal }) => api.getSensors(undefined, signal, true) });
+}
+
 export function useSensor(id: number) {
   return useQuery({ queryKey: qk.sensor(id), queryFn: ({ signal }) => api.getSensor(id, signal), enabled: Number.isFinite(id) });
 }
@@ -128,11 +133,73 @@ export function usePatchSensor(id: number) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (patch: api.SensorPatch) => api.patchSensor(id, patch),
-    onSuccess: (s) => {
-      // Tidak ada event realtime untuk perubahan data master: perbarui cache sendiri.
-      qc.setQueryData(qk.sensor(id), s);
-      qc.setQueryData<Sensor[]>(qk.sensors, (list) => list?.map((x) => (x.id === id ? s : x)));
-    },
+    // Event SENSOR_UPDATED menyusul untuk operator lain; di sini cache langsung diperbarui.
+    onSuccess: (s) => applySensor(qc, s),
+  });
+}
+
+// ── Kalibrasi sensor ─────────────────────────────────────────────────────────
+
+export function useCalibrationSamples(sensorId: number) {
+  return useQuery({ queryKey: qk.calibrationSamples(sensorId), queryFn: ({ signal }) => api.getCalibrationSamples(sensorId, signal) });
+}
+
+export function useAddCalibrationSample(sensorId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.CalibrationSampleInput) => api.addCalibrationSample(sensorId, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.calibrationSamples(sensorId) }),
+  });
+}
+
+export function useDeleteCalibrationSample(sensorId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (sampleId: number) => api.deleteCalibrationSample(sensorId, sampleId),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.calibrationSamples(sensorId) }),
+  });
+}
+
+export function useSensorCalibrations(sensorId: number) {
+  return useQuery({ queryKey: qk.sensorCalibrations(sensorId), queryFn: ({ signal }) => api.getSensorCalibrations(sensorId, signal) });
+}
+
+/** Model baru berlaku untuk pembacaan berikutnya: angka terakhir & riwayat diambil ulang. */
+function useInvalidateCalibration(sensorId: number) {
+  const qc = useQueryClient();
+  return () => {
+    void qc.invalidateQueries({ queryKey: qk.sensorCalibrations(sensorId) });
+    void qc.invalidateQueries({ queryKey: qk.sensorLatest(sensorId) });
+  };
+}
+
+/** `save: false` hanya menghitung (pratinjau); `save: true` menyimpan sebagai kalibrasi baru. */
+export function useFitCalibration(sensorId: number) {
+  const invalidate = useInvalidateCalibration(sensorId);
+  return useMutation({
+    mutationFn: (body: api.CalibrationFitInput) => api.fitSensorCalibration(sensorId, body),
+    onSuccess: (_, body) => body.save && invalidate(),
+  });
+}
+
+export function useCreateSensorCalibration(sensorId: number) {
+  const invalidate = useInvalidateCalibration(sensorId);
+  return useMutation({ mutationFn: (body: api.SensorCalibrationInput) => api.createSensorCalibration(sensorId, body), onSuccess: invalidate });
+}
+
+export function useDriftChecks(sensorId: number, page = 0) {
+  return useQuery({
+    queryKey: qk.driftChecks(sensorId, page),
+    queryFn: ({ signal }) => api.getDriftChecks(sensorId, page, 10, signal),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useAddDriftCheck(sensorId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.DriftCheckInput) => api.addDriftCheck(sensorId, body),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.driftChecksRoot(sensorId) }),
   });
 }
 
@@ -143,6 +210,14 @@ export function useActuators<T = Actuator[]>(select?: (a: Actuator[]) => T) {
     queryKey: qk.actuators,
     queryFn: async ({ signal }) => (await api.getActuators(undefined, signal)).filter((a) => !isRetiredActuator(a)),
     select,
+  });
+}
+
+/** Semua aktuator termasuk yang dimatikan, untuk diaktifkan kembali di Pengaturan. */
+export function useAllActuators() {
+  return useQuery({
+    queryKey: qk.actuatorsAll,
+    queryFn: async ({ signal }) => (await api.getActuators(undefined, signal, true)).filter((a) => !isRetiredActuator(a)),
   });
 }
 
@@ -163,13 +238,36 @@ export function usePatchActuator(id: number) {
   const qc = useQueryClient();
   return useMutation({
     mutationFn: (patch: api.ActuatorPatch) => api.patchActuator(id, patch),
-    onSuccess: (a) => {
-      qc.setQueryData(qk.actuator(id), a);
-      qc.setQueryData<Actuator[]>(qk.actuators, (list) => list?.map((x) => (x.id === id ? a : x)));
-      qc.setQueryData<DashboardOverview>(qk.overview, (o) =>
-        o ? { ...o, actuators: o.actuators.map((s) => (s.id === id ? { ...s, enabled: a.enabled } : s)) } : o,
-      );
+    onSuccess: (a) => applyActuator(qc, a),
+  });
+}
+
+// ── Kalibrasi pompa dosing ───────────────────────────────────────────────────
+
+export function usePumpCalibrations(actuatorId: number) {
+  return useQuery({ queryKey: qk.pumpCalibrations(actuatorId), queryFn: ({ signal }) => api.getPumpCalibrations(actuatorId, signal) });
+}
+
+export function useCreatePumpCalibration(actuatorId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.PumpCalibrationInput) => api.createPumpCalibration(actuatorId, body),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.pumpCalibrations(actuatorId) });
+      void qc.invalidateQueries({ queryKey: ["actuators", actuatorId, "dispensed"] });
     },
+  });
+}
+
+/** Volume yang dikeluarkan pompa selama `ms` terakhir. */
+export function useDispensed(actuatorId: number, range: string, ms: number) {
+  return useQuery({
+    queryKey: qk.dispensed(actuatorId, range),
+    queryFn: ({ signal }) => {
+      const now = Date.now();
+      return api.getDispensed(actuatorId, { from: new Date(now - ms).toISOString(), to: new Date(now).toISOString() }, signal);
+    },
+    staleTime: 60_000,
   });
 }
 
@@ -193,6 +291,23 @@ export function useSendCommand(actuatorId: number) {
     },
   });
 }
+
+// ── Jadwal siram ─────────────────────────────────────────────────────────────
+
+/** Diambil ulang tiap menit supaya "berikutnya" dan hasil terakhir ikut berubah setelah jam siram. */
+export function useIrrigationSchedules() {
+  return useQuery({ queryKey: qk.irrigationSchedules, queryFn: ({ signal }) => api.getIrrigationSchedules(signal), refetchInterval: 60_000 });
+}
+
+function useIrrigationMutation<V>(fn: (v: V) => Promise<unknown>) {
+  const qc = useQueryClient();
+  return useMutation({ mutationFn: fn, onSuccess: () => void qc.invalidateQueries({ queryKey: qk.irrigationSchedules }) });
+}
+
+export const useCreateIrrigation = () => useIrrigationMutation((body: api.IrrigationInput) => api.createIrrigationSchedule(body));
+export const usePatchIrrigation = () =>
+  useIrrigationMutation(({ id, body }: { id: number; body: Partial<api.IrrigationInput> }) => api.patchIrrigationSchedule(id, body));
+export const useDeleteIrrigation = () => useIrrigationMutation((id: number) => api.deleteIrrigationSchedule(id));
 
 // ── Alert ────────────────────────────────────────────────────────────────────
 
@@ -218,39 +333,22 @@ export function useDetections(f: api.DetectionFilter, page = 0, size = 20) {
   });
 }
 
-// ── Siklus tanam & tanaman ───────────────────────────────────────────────────
+// ── Umur tanaman & tanaman ───────────────────────────────────────────────────
 
 export function useCycleToday(enabled = true) {
   return useQuery({ queryKey: qk.cycleToday, queryFn: ({ signal }) => api.getCycleToday(signal), staleTime: 60_000, enabled });
 }
 
-export function useCycles() {
-  return useQuery({ queryKey: qk.cycles, queryFn: ({ signal }) => api.getCycles(signal) });
-}
-
-/** Setelah siklus/fase berubah: HST & fase di overview dan daftar siklus diambil ulang. */
-function useInvalidateCultivation() {
+/** Simpan tanggal tanam pindah. Jawaban backend langsung jadi HST & fase; overview diambil ulang. */
+export function useSetTransplantDate() {
   const qc = useQueryClient();
-  return () => {
-    void qc.invalidateQueries({ queryKey: qk.cycleToday });
-    void qc.invalidateQueries({ queryKey: qk.cycles });
-    void qc.invalidateQueries({ queryKey: qk.overview });
-  };
-}
-
-export function useCreateCycle() {
-  const invalidate = useInvalidateCultivation();
-  return useMutation({ mutationFn: (body: api.CycleInput) => api.createCycle(body), onSuccess: invalidate });
-}
-
-export function usePatchCycle(id: number) {
-  const invalidate = useInvalidateCultivation();
-  return useMutation({ mutationFn: (body: api.CyclePatch) => api.patchCycle(id, body), onSuccess: invalidate });
-}
-
-export function usePutPhases(id: number) {
-  const invalidate = useInvalidateCultivation();
-  return useMutation({ mutationFn: (phases: api.PhaseInput[]) => api.putPhases(id, phases), onSuccess: invalidate });
+  return useMutation({
+    mutationFn: (date: string) => api.putTransplantDate(date),
+    onSuccess: (today) => {
+      qc.setQueryData(qk.cycleToday, today);
+      void qc.invalidateQueries({ queryKey: qk.overview });
+    },
+  });
 }
 
 export function usePlants(f: api.PlantFilters) {
@@ -269,23 +367,16 @@ export function useCreatePlant() {
   });
 }
 
-export function usePatchPlant() {
+/** Menghapus tanaman terakhir juga mengosongkan tanggal tanam di backend → umur & overview diambil ulang. */
+export function useDeletePlant() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: number; body: api.PlantPatch }) => api.patchPlant(id, body),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.plantsRoot }),
-  });
-}
-
-export function useObservations(plantId: number, page = 0) {
-  return useQuery({ queryKey: qk.observations(plantId, page), queryFn: ({ signal }) => api.getObservations(plantId, page, 10, signal), placeholderData: keepPreviousData });
-}
-
-export function useAddObservation(plantId: number) {
-  const qc = useQueryClient();
-  return useMutation({
-    mutationFn: (body: api.ObservationInput) => api.addObservation(plantId, body),
-    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.plantsRoot }),
+    mutationFn: (id: number) => api.deletePlant(id),
+    onSuccess: () => {
+      void qc.invalidateQueries({ queryKey: qk.plantsRoot });
+      void qc.invalidateQueries({ queryKey: qk.cycleToday });
+      void qc.invalidateQueries({ queryKey: qk.overview });
+    },
   });
 }
 

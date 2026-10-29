@@ -4,36 +4,54 @@
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 :root {
-  /* Terang: putih bersih di atas latar mint pucat, teks hijau sangat gelap (mengikuti docs/referensi-ui). */
-  --bg: #eef5ef;
+  /*
+   * Design tokens FertiMata (docs/collor-pallet.txt). Tiga tema = tiga varian dari satu sistem:
+   * nama token sama, nilainya per tema. Komponen hanya memakai token, tidak pernah hex langsung.
+   *
+   *   bg / card / card-2 (permukaan terangkat atau sisipan) / sunken (lekukan, track bar)
+   *   ink (teks utama) / ink-2 (teks isi) / muted (teks sekunder) / line (border & pemisah)
+   *   accent (aksi utama) / accent-hover / accent-soft (latar ikon) / accent-ink (teks & ikon hijau)
+   *   active (elemen terpilih: segmented, nomor langkah) — sama dengan aksi utama
+   *   success · warn · danger · info: warna status, maknanya tidak berubah antar tema.
+   *     <x>      = titik, garis, bar (selalu didampingi teks)
+   *     <x>-soft = latar badge / ikon
+   *     <x>-ink  = teks & ikon di atas <x>-soft atau kartu (kontras ≥ 4.5:1)
+   */
+  --bg: #eef5f0;
   --card: #ffffff;
-  --card-2: #f6faf6;
-  --sunken: #e3eee6;
-  --ink: #13261b;
-  --ink-2: #3c5244;
-  --muted: #687c6f;
-  --line: rgb(19 60 35 / 0.09);
+  --card-2: #f5faf6;
+  --sunken: #e4eee7;
+  --ink: #183126;
+  --ink-2: #3e5347;
+  --muted: #63756b;
+  --line: #dce7df;
 
-  --active: #1d6b3f;
+  --active: #218653;
   --active-fg: #ffffff;
 
-  --accent: #1f9a53;
+  --accent: #218653;
+  --accent-hover: #176b42;
   --accent-2: #4cc27c;
   --accent-fg: #ffffff;
-  --accent-soft: #e0f3e6;
+  --accent-soft: #e2f4e8;
+  --accent-ink: #176b42;
 
-  --warn: #d98a0b;
-  --warn-soft: #fdf1d7;
+  --success: #16a05d;
+
+  --warn: #e99a18;
+  --warn-soft: #fdf2dc;
   --warn-ink: #8a5a00;
 
-  --danger: #d6372e;
-  --danger-soft: #fde8e6;
-  --danger-ink: #a3221a;
+  --danger: #dc4c4c;
+  --danger-soft: #fce9e9;
+  --danger-ink: #a82828;
+  --danger-fg: #ffffff;
 
   --info: #3a78c2;
-  --info-soft: #e0ebf8;
+  --info-soft: #e3edf9;
+  --info-ink: #2b5e9c;
 
-  --shadow: 0 1px 2px rgb(16 64 34 / 0.04), 0 10px 30px -14px rgb(16 64 34 / 0.16);
+  --shadow: 0 1px 2px rgb(24 49 38 / 0.05);
 
   /* Ilustrasi dekoratif (daun, melon, greenhouse). */
   --leaf-1: #2e9c57;
@@ -49,36 +67,43 @@
   --glass: rgb(255 255 255 / 0.55);
   --deco-opacity: 1;
   color-scheme: light;
+
 }
 
 [data-theme="dark"] {
-  --bg: #111211;
-  --card: #1b1c1b;
-  --card-2: #242624;
-  --sunken: #0c0d0c;
-  --ink: #ededed;
-  --ink-2: #c4c4c4;
-  --muted: #8f918f;
-  --line: rgb(255 255 255 / 0.07);
+  --bg: #111815;
+  --card: #1b2420;
+  --card-2: #24312a;
+  --sunken: #0d1310;
+  --ink: #e7f0e9;
+  --ink-2: #c7d4cb;
+  --muted: #a5b6aa;
+  --line: #34453a;
 
-  --active: #f1f1f1;
-  --active-fg: #111211;
+  --active: #4cc786;
+  --active-fg: #0e1c14;
 
-  --accent: #37ad61;
-  --accent-2: #5fd08a;
-  --accent-fg: #ffffff;
-  --accent-soft: #173524;
+  --accent: #4cc786;
+  --accent-hover: #70d99d;
+  --accent-2: #70d99d;
+  --accent-fg: #0e1c14;
+  --accent-soft: #203b2d;
+  --accent-ink: #70d99d;
 
-  --warn: #e7a82c;
-  --warn-soft: #3a2d10;
-  --warn-ink: #f3c86c;
+  --success: #4cc786;
 
-  --danger: #ea5a50;
-  --danger-soft: #3d1917;
-  --danger-ink: #ff9f97;
+  --warn: #f5b942;
+  --warn-soft: #3a2e12;
+  --warn-ink: #f5b942;
+
+  --danger: #ff7777;
+  --danger-soft: #3f1e1e;
+  --danger-ink: #ff9a9a;
+  --danger-fg: #2a0d0d;
 
   --info: #6aa3e6;
-  --info-soft: #172a3f;
+  --info-soft: #182b40;
+  --info-ink: #8dbbf0;
 
   --shadow: none;
 
@@ -98,37 +123,43 @@
 }
 
 /*
- * Mode "Hijau": hijau mendominasi. Latar & kartu bernuansa sage, elemen aktif hijau tua
- * menggantikan hitam, teks hijau sangat gelap. Kontras teks tetap ≥ 4.5:1 terhadap kartu.
+ * Mode "Hijau": nuansa greenhouse yang lembut. Latar hijau pucat, kartu hampir putih supaya tetap
+ * terpisah dari latar; hijau solid hanya untuk aksi utama. Kontras teks ≥ 4.5:1 terhadap kartu.
  */
 [data-theme="green"] {
-  --bg: #cbe2d1;
-  --card: #e1f0e5;
-  --card-2: #f2faf4;
-  --sunken: #bcd8c4;
-  --ink: #10291a;
-  --ink-2: #2f4d3a;
-  --muted: #5d7a66;
-  --line: rgb(16 64 34 / 0.1);
+  --bg: #e6f2e9;
+  --card: #f8fcf9;
+  --card-2: #ffffff;
+  --sunken: #d6e8db;
+  --ink: #173b29;
+  --ink-2: #2f5240;
+  --muted: #587263;
+  --line: #c9dfd0;
 
-  --active: #17593a;
+  --active: #218653;
   --active-fg: #ffffff;
 
-  --accent: #23874a;
+  --accent: #218653;
+  --accent-hover: #176b42;
   --accent-2: #45b06c;
   --accent-fg: #ffffff;
-  --accent-soft: #cbe9d4;
+  --accent-soft: #d9f0df;
+  --accent-ink: #176b42;
 
-  --warn: #c98506;
-  --warn-soft: #f6ecd0;
-  --warn-ink: #7a4f00;
+  --success: #16854b;
 
-  --danger: #c93a31;
-  --danger-soft: #f7dedb;
-  --danger-ink: #8f1f18;
+  --warn: #a96800;
+  --warn-soft: #f6ecd3;
+  --warn-ink: #7f4e00;
+
+  --danger: #b83232;
+  --danger-soft: #f7e0e0;
+  --danger-ink: #962424;
+  --danger-fg: #ffffff;
 
   --info: #2f6fb3;
-  --info-soft: #dce8f4;
+  --info-soft: #dde9f5;
+  --info-ink: #275c96;
 
   --shadow: 0 1px 2px rgb(16 64 34 / 0.05);
 
@@ -162,22 +193,28 @@
   --color-accent-2: var(--accent-2);
   --color-accent-fg: var(--accent-fg);
   --color-accent-soft: var(--accent-soft);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-ink: var(--accent-ink);
+  --color-success: var(--success);
   --color-warn: var(--warn);
   --color-warn-soft: var(--warn-soft);
   --color-warn-ink: var(--warn-ink);
   --color-danger: var(--danger);
   --color-danger-soft: var(--danger-soft);
   --color-danger-ink: var(--danger-ink);
+  --color-danger-fg: var(--danger-fg);
   --color-info: var(--info);
   --color-info-soft: var(--info-soft);
+  --color-info-ink: var(--info-ink);
   --color-leaf-1: var(--leaf-1);
   --color-leaf-2: var(--leaf-2);
   --color-leaf-3: var(--leaf-3);
   --color-leaf-4: var(--leaf-4);
 
-  --radius-card: 22px;
-  --radius-inner: 16px;
-  --radius-control: 12px;
+  /* Kartu utama 18, kartu di dalam kartu 14, tombol & input 10. */
+  --radius-card: 18px;
+  --radius-inner: 14px;
+  --radius-control: 10px;
 
   --shadow-card: var(--shadow);
 

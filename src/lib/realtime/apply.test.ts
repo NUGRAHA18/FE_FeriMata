@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { beforeEach, describe, expect, it } from "vitest";
 import { qk, type LiveActivity } from "@/lib/api/query-keys";
-import type { ActuatorCommand, Alert, DashboardOverview, DeviceStatus, Page, SensorReading } from "@/lib/api/types";
+import type { Actuator, ActuatorCommand, Alert, DashboardOverview, DeviceStatus, Page, Sensor, SensorReading } from "@/lib/api/types";
 import { applyAcknowledged, applyRealtimeEvent, mergeReadings, type ReadingMap } from "./apply";
 
 const t = (s: number) => new Date(Date.UTC(2026, 8, 19, 7, 0, s)).toISOString();
@@ -113,6 +113,59 @@ describe("applyRealtimeEvent", () => {
     expect(applyRealtimeEvent(qc, { event: "DEVICE_STATUS_CHANGED", data: { id: "x" } })).toBe(false);
     expect(applyRealtimeEvent(qc, "bukan envelope")).toBe(false);
     expect(qc.getQueryData(qk.overview)).toBe(before);
+  });
+});
+
+function sensor(id: number, name: string): Sensor {
+  return {
+    id, deviceId: 1, deviceCode: "D", code: `S${id}`, metricKey: `m.${id}`, name, type: null, unit: "C", enabled: true, autoRegistered: false,
+    description: null, metadata: null, createdAt: t(0), updatedAt: t(1),
+  };
+}
+
+function actuator(id: number, patch: Partial<Actuator> = {}): Actuator {
+  return {
+    id, deviceId: 3, deviceCode: "PANEL-01", code: `A${id}`, name: `Pompa ${id}`, type: "DOSING_PUMP", enabled: true, currentState: "OFF", stateUpdatedAt: t(0),
+    maxRunSeconds: 60, supportedCommands: null, description: null, metadata: null, createdAt: t(0), updatedAt: t(1), ...patch,
+  };
+}
+
+describe("data master (SENSOR_UPDATED, ACTUATOR_UPDATED)", () => {
+  it("SENSOR_UPDATED mengganti sensor di daftar & detail, dan menambah sensor baru", () => {
+    qc.setQueryData(qk.sensors, [sensor(1, "Suhu")]);
+    applyRealtimeEvent(qc, { event: "SENSOR_UPDATED", data: sensor(1, "Suhu udara") });
+    applyRealtimeEvent(qc, { event: "SENSOR_UPDATED", data: sensor(2, "Baru") });
+    expect(qc.getQueryData<Sensor[]>(qk.sensors)!.map((s) => s.name)).toEqual(["Suhu udara", "Baru"]);
+    expect(qc.getQueryData<Sensor>(qk.sensor(1))!.name).toBe("Suhu udara");
+  });
+
+  it("ACTUATOR_UPDATED memperbarui daftar, detail, dan saklar 'boleh dinyalakan' di overview", () => {
+    qc.setQueryData(qk.actuators, [actuator(7)]);
+    applyRealtimeEvent(qc, { event: "ACTUATOR_UPDATED", data: actuator(7, { name: "Pompa A" }) });
+    expect(qc.getQueryData<Actuator[]>(qk.actuators)![0].name).toBe("Pompa A");
+    applyRealtimeEvent(qc, { event: "ACTUATOR_UPDATED", data: actuator(7, { enabled: false, name: "Pompa A" }) });
+    expect(qc.getQueryData<Actuator>(qk.actuator(7))!.enabled).toBe(false);
+    expect(qc.getQueryData<DashboardOverview>(qk.overview)!.actuators[0].enabled).toBe(false);
+  });
+
+  it("yang dimatikan keluar dari daftar bawaan tapi tetap di daftar includeDisabled; diaktifkan = masuk lagi", () => {
+    qc.setQueryData(qk.sensors, [sensor(1, "Suhu"), sensor(2, "pH")]);
+    qc.setQueryData(qk.sensorsAll, [sensor(1, "Suhu"), sensor(2, "pH")]);
+    applyRealtimeEvent(qc, { event: "SENSOR_UPDATED", data: { ...sensor(2, "pH"), enabled: false } });
+    expect(qc.getQueryData<Sensor[]>(qk.sensors)!.map((s) => s.id)).toEqual([1]);
+    expect(qc.getQueryData<Sensor[]>(qk.sensorsAll)!.find((s) => s.id === 2)!.enabled).toBe(false);
+    applyRealtimeEvent(qc, { event: "SENSOR_UPDATED", data: sensor(2, "pH") });
+    expect(qc.getQueryData<Sensor[]>(qk.sensors)!.map((s) => s.id)).toEqual([1, 2]);
+
+    qc.setQueryData(qk.actuators, [actuator(7)]);
+    applyRealtimeEvent(qc, { event: "ACTUATOR_STATUS_CHANGED", data: { id: 7, code: "A7", enabled: false, currentState: "OFF", stateUpdatedAt: t(5), deviceCode: "PANEL-01" } });
+    expect(qc.getQueryData<Actuator[]>(qk.actuators)).toEqual([]);
+  });
+
+  it("ACTUATOR_UPDATED tidak memunculkan aktuator yang sudah dicabut di daftar Kontrol", () => {
+    qc.setQueryData(qk.actuators, [actuator(7)]);
+    applyRealtimeEvent(qc, { event: "ACTUATOR_UPDATED", data: actuator(9, { type: "DOSING_LOOP" }) });
+    expect(qc.getQueryData<Actuator[]>(qk.actuators)!.map((a) => a.id)).toEqual([7]);
   });
 });
 

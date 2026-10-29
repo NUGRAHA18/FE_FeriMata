@@ -12,7 +12,7 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useDevices, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { deviceNameLabel, formatReading, formatUnit } from "@/lib/format";
+import { deviceNameLabel, formatNumber, formatReading, formatUnit } from "@/lib/format";
 import { SensorIcon } from "@/lib/icons";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
@@ -29,7 +29,7 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
       className={cn("flex min-w-0 flex-col rounded-inner bg-card-2 p-4 transition hover:ring-1 hover:ring-line", !s.enabled && "opacity-70")}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+        <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
           <SensorIcon kind={s.type} aria-hidden className="size-5" strokeWidth={1.8} />
         </span>
         <div className="min-w-0 flex-1">
@@ -44,6 +44,12 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
         <span className="metric-value text-[34px] sm:text-[40px]">{value ?? "—"}</span>
         {value && unit && <span className="text-base text-muted">{unit}</span>}
       </p>
+      {r?.calibratedValue != null && (
+        <p className="tabular mt-1 truncate text-xs text-ink-2">
+          dikoreksi lab: {formatNumber(r.calibratedValue)}
+          {unit && ` ${unit}`}
+        </p>
+      )}
       <p className="mt-2 truncate text-xs text-muted">{r ? <RelativeTime iso={r.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
     </Link>
   );

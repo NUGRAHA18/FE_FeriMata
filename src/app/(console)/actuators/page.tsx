@@ -41,7 +41,7 @@ export default function ActuatorsPage() {
     <>
       <PageHeader
         title={canWrite ? "Kontrol" : "Status alat"}
-        subtitle={canWrite ? "Nyalakan atau matikan pompa, pengaduk, dan kereta kamera." : "Status pompa, pengaduk, dan kereta kamera. Akun Anda hanya bisa melihat."}
+        subtitle={canWrite ? "Nyalakan atau matikan alat." : "Status alat (hanya melihat)."}
       />
       {q.isPending ? (
         <div className="grid gap-4 lg:grid-cols-2">

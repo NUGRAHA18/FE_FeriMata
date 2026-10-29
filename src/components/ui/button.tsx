@@ -5,13 +5,19 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "dark" | "soft" | "ghost" | "danger" | "accent";
 type Size = "sm" | "md" | "lg";
 
+/*
+ * Aturan tombol: hijau solid hanya untuk aksi utama (primary / dark / accent — sama tampilannya;
+ * nama lama dipertahankan agar pemanggil tidak berubah). Aksi kedua: soft. Navigasi kecil: IconButton
+ * atau CornerLink, bukan tombol solid. Disabled: pudar + kursor dilarang, tanpa efek hover.
+ */
+const solid = "bg-accent text-accent-fg hover:bg-accent-hover disabled:hover:bg-accent";
 const variants: Record<Variant, string> = {
-  primary: "bg-active text-active-fg hover:opacity-90",
-  dark: "bg-active text-active-fg hover:opacity-90",
-  accent: "bg-accent text-accent-fg hover:brightness-105",
-  soft: "bg-card-2 text-ink ring-1 ring-line hover:bg-sunken",
-  ghost: "bg-transparent text-ink-2 hover:bg-card-2",
-  danger: "bg-danger text-white hover:brightness-105",
+  primary: solid,
+  dark: solid,
+  accent: solid,
+  soft: "bg-card text-ink ring-1 ring-line hover:bg-card-2 hover:ring-accent/40 disabled:hover:bg-card",
+  ghost: "bg-transparent text-ink-2 hover:bg-accent-soft hover:text-accent-ink disabled:hover:bg-transparent",
+  danger: "bg-danger-ink text-danger-fg hover:bg-danger disabled:hover:bg-danger-ink",
 };
 
 const sizes: Record<Size, string> = {
@@ -38,7 +44,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(function Button
       disabled={disabled || loading}
       aria-busy={loading || undefined}
       className={cn(
-        "inline-flex shrink-0 items-center justify-center rounded-control font-medium transition select-none",
+        "inline-flex shrink-0 items-center justify-center rounded-control font-semibold transition select-none",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
         "disabled:cursor-not-allowed disabled:opacity-50",
         variants[variant],
@@ -65,7 +71,7 @@ type IconButtonProps = Omit<ComponentProps<"button">, "children"> & {
   badge?: boolean;
 };
 
-const iconSizes = { sm: "size-8 rounded-[10px]", md: "size-10 rounded-control", lg: "size-12 rounded-[14px]" };
+const iconSizes = { sm: "size-8 rounded-[8px]", md: "size-10 rounded-control", lg: "size-12 rounded-[12px]" };
 
 export function IconButton({ icon: Icon, label, active, size = "md", badge, className, type = "button", ...props }: IconButtonProps) {
   return (
@@ -77,13 +83,13 @@ export function IconButton({ icon: Icon, label, active, size = "md", badge, clas
         "relative grid shrink-0 place-items-center transition",
         "focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40",
         iconSizes[size],
-        active ? "bg-active text-active-fg" : "bg-card-2 text-ink-2 ring-1 ring-line hover:bg-sunken",
+        active ? "bg-active text-active-fg" : "bg-card text-ink-2 ring-1 ring-line hover:bg-accent-soft hover:text-accent-ink",
         className,
       )}
       {...props}
     >
       <Icon aria-hidden className={size === "sm" ? "size-4" : "size-[18px]"} strokeWidth={2} />
-      {badge && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-danger ring-2 ring-card-2" />}
+      {badge && <span aria-hidden className="absolute top-2 right-2 size-2 rounded-full bg-danger ring-2 ring-card" />}
     </button>
   );
 }

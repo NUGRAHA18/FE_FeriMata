@@ -10,14 +10,14 @@ import { errorMessage } from "@/lib/api/client";
 import { useAcknowledgeAlert } from "@/lib/api/queries";
 import type { Alert } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
-import { alertMessageLabel, alertTitleLabel, alertTypeLabel, formatDateTime, severityLabel, sourceLabel } from "@/lib/format";
+import { alertBody, alertFailureCode, alertHeadline, formatDateTime, severityLabel, sourceLabel } from "@/lib/format";
 import { cn } from "@/lib/cn";
 
 export const severityTone: Record<string, Tone> = { INFO: "info", WARNING: "warn", CRITICAL: "danger" };
 
 const severityIcon: Record<string, LucideIcon> = { INFO: Info, WARNING: AlertTriangle, CRITICAL: OctagonAlert };
 const severityBubble: Record<string, string> = {
-  INFO: "bg-info-soft text-info",
+  INFO: "bg-info-soft text-info-ink",
   WARNING: "bg-warn-soft text-warn-ink",
   CRITICAL: "bg-danger-soft text-danger-ink",
 };
@@ -55,7 +55,7 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
         </span>
         <div className="min-w-0 flex-1">
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="font-semibold text-ink">{alertTypeLabel(a.type) === a.type ? alertTitleLabel(a.title) : alertTypeLabel(a.type)}</p>
+            <p className="font-semibold text-ink">{alertHeadline(a.type, a.title, alertFailureCode(a.metadata))}</p>
             <Chip tone={tone} icon={false} className="py-0.5 text-[11px]">
               {severityLabel[a.severity] ?? a.severity}
             </Chip>
@@ -63,7 +63,7 @@ export function AlertItem({ alert: a, compact }: { alert: Alert; compact?: boole
           <p className="mt-0.5 text-xs text-muted">
             {sourceLabel[a.source] ?? a.source} • <RelativeTime iso={a.createdAt} />
           </p>
-          {a.message && <p className={cn("mt-1.5 text-ink-2", compact ? "line-clamp-2 text-sm" : "text-sm")}>{alertMessageLabel(a.message)}</p>}
+          {a.message && <p className={cn("mt-1.5 text-ink-2", compact ? "line-clamp-2 text-sm" : "text-sm")}>{alertBody(a.message, { failureCode: alertFailureCode(a.metadata), deviceCode: a.relatedDeviceCode, actuatorCode: a.relatedActuatorCode, type: a.type, metadata: a.metadata })}</p>}
           <RelatedLinks a={a} />
           <div className="mt-3 flex flex-wrap items-center gap-2">
             {a.acknowledged ? (

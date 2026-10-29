@@ -1,13 +1,16 @@
 import type { QueryClient } from "@tanstack/react-query";
 import type { AlertFilters, DetectionFilter } from "@/lib/api/endpoints";
 import { qk, type LiveActivity } from "@/lib/api/query-keys";
+import { isRetiredActuator } from "@/lib/actuator-commands";
 import {
   actuatorCommandSchema,
+  actuatorSchema,
   actuatorStatusSchema,
   aiDetectionSchema,
   alertSchema,
   deviceStatusSchema,
   envelopeSchema,
+  sensorSchema,
   telemetryEventSchema,
   type Actuator,
   type ActuatorCommand,
@@ -18,6 +21,7 @@ import {
   type Device,
   type DeviceStatus,
   type Page,
+  type Sensor,
   type SensorReading,
 } from "@/lib/api/types";
 
@@ -108,8 +112,35 @@ function onDeviceStatus(qc: QueryClient, s: DeviceStatus) {
 function onActuatorStatus(qc: QueryClient, s: ActuatorStatus) {
   qc.setQueryData<DashboardOverview>(qk.overview, (o) => (o ? { ...o, actuators: upsertById(o.actuators, s) } : o));
   const patch = (a: Actuator): Actuator => ({ ...a, enabled: s.enabled, currentState: s.currentState, stateUpdatedAt: s.stateUpdatedAt });
-  qc.setQueryData<Actuator[]>(qk.actuators, (list) => list?.map((a) => (a.id === s.id ? patch(a) : a)));
+  // Daftar bawaan hanya berisi yang aktif: aktuator yang baru dimatikan keluar dari daftar.
+  qc.setQueryData<Actuator[]>(qk.actuators, (list) => list?.flatMap((a) => (a.id !== s.id ? [a] : s.enabled ? [patch(a)] : [])));
+  qc.setQueryData<Actuator[]>(qk.actuatorsAll, (list) => list?.map((a) => (a.id === s.id ? patch(a) : a)));
   qc.setQueryData<Actuator>(qk.actuator(s.id), (a) => (a ? patch(a) : a));
+}
+
+const without = <T extends { id: number }>(list: T[], id: number) => (list.some((x) => x.id === id) ? list.filter((x) => x.id !== id) : list);
+
+/**
+ * Data master sensor berubah (SENSOR_UPDATED atau PATCH sendiri). Daftar bawaan backend hanya berisi
+ * sensor aktif → dimatikan = keluar, diaktifkan = masuk. Daftar `includeDisabled` memuat semuanya.
+ */
+export function applySensor(qc: QueryClient, s: Sensor) {
+  qc.setQueryData<Sensor[]>(qk.sensors, (list) => (!list ? list : s.enabled ? upsertById(list, s) : without(list, s.id)));
+  qc.setQueryData<Sensor[]>(qk.sensorsAll, (list) => (list ? upsertById(list, s) : list));
+  qc.setQueryData<Sensor>(qk.sensor(s.id), s);
+}
+
+/** Sama untuk aktuator (ACTUATOR_UPDATED atau PATCH sendiri). Yang sudah dicabut tidak pernah ditampilkan. */
+export function applyActuator(qc: QueryClient, a: Actuator) {
+  const visible = a.enabled && !isRetiredActuator(a);
+  qc.setQueryData<Actuator[]>(qk.actuators, (list) => (!list ? list : visible ? upsertById(list, a) : without(list, a.id)));
+  qc.setQueryData<Actuator[]>(qk.actuatorsAll, (list) => (!list ? list : isRetiredActuator(a) ? without(list, a.id) : upsertById(list, a)));
+  qc.setQueryData<Actuator>(qk.actuator(a.id), a);
+  qc.setQueryData<DashboardOverview>(qk.overview, (o) =>
+    o && o.actuators.some((x) => x.id === a.id && x.enabled !== a.enabled)
+      ? { ...o, actuators: o.actuators.map((x) => (x.id === a.id ? { ...x, enabled: a.enabled } : x)) }
+      : o,
+  );
 }
 
 function onCommand(qc: QueryClient, c: ActuatorCommand) {
@@ -224,6 +255,18 @@ export function applyRealtimeEvent(qc: QueryClient, raw: unknown): boolean {
       const p = actuatorStatusSchema.safeParse(data);
       if (!p.success) return false;
       onActuatorStatus(qc, p.data);
+      return true;
+    }
+    case "SENSOR_UPDATED": {
+      const p = sensorSchema.safeParse(data);
+      if (!p.success) return false;
+      applySensor(qc, p.data);
+      return true;
+    }
+    case "ACTUATOR_UPDATED": {
+      const p = actuatorSchema.safeParse(data);
+      if (!p.success) return false;
+      applyActuator(qc, p.data);
       return true;
     }
     case "ACTUATOR_COMMAND_UPDATED": {

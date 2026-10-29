@@ -6,6 +6,7 @@ import { useState } from "react";
 import { useSession } from "@/lib/auth/use-session";
 import { GuideDialog } from "@/components/onboarding/guide";
 import { DevTools } from "@/components/settings/dev-tools";
+import { DisabledItemsCard } from "@/components/settings/disabled-items";
 import { PageHeader } from "@/components/shell/page-header";
 import { ThemeSwitcher } from "@/components/shell/theme-toggle";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -36,16 +37,17 @@ export default function SettingsPage() {
   return (
     <>
       <PageHeader title="Pengaturan" />
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
         <Card className="lg:col-span-2">
-          <CardHeader title="Siklus tanam & tanaman" icon={Sprout} />
+          <CardHeader title="Tanaman" icon={Sprout} />
           <p className="text-sm text-ink-2">
-            {canWrite ? "Atur tanggal tanam, fase pertumbuhan, daftar tanaman perlakuan, dan catat pengamatan 3–4 harian." : "Lihat umur tanaman, fase pertumbuhan, dan daftar tanaman perlakuan."}
+            {canWrite ? "Lihat umur dan fase tanaman, tambah atau hapus tanaman, dan ubah tanggal tanam." : "Lihat umur tanaman, fase pertumbuhan, dan daftar tanaman."}
           </p>
           <Link href="/cultivation" className="mt-3 inline-flex h-11 items-center gap-2 rounded-control bg-active px-4 text-sm font-medium text-active-fg hover:opacity-90">
             Buka halaman Tanaman <ArrowUpRight aria-hidden className="size-4" />
           </Link>
         </Card>
+        {canWrite && <DisabledItemsCard />}
         {isAdmin && (
           <Card className="lg:col-span-2">
             <CardHeader title="Pengguna" icon={Users} />

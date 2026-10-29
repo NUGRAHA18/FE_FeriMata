@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  alertBody,
+  alertFailureCode,
+  alertHeadline,
   alertMessageLabel,
   alertTitleLabel,
   alertTypeLabel,
@@ -8,6 +11,7 @@ import {
   formatDuration,
   formatNumber,
   formatReading,
+  parseDecimal,
   formatRelative,
   formatTime,
   formatUnit,
@@ -99,5 +103,51 @@ describe("alertMessageLabel / alertTitleLabel / deviceNameLabel", () => {
     expect(deviceNameLabel("Development edge device")).toBe("Komputer Simulasi (Dev)");
     expect(deviceNameLabel("Pompa Utama")).toBe("Pompa Utama");
     expect(deviceNameLabel(null)).toBeNull();
+  });
+});
+
+describe("alertHeadline & alertBody", () => {
+  it("memakai failureCode dari data, bukan teks pesan", () => {
+    expect(alertHeadline("ACTUATOR_COMMAND_FAILED", "Actuator did not respond", "NO_RESPONSE")).toBe("Alat tidak menjawab perintah");
+    expect(alertHeadline(null, "Actuator did not respond", "NO_RESPONSE")).toBe("Alat tidak menjawab perintah");
+    expect(alertBody("Device PANEL-01 did not acknowledge command ON for DIST-PUMP", { failureCode: "NO_RESPONSE", deviceCode: "PANEL-01", actuatorCode: "DIST-PUMP" })).toBe(
+      "PANEL-01 tidak menjawab perintah untuk DIST-PUMP. Perintah mungkin tidak dijalankan; periksa keadaan alat.",
+    );
+  });
+
+  it("tanpa kode: label tipe, lalu terjemahan judul lama, lalu judul apa adanya", () => {
+    expect(alertHeadline("ACTUATOR_COMMAND_FAILED", "Something")).toBe("Perintah gagal dijalankan");
+    expect(alertHeadline(null, "Device offline")).toBe("Alat terputus");
+    expect(alertHeadline("SMOKE_WARN", "SMOKE_WARN_1793032988")).toBe("SMOKE_WARN_1793032988");
+    expect(alertFailureCode({ failureCode: "NO_RESPONSE", commandUid: "x" })).toBe("NO_RESPONSE");
+    expect(alertFailureCode(null)).toBeNull();
+  });
+});
+
+describe("parseDecimal", () => {
+  it("menerima koma desimal, kosong → undefined, teks → NaN", () => {
+    expect(parseDecimal("13,5")).toBe(13.5);
+    expect(parseDecimal(" 1450 ")).toBe(1450);
+    expect(parseDecimal("")).toBeUndefined();
+    expect(parseDecimal("12a")).toBeNaN();
+  });
+});
+
+describe("peringatan jadwal siram", () => {
+  it("disusun dari metadata.reasonCode atau kode entri overview (teks Inggris tidak tampil)", () => {
+    expect(alertHeadline("IRRIGATION_SKIPPED", "Scheduled irrigation skipped")).toBe("Penyiraman terjadwal dibatalkan");
+    expect(
+      alertBody("Irrigation scheduled at 06:00 did not start: Device is on backup power", {
+        type: "IRRIGATION_SKIPPED",
+        metadata: { scheduleId: 1, time: "06:00", result: "SKIPPED", reasonCode: "EXCLUSIVE_OPERATION", conflictingActuatorCode: "DOSING-N" },
+      }),
+    ).toBe("Penyiraman jam 06:00 dibatalkan demi keamanan: DOSING-N sedang berjalan. Jadwal berikutnya tetap berjalan.");
+    // Entri overview: tanpa metadata, hanya alertType + kode (failureCode = reasonCode).
+    expect(alertBody("Irrigation scheduled at 06:00 did not start: x", { type: "IRRIGATION_SKIPPED", failureCode: "FLOAT_LOW" })).toBe(
+      "Penyiraman dibatalkan demi keamanan: air drum rendah. Jadwal berikutnya tetap berjalan.",
+    );
+    expect(alertBody("x", { type: "IRRIGATION_SKIPPED", failureCode: "PUMP_UNAVAILABLE" })).toBe(
+      "Penyiraman gagal: pompa siram tidak ditemukan atau dimatikan. Jadwal berikutnya tetap berjalan.",
+    );
   });
 });

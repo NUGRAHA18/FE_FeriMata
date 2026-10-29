@@ -15,7 +15,7 @@ import { useNow } from "@/lib/use-now";
 const toneClass: Partial<Record<Tone, string>> = {
   warn: "bg-warn-soft text-warn-ink",
   danger: "bg-danger-soft text-danger-ink",
-  info: "bg-info-soft text-info",
+  info: "bg-info-soft text-info-ink",
 };
 
 export function Banner({ tone, icon, children, action }: { tone: Tone; icon: ReactNode; children: ReactNode; action?: ReactNode }) {
@@ -42,7 +42,7 @@ export function SystemBanners() {
     <>
       {flags.backup.length > 0 && (
         <Banner tone="danger" icon={<BatteryWarning aria-hidden className={iconCls} strokeWidth={1.8} />}>
-          <strong className="font-semibold">Listrik PLN padam, sistem memakai baterai.</strong> Pompa pupuk dan kereta kamera dihentikan sementara
+          <strong className="font-semibold">Listrik PLN padam, sistem memakai baterai.</strong> Pompa air utama, pompa pupuk, pengaduk, dan kereta kamera dikunci sementara
           sampai listrik kembali.
         </Banner>
       )}

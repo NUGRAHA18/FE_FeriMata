@@ -14,6 +14,7 @@ import { ensureFreshToken, needsRefresh, REFRESH_LEEWAY_MS } from "@/lib/auth/re
 import { endSession, type Session } from "@/lib/auth/session";
 import { useSession } from "@/lib/auth/use-session";
 import { useOfflineSnapshot } from "@/lib/offline/use-offline-snapshot";
+import { disablePushOnLogout, syncPushKey } from "@/lib/push";
 import { useRealtime, useConnectionState } from "@/lib/realtime/stomp";
 
 function initialsOf(s: Session) {
@@ -44,6 +45,8 @@ function AuthedConsole({ session, children }: { session: Session; children: Reac
   // Sebelum hook lain memakai overview: muat angka terakhir yang tersimpan untuk mode offline.
   useOfflineSnapshot(session.user.username, connection);
   useRealtime(session.token);
+  // Kunci VAPID server diganti? Perbarui langganan push HP ini (hanya bila sudah berlangganan).
+  useEffect(() => void syncPushKey().catch(() => undefined), []);
   const alertCount = useOverview((o) => o.alerts.unacknowledged).data ?? 0;
 
   // Perpanjang token akses diam-diam sebelum habis; sesi berakhir hanya saat refresh token habis.
@@ -63,8 +66,10 @@ function AuthedConsole({ session, children }: { session: Session; children: Reac
     };
   }, [session.expiresAt, session.refreshExpiresAt, session.refreshToken]);
 
-  const relogin = () => {
+  const relogin = async () => {
     const next = currentPath();
+    // Akun berikutnya di HP ini tidak boleh menerima peringatan akun ini.
+    await disablePushOnLogout();
     endSession("logout");
     router.replace(`/login?next=${encodeURIComponent(next)}`);
   };

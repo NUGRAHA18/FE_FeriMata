@@ -93,6 +93,9 @@ export const sensorReadingSchema = z.object({
   deviceId: z.number(),
   deviceCode: z.string(),
   value: z.number().nullable(),
+  // Nilai setelah koreksi kalibrasi yang berlaku saat recordedAt; null = belum dikalibrasi (atau
+  // kovariat tidak ada). Opsional supaya backend lama tetap terbaca.
+  calibratedValue: z.number().nullable().optional(),
   textValue: z.string().nullable(),
   unit: z.string().nullable(),
   recordedAt: instant,
@@ -111,6 +114,123 @@ export function pageSchema<T extends z.ZodType>(item: T) {
   });
 }
 export type Page<T> = { content: T[]; page: number; size: number; totalElements: number; totalPages: number; last: boolean };
+
+/** GET /sensors/{id}/history/aggregate. Nilai mentah (tanpa kalibrasi); ember kosong tidak dikirim. */
+export const sensorHistorySeriesSchema = z.object({
+  sensorId: z.number(),
+  sensorCode: z.string(),
+  metricKey: z.string(),
+  unit: z.string().nullable(),
+  interval: z.string(),
+  intervalSeconds: z.number(),
+  from: instant,
+  to: instant,
+  points: z.array(
+    z.object({
+      bucketStart: instant,
+      count: z.number(),
+      min: z.number().nullable(),
+      avg: z.number().nullable(),
+      max: z.number().nullable(),
+    }),
+  ),
+});
+export type SensorHistorySeries = z.infer<typeof sensorHistorySeriesSchema>;
+
+// ── Kalibrasi (Protokol-Data §7, §8) ─────────────────────────────────────────
+const numberMap = z.record(z.string(), z.unknown()).nullable();
+
+export const calibrationSampleSchema = z.object({
+  id: z.number(),
+  sensorId: z.number(),
+  sensorCode: z.string(),
+  sampledAt: instant,
+  sensorValue: z.number().nullable(),
+  labValue: z.number(),
+  labMethod: z.string().nullable(),
+  covariates: numberMap,
+  sampleCode: z.string().nullable(),
+  notes: z.string().nullable(),
+  recordedBy: z.string().nullable(),
+  createdAt: instant,
+});
+export type CalibrationSample = z.infer<typeof calibrationSampleSchema>;
+
+export const sensorCalibrationSchema = z.object({
+  /** Null untuk pratinjau hitungan yang belum disimpan. */
+  id: z.number().nullable(),
+  sensorId: z.number(),
+  sensorCode: z.string(),
+  metricKey: z.string(),
+  method: z.string(),
+  intercept: z.number(),
+  slope: z.number(),
+  covariates: numberMap,
+  validFrom: instant.nullable(),
+  sampleCount: z.number().nullable(),
+  rSquared: z.number().nullable(),
+  rmse: z.number().nullable(),
+  mae: z.number().nullable(),
+  bias: z.number().nullable(),
+  loaLower: z.number().nullable(),
+  loaUpper: z.number().nullable(),
+  notes: z.string().nullable(),
+  createdBy: z.string().nullable(),
+  current: z.boolean(),
+  createdAt: instant.nullable(),
+});
+export type SensorCalibration = z.infer<typeof sensorCalibrationSchema>;
+
+export const driftCheckSchema = z.object({
+  id: z.number(),
+  sensorId: z.number(),
+  sensorCode: z.string(),
+  checkedAt: instant,
+  standardName: z.string(),
+  referenceValue: z.number(),
+  measuredValue: z.number().nullable(),
+  deviation: z.number().nullable(),
+  deviationPercent: z.number().nullable(),
+  probeCleaned: z.boolean(),
+  notes: z.string().nullable(),
+  performedBy: z.string().nullable(),
+  createdAt: instant,
+});
+export type DriftCheck = z.infer<typeof driftCheckSchema>;
+
+export const pumpCalibrationSchema = z.object({
+  id: z.number(),
+  actuatorId: z.number(),
+  actuatorCode: z.string(),
+  calibratedAt: instant,
+  flowMlPerSecond: z.number(),
+  trialCount: z.number(),
+  trials: z.array(z.object({ durationSeconds: z.number(), volumeMl: z.number() })).nullable(),
+  flowCvPercent: z.number().nullable(),
+  busVoltage: z.number().nullable(),
+  notes: z.string().nullable(),
+  performedBy: z.string().nullable(),
+  current: z.boolean(),
+  createdAt: instant,
+});
+export type PumpCalibration = z.infer<typeof pumpCalibrationSchema>;
+
+export const dispensedVolumeSchema = z.object({
+  actuatorId: z.number(),
+  actuatorCode: z.string(),
+  actuatorName: z.string().nullable(),
+  from: instant,
+  to: instant,
+  runCount: z.number(),
+  totalSeconds: z.number().nullable(),
+  /** Null bila tidak ada jalannya pompa yang sudah dikalibrasi. */
+  volumeMl: z.number().nullable(),
+  uncalibratedRunCount: z.number(),
+  unknownDurationRunCount: z.number(),
+  currentFlowMlPerSecond: z.number().nullable(),
+  currentCalibratedAt: instant.nullable(),
+});
+export type DispensedVolume = z.infer<typeof dispensedVolumeSchema>;
 
 // ── Aktuator ──────────────────────────────────────────────────────────────────
 export const actuatorSchema = z.object({
@@ -189,6 +309,8 @@ export const alertSchema = z.object({
   acknowledgedBy: z.string().nullable(),
   acknowledgedAt: instant.nullable(),
   createdAt: instant,
+  // Metadata mentah peringatan (mis. {commandUid, failureCode}). Opsional untuk backend lama.
+  metadata: json.nullable().optional(),
 });
 export type Alert = z.infer<typeof alertSchema>;
 
@@ -215,7 +337,12 @@ export const aiDetectionSchema = z.object({
 });
 export type AiDetection = z.infer<typeof aiDetectionSchema>;
 
-// ── Siklus tanam & tanaman ────────────────────────────────────────────────────
+// ── Umur tanaman & tanaman ────────────────────────────────────────────────────
+/*
+ * Backend masih menyimpan fase dalam "siklus" aktif, tetapi UI hanya memakai tanggal tanam pindah,
+ * HST, dan nama/target EC fase. Field lain dibuat opsional supaya pembersihan backend tidak membuat
+ * respons ditolak (zod juga membuang field yang tidak dikenal).
+ */
 export const growthPhaseSchema = z.object({
   id: z.number().nullable().optional(),
   code: z.string(),
@@ -224,32 +351,21 @@ export const growthPhaseSchema = z.object({
   endHst: z.number().nullable(),
   ecTargetMin: z.number().nullable(),
   ecTargetMax: z.number().nullable(),
-  ratioN: z.number().nullable(),
-  ratioP: z.number().nullable(),
-  ratioK: z.number().nullable(),
-  notes: z.string().nullable(),
+  notes: z.string().nullable().optional(),
 });
 export type GrowthPhase = z.infer<typeof growthPhaseSchema>;
 
-export const cycleStatusSchema = z.enum(["PLANNED", "ACTIVE", "ENDED"]);
-export type CycleStatus = z.infer<typeof cycleStatusSchema>;
-
 export const plantingCycleSchema = z.object({
-  id: z.number(),
-  code: z.string(),
-  name: z.string(),
-  variety: z.string().nullable(),
+  id: z.number().optional(),
+  code: z.string().optional(),
+  name: z.string().optional(),
   transplantDate: z.string(),
-  expectedHarvestDate: z.string().nullable(),
-  endedAt: z.string().nullable(),
-  status: cycleStatusSchema,
-  notes: z.string().nullable(),
-  phases: z.array(growthPhaseSchema),
-  createdAt: instant,
-  updatedAt: instant,
+  status: z.string().optional(),
+  phases: z.array(growthPhaseSchema).optional(),
 });
 export type PlantingCycle = z.infer<typeof plantingCycleSchema>;
 
+/** GET /cultivation/active & PUT /cultivation/transplant-date. */
 export const cycleTodaySchema = z.object({
   cycle: plantingCycleSchema,
   today: z.string(),
@@ -257,50 +373,42 @@ export const cycleTodaySchema = z.object({
   currentPhase: growthPhaseSchema.nullable(),
   nextPhase: growthPhaseSchema.nullable(),
   daysUntilNextPhase: z.number().nullable(),
+  /** Semua tanaman aktif. */
   plantCount: z.number(),
-  treatmentPlantCount: z.number(),
 });
 export type CycleToday = z.infer<typeof cycleTodaySchema>;
-
-export const plantObservationSchema = z.object({
-  id: z.number(),
-  plantId: z.number(),
-  plantCode: z.string(),
-  observedAt: instant,
-  hst: z.number().nullable(),
-  heightCm: z.number().nullable(),
-  leafCount: z.number().nullable(),
-  leaf3LengthCm: z.number().nullable(),
-  leaf3WidthCm: z.number().nullable(),
-  visualNotes: z.string().nullable(),
-  soilSnapshot: json.nullable(),
-  observedBy: z.string().nullable(),
-  createdAt: instant,
-});
-export type PlantObservation = z.infer<typeof plantObservationSchema>;
 
 export const plantSchema = z.object({
   id: z.number(),
   code: z.string(),
   name: z.string(),
   description: z.string().nullable(),
-  cycleId: z.number().nullable(),
-  cycleCode: z.string().nullable(),
-  treatmentCode: z.string().nullable(),
-  blockCode: z.string().nullable(),
-  rowCode: z.string().nullable(),
-  plotCode: z.string().nullable(),
-  stationCode: z.string().nullable(),
-  positionInRow: z.number().nullable(),
-  comparisonGroup: z.string().nullable(),
-  taggedLeaves: z.string().nullable(),
   active: z.boolean(),
-  metadata: json.nullable(),
-  lastObservation: plantObservationSchema.nullable(),
   createdAt: instant,
   updatedAt: instant,
 });
 export type Plant = z.infer<typeof plantSchema>;
+
+// ── Jadwal siram (harian, jam WIB) ───────────────────────────────────────────
+export const irrigationScheduleSchema = z.object({
+  id: z.number(),
+  /** "06:00", waktu kebun (WIB). */
+  time: z.string(),
+  durationSeconds: z.number(),
+  enabled: z.boolean(),
+  notes: z.string().nullable(),
+  /** Null bila jadwal dimatikan. */
+  nextRunAt: instant.nullable(),
+  lastRunAt: instant.nullable(),
+  /** STARTED · SKIPPED (ditolak aturan keselamatan) · FAILED · MISSED (sistem mati). String agar nilai baru tidak ditolak. */
+  lastResult: z.string().nullable(),
+  /** Teks teknis bahasa Inggris — hanya untuk "Info teknis". */
+  lastMessage: z.string().nullable(),
+  /** Kode alasan (interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, kode error API); null bila Disiram. */
+  lastReasonCode: z.string().nullable().optional(),
+  lastCommandUid: z.string().nullable(),
+});
+export type IrrigationSchedule = z.infer<typeof irrigationScheduleSchema>;
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export const activityEntrySchema = z.object({
@@ -315,6 +423,11 @@ export const activityEntrySchema = z.object({
   deviceCode: z.string().nullable().optional(),
   actor: z.string().nullable().optional(),
   refId: z.number().nullable().optional(),
+  // Perintah: failureCode perintah; peringatan: metadata.failureCode, atau metadata.reasonCode bila
+  // tidak ada (mis. IRRIGATION_SKIPPED → BACKUP_POWER). Null selain itu.
+  failureCode: z.string().nullable().optional(),
+  /** Tipe peringatan untuk entri ALERT (mis. IRRIGATION_SKIPPED); null untuk perintah. */
+  alertType: z.string().nullable().optional(),
 });
 export type ActivityEntry = z.infer<typeof activityEntrySchema>;
 
@@ -346,24 +459,34 @@ export const dashboardOverviewSchema = z.object({
   }),
   latestAiDetection: aiDetectionSchema.nullable().optional(),
   recentActivity: z.array(activityEntrySchema),
-  // Null bila belum ada siklus tanam aktif; opsional agar backend lama tetap lolos.
+  // Null bila tanggal tanam pindah belum diisi; opsional agar backend lama tetap lolos.
   cultivation: z
     .object({
-      cycleId: z.number(),
-      cycleCode: z.string(),
-      cycleName: z.string(),
       transplantDate: z.string(),
       hst: z.number(),
       currentPhase: growthPhaseSchema.nullable(),
       nextPhase: growthPhaseSchema.nullable(),
       daysUntilNextPhase: z.number().nullable(),
       plantCount: z.number(),
-      treatmentPlantCount: z.number(),
     })
     .nullable()
     .optional(),
 });
 export type DashboardOverview = z.infer<typeof dashboardOverviewSchema>;
+
+// ── Notifikasi push ───────────────────────────────────────────────────────────
+export const pushConfigSchema = z.object({
+  /** False bila server belum punya kunci VAPID. */
+  enabled: z.boolean(),
+  publicKey: z.string().nullable(),
+  minSeverity: z.string().nullable(),
+  /** Jumlah browser akun ini yang berlangganan. */
+  subscriptions: z.number(),
+});
+export type PushConfig = z.infer<typeof pushConfigSchema>;
+
+export const pushTestResultSchema = z.object({ delivered: z.number(), removed: z.number(), failed: z.number() });
+export type PushTestResult = z.infer<typeof pushTestResultSchema>;
 
 // ── Error ─────────────────────────────────────────────────────────────────────
 export const apiErrorSchema = z.object({

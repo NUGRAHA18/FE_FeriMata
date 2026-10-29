@@ -1,21 +1,30 @@
 "use client";
 
-import { Cpu } from "lucide-react";
+import Link from "next/link";
+import { ChevronRight, Cpu } from "lucide-react";
 import { DeviceRow } from "@/components/devices/device-row";
 import { Card, CardHeader, Inset } from "@/components/ui/card";
 import { ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { errorMessage } from "@/lib/api/client";
 import { useDevices, useOverview } from "@/lib/api/queries";
-import type { Device } from "@/lib/api/types";
+import type { Device, DeviceStatus } from "@/lib/api/types";
 import { cn } from "@/lib/cn";
 
 function Summary({ label, value }: { label: string; value: number | string }) {
   return (
-    <div className="min-w-0 px-2.5 first:pl-0">
+    <div className="min-w-0">
       <p className="text-xs leading-tight text-ink-2">{label}</p>
       <p className="tabular mt-1 text-2xl font-bold text-ink">{value}</p>
     </div>
   );
+}
+
+const DEVICE_PREVIEW = 6;
+
+/** Terputus / memakai baterai dulu, lalu belum pernah terhubung, lalu yang sehat; urutan asli dipertahankan. */
+function byProblem(items: DeviceStatus[]): DeviceStatus[] {
+  const rank = (s: DeviceStatus) => (s.status === "OFFLINE" || s.onBackupPower ? 0 : s.status === "UNKNOWN" ? 1 : 2);
+  return [...items].sort((a, b) => rank(a) - rank(b));
 }
 
 const namesOf = (list: Device[]) => Object.fromEntries(list.map((d) => [d.id, { name: d.name, type: d.type }]));
@@ -34,7 +43,7 @@ export function DevicesCard({ className }: { className?: string }) {
   const d = overview.data;
 
   return (
-    <Card className={cn("flex min-w-0 flex-col", className)}>
+    <Card className={cn("@container flex min-w-0 flex-col", className)}>
       <CardHeader title="Alat" icon={Cpu} href="/devices" hrefLabel="Buka daftar alat" />
       {overview.error ? (
         <ErrorState message={errorMessage(overview.error)} onRetry={() => overview.refetch()} />
@@ -52,19 +61,31 @@ export function DevicesCard({ className }: { className?: string }) {
         </>
       ) : (
         <>
-          <div className="mb-4 grid grid-cols-4 items-end divide-x divide-line px-1">
+          {/* Kartu sempit (tablet, kolom tengah): 2×2 supaya label tidak bertabrakan; lebar: 4 sejajar. */}
+          <div className="mb-4 grid grid-cols-2 items-end gap-x-4 gap-y-3 px-1 @[22rem]:grid-cols-4">
             <Summary label="Alat" value={d.total} />
             <Summary label="Terhubung" value={d.online} />
             <Summary label="Sensor" value={d.sensors} />
             <Summary label="Bisa dikendalikan" value={d.actuators} />
           </div>
-          <ul className="scroll-thin -mx-1 flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto px-1 lg:max-h-[640px]">
-            {d.items.map((s) => (
-              <li key={s.id}>
-                <DeviceRow status={s} name={names?.[s.id]?.name} type={names?.[s.id]?.type} href={`/devices/${s.id}`} />
-              </li>
-            ))}
+          {/* Tanpa area gulir di dalam kartu: alat bermasalah dulu, maksimal DEVICE_PREVIEW, sisanya di halaman Alat. */}
+          <ul className="flex flex-col gap-2">
+            {byProblem(d.items)
+              .slice(0, DEVICE_PREVIEW)
+              .map((s) => (
+                <li key={s.id}>
+                  <DeviceRow status={s} name={names?.[s.id]?.name} type={names?.[s.id]?.type} href={`/devices/${s.id}`} />
+                </li>
+              ))}
           </ul>
+          {d.items.length > DEVICE_PREVIEW && (
+            <Link
+              href="/devices"
+              className="mt-3 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-control text-sm font-semibold text-accent-ink transition hover:bg-accent-soft"
+            >
+              Lihat semua alat ({d.items.length}) <ChevronRight aria-hidden className="size-4" />
+            </Link>
+          )}
         </>
       )}
     </Card>

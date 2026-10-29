@@ -113,7 +113,7 @@ export function ActuatorCard({ actuator: a }: { actuator: Actuator }) {
     <section aria-label={a.name} className={cn("flex flex-col rounded-inner bg-card-2 p-4", !a.enabled && "ring-1 ring-line")}>
       <div className="flex items-start justify-between gap-3">
         <div className="flex min-w-0 items-start gap-3">
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent-soft text-accent">
+          <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
             <ActuatorIcon kind={a.type} aria-hidden className="size-5" strokeWidth={1.8} />
           </span>
           <div className="min-w-0">

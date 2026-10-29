@@ -162,6 +162,11 @@ export async function fetchProtectedBlob(url: string, signal?: AbortSignal): Pro
   return res.blob();
 }
 
+/** Berkas teks dari `/api` (ekspor CSV backend). Butuh Bearer token, jadi tidak bisa lewat `<a href>`. */
+export async function fetchApiText(path: string, query?: Query, signal?: AbortSignal): Promise<string> {
+  return (await fetchProtectedBlob(buildUrl(path, query), signal)).text();
+}
+
 /** Pesan ramah untuk ditampilkan di kartu error. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {

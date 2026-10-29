@@ -1,6 +1,6 @@
 "use client";
 
-import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from "recharts";
+import { Area, CartesianGrid, ComposedChart, Line, ResponsiveContainer, Tooltip, XAxis, YAxis, type TooltipContentProps } from "recharts";
 import type { Point } from "@/lib/history";
 import { formatDate, formatDateTime, formatNumber, formatTime } from "@/lib/format";
 
@@ -8,23 +8,31 @@ type Props = { points: Point[]; unit: string; spanMs: number };
 
 function ChartTooltip({ active, payload, unit }: Partial<TooltipContentProps<number, string>> & { unit: string }) {
   const p = payload?.[0]?.payload as Point | undefined;
-  if (!active || !p) return null;
+  if (!active || !p || p.avg == null) return null;
   return (
     <div className="rounded-control bg-active px-3 py-2 text-xs text-active-fg shadow-lg">
       <p className="tabular text-sm font-medium">
-        {formatNumber(p.v)} {unit}
+        {formatNumber(p.avg)} {unit}
       </p>
+      {p.min != null && p.max != null && p.min !== p.max && (
+        <p className="tabular opacity-75">
+          terendah {formatNumber(p.min)} · tertinggi {formatNumber(p.max)}
+        </p>
+      )}
       <p className="opacity-75">{formatDateTime(p.t)}</p>
     </div>
   );
 }
 
-/** Grafik garis satu seri (tanpa legenda: judul kartu menamai serinya). */
+/**
+ * Satu seri: garis = rata-rata tiap titik, pita tipis = terendah–tertinggi (tanpa legenda: judul
+ * kartu menamai serinya). Titik null memutus garis, jadi celah berarti alat tidak mengirim data.
+ */
 export default function HistoryChart({ points, unit, spanMs }: Props) {
   const multiDay = spanMs > 24 * 3_600_000;
   return (
     <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
+      <ComposedChart data={points} margin={{ top: 8, right: 8, bottom: 0, left: 0 }}>
         <CartesianGrid vertical={false} stroke="var(--line)" />
         <XAxis
           dataKey="t"
@@ -38,7 +46,6 @@ export default function HistoryChart({ points, unit, spanMs }: Props) {
           minTickGap={40}
         />
         <YAxis
-          dataKey="v"
           width={52}
           domain={["auto", "auto"]}
           tickFormatter={(v: number) => formatNumber(v) ?? ""}
@@ -47,16 +54,17 @@ export default function HistoryChart({ points, unit, spanMs }: Props) {
           axisLine={false}
         />
         <Tooltip cursor={{ stroke: "var(--ink-2)", strokeWidth: 1, strokeDasharray: "3 3" }} content={<ChartTooltip unit={unit} />} isAnimationActive={false} />
+        <Area type="monotone" dataKey="band" stroke="none" fill="var(--accent)" fillOpacity={0.15} activeDot={false} isAnimationActive={false} />
         <Line
           type="monotone"
-          dataKey="v"
+          dataKey="avg"
           stroke="var(--accent)"
           strokeWidth={2}
           dot={false}
           activeDot={{ r: 5, fill: "var(--accent)", stroke: "var(--card)", strokeWidth: 2 }}
           isAnimationActive={false}
         />
-      </LineChart>
+      </ComposedChart>
     </ResponsiveContainer>
   );
 }
