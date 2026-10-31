@@ -22,8 +22,11 @@ import { formatDate, formatDateTime, formatDuration, formatNumber, parseDecimal 
  * volumenya. Debit = total volume / total waktu. Dari debit itu backend menghitung volume pupuk.
  */
 
-/** Tipe aktuator yang debitnya dikalibrasi (bawaan backend `calibration.pump.types`). */
-export const isDosingPump = (a: Pick<Actuator, "type">) => a.type === "DOSING_PUMP";
+/**
+ * Pompa yang debitnya bisa dikalibrasi: flag `pumpCalibratable` dari backend (sumbernya
+ * `app.calibration.pump.types`). Backend lama tanpa flag → cek tipe DOSING_PUMP.
+ */
+export const isCalibratablePump = (a: Pick<Actuator, "type" | "pumpCalibratable">) => a.pumpCalibratable ?? a.type === "DOSING_PUMP";
 
 const MIN_TRIALS = 3;
 const DAY = 24 * 3_600_000;

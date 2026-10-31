@@ -70,7 +70,7 @@ export function SystemStatusCard({ compact, className }: { compact?: boolean; cl
 }
 
 /**
- * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa tanggal tanam atau
+ * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa tanggal semai atau
  * target → null, karena frontend tidak mengarang rentang ideal.
  */
 export function ecTargetStatus(

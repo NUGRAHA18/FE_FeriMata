@@ -5,7 +5,7 @@ import { History, Save, Settings2, SlidersHorizontal } from "lucide-react";
 import { useState, type FormEvent } from "react";
 import { ActuatorControls, ReportedState } from "@/components/actuators/actuator-card";
 import { CommandHistory } from "@/components/actuators/command-history";
-import { isDosingPump, PumpCalibrationCard } from "@/components/actuators/pump-calibration";
+import { isCalibratablePump, PumpCalibrationCard } from "@/components/actuators/pump-calibration";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
@@ -137,7 +137,7 @@ export default function ActuatorDetailPage() {
               </TechInfo>
             </Card>
             {canWrite && <Settings key={a.id} actuator={a} />}
-            {isDosingPump(a) && <PumpCalibrationCard actuator={a} />}
+            {isCalibratablePump(a) && <PumpCalibrationCard actuator={a} />}
             <Card className="lg:col-span-2">
               <CardHeader title="Riwayat perintah" icon={History} />
               <CommandHistory actuatorId={a.id} />

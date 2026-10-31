@@ -107,6 +107,9 @@ export const getDriftChecks = (sensorId: number, page = 0, size = 10, signal?: A
 export type DriftCheckInput = { standardName: string; referenceValue: number; measuredValue?: number; probeCleaned?: boolean; notes?: string };
 export const addDriftCheck = (sensorId: number, body: DriftCheckInput) =>
   apiRequest(`/sensors/${sensorId}/drift-checks`, { method: "POST", body, schema: driftCheckSchema });
+/** Hapus cek drift yang salah ketik (OPERATOR+; 404 bila bukan milik sensor ini). */
+export const deleteDriftCheck = (sensorId: number, checkId: number) =>
+  apiRequest(`/sensors/${sensorId}/drift-checks/${checkId}`, { method: "DELETE" });
 
 // Aktuator
 export const getActuators = (deviceId?: number, signal?: AbortSignal, includeDisabled = false) =>
@@ -181,7 +184,7 @@ export const getDetections = (f: DetectionFilter, page = 0, size = 20, signal?: 
   apiRequest("/ai/detections", { query: { ...detectionQuery(f), page, size }, schema: pageSchema(aiDetectionSchema), signal });
 export const getDetection = (id: number, signal?: AbortSignal) => apiRequest(`/ai/detections/${id}`, { schema: aiDetectionSchema, signal });
 
-// Umur tanaman: HST & fase dihitung backend dari satu tanggal tanam pindah (404 = belum diisi).
+// Umur tanaman: HST & fase dihitung backend dari satu tanggal semai = hari ke-0 (404 = belum diisi).
 export const getCycleToday = async (signal?: AbortSignal) => {
   try {
     return await apiRequest("/cultivation/active", { schema: cycleTodaySchema, signal });
@@ -190,9 +193,9 @@ export const getCycleToday = async (signal?: AbortSignal) => {
     throw e;
   }
 };
-/** Isi atau ubah tanggal tanam pindah ("2026-09-12"); jawabannya sama dengan GET /cultivation/active. */
-export const putTransplantDate = (transplantDate: string) =>
-  apiRequest("/cultivation/transplant-date", { method: "PUT", body: { transplantDate }, schema: cycleTodaySchema });
+/** Isi atau ubah tanggal semai ("2026-09-12"); jawabannya sama dengan GET /cultivation/active. */
+export const putSowingDate = (sowingDate: string) =>
+  apiRequest("/cultivation/sowing-date", { method: "PUT", body: { sowingDate }, schema: cycleTodaySchema });
 
 // Tanaman (semua tanaman aktif, tidak per siklus)
 export type PlantFilters = { active?: boolean };

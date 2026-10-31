@@ -121,6 +121,18 @@ describe("alertHeadline & alertBody", () => {
     expect(alertHeadline("SMOKE_WARN", "SMOKE_WARN_1793032988")).toBe("SMOKE_WARN_1793032988");
     expect(alertFailureCode({ failureCode: "NO_RESPONSE", commandUid: "x" })).toBe("NO_RESPONSE");
     expect(alertFailureCode(null)).toBeNull();
+    expect(alertFailureCode({ reasonCode: "AI_NO_WATER_NEEDED" })).toBe("AI_NO_WATER_NEEDED");
+  });
+
+  it("jadwal siram & AI: tidak perlu siram bukan masalah; durasi cadangan menyebut alasannya", () => {
+    expect(alertHeadline("IRRIGATION_SKIPPED", "x", "AI_NO_WATER_NEEDED")).toBe("Tidak perlu siram (keputusan AI)");
+    expect(alertBody("x", { type: "IRRIGATION_SKIPPED", metadata: { reasonCode: "AI_NO_WATER_NEEDED", time: "06:00" } })).toBe(
+      "Penyiraman jam 06:00 tidak dijalankan: AI menilai tanah masih cukup basah. Ini normal.",
+    );
+    expect(alertHeadline("IRRIGATION_AI_FALLBACK", "x")).toBe("Siram memakai durasi cadangan");
+    expect(alertBody("x", { type: "IRRIGATION_AI_FALLBACK", metadata: { reasonCode: "AI_UNAVAILABLE", time: "06:00" } })).toBe(
+      "Siram jam 06:00 memakai durasi cadangan karena AI tidak bisa dipakai: layanan AI tidak menjawab.",
+    );
   });
 });
 

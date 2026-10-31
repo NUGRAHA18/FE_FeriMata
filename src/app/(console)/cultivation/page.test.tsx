@@ -15,6 +15,7 @@ const phase = (code: string, name: string, startHst: number, endHst: number | nu
   code, name, startHst, endHst, ecTargetMin: 1.2, ecTargetMax: 2.5, ratioN: null, ratioP: null, ratioK: null, notes: null,
 });
 const cycle = {
+  // Nama lama `transplantDate` (backend sebelum 31 Okt 2026): tetap terbaca sebagai tanggal semai.
   id: 2, code: "MT-1", name: "Musim tanam", variety: null, transplantDate: "2026-09-21", expectedHarvestDate: null, endedAt: null, status: "ACTIVE",
   notes: null,
   phases: [
@@ -42,7 +43,8 @@ beforeEach(() => {
     if (init?.method === "DELETE") return Promise.resolve(new Response(null, { status: 204 }));
     if (init?.method === "PUT") {
       hasDate = true;
-      return json(200, { ...today, cycle: { ...cycle, transplantDate: JSON.parse(String(init.body)).transplantDate } });
+      // Backend baru: hanya `sowingDate`.
+      return json(200, { ...today, cycle: { ...cycle, transplantDate: undefined, sowingDate: JSON.parse(String(init.body)).sowingDate } });
     }
     if (init?.method === "POST") return json(201, { ...plant, id: 6, name: JSON.parse(String(init.body)).name });
     if (url.includes("/cultivation/active")) return hasDate ? json(200, today) : json(404, { status: 404, error: "RESOURCE_NOT_FOUND", message: "No active cycle" });
@@ -53,12 +55,12 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Halaman Tanaman", () => {
-  it("tanggal tanam sudah ada: form hanya menampilkannya, tanaman dikirim dengan nama saja", async () => {
+  it("tanggal semai sudah ada: form hanya menampilkannya, tanaman dikirim dengan nama saja", async () => {
     signIn();
     const { user } = renderWithProviders(<CultivationPage />);
     await user.click(await screen.findByRole("button", { name: "Tambah tanaman" }));
-    expect(screen.getByText(/Ditanam bersamaan pada/)).toHaveTextContent("hari ke-47");
-    expect(screen.queryByLabelText("Tanggal tanam")).not.toBeInTheDocument();
+    expect(screen.getByText(/Disemai bersamaan pada/)).toHaveTextContent("hari ke-47");
+    expect(screen.queryByLabelText("Tanggal semai")).not.toBeInTheDocument();
     await user.type(screen.getByRole("textbox", { name: "Nama tanaman" }), "  Melon 06 ");
     await user.click(screen.getByRole("button", { name: "Simpan tanaman" }));
     await waitFor(() => {
@@ -74,8 +76,8 @@ describe("Halaman Tanaman", () => {
     await user.click(await screen.findByRole("button", { name: "Hapus tanaman Melon pojok 03" }));
     const dialog = screen.getByRole("dialog", { name: "Hapus tanaman Melon pojok 03?" });
     expect(dialog).toHaveTextContent("Tidak bisa dibatalkan.");
-    // Daftar berisi satu tanaman → peringatan bahwa tanggal tanam ikut dikosongkan.
-    expect(dialog).toHaveTextContent("Ini tanaman terakhir; tanggal tanam juga akan dikosongkan.");
+    // Daftar berisi satu tanaman → peringatan bahwa tanggal semai ikut dikosongkan.
+    expect(dialog).toHaveTextContent("Ini tanaman terakhir; tanggal semai juga akan dikosongkan.");
     await user.click(screen.getByRole("button", { name: "Hapus" }));
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(expect.stringContaining("/api/plants/5"), expect.objectContaining({ method: "DELETE" })));
     // Umur tanaman diambil ulang (bisa jadi kosong lagi setelah tanaman terakhir dihapus).
@@ -91,15 +93,15 @@ describe("Halaman Tanaman", () => {
     expect(plantsUrl).not.toContain("cycleId");
   });
 
-  it("tanaman pertama: tanggal tanam wajib, disimpan dulu (PUT) lalu tanaman (POST)", async () => {
+  it("tanaman pertama: tanggal semai wajib, disimpan dulu (PUT) lalu tanaman (POST)", async () => {
     hasDate = false;
     signIn();
     const { user } = renderWithProviders(<CultivationPage />);
-    expect(await screen.findByText("Tanggal tanam belum diisi")).toBeInTheDocument();
+    expect(await screen.findByText("Tanggal semai belum diisi")).toBeInTheDocument();
     expect(screen.getByText("Tambahkan tanaman pertama untuk mulai menghitung hari tanam.")).toBeInTheDocument();
     expect(await screen.findByText("Melon pojok 03")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Tambah tanaman pertama" }));
-    const date = screen.getByLabelText("Tanggal tanam");
+    const date = screen.getByLabelText("Tanggal semai");
     expect(date).toHaveAttribute("type", "date");
     await user.clear(date);
     await user.type(date, "2026-09-12");
@@ -107,22 +109,22 @@ describe("Halaman Tanaman", () => {
     await user.click(screen.getByRole("button", { name: "Simpan tanaman" }));
     await waitFor(() => expect(fetchMock.mock.calls.some(([, init]) => init?.method === "POST")).toBe(true));
     const writes = fetchMock.mock.calls.filter(([, init]) => init?.method === "PUT" || init?.method === "POST");
-    expect(writes.map(([u, init]) => `${init?.method} ${new URL(String(u)).pathname}`)).toEqual(["PUT /api/cultivation/transplant-date", "POST /api/plants"]);
-    expect(JSON.parse(String(writes[0][1]?.body))).toEqual({ transplantDate: "2026-09-12" });
+    expect(writes.map(([u, init]) => `${init?.method} ${new URL(String(u)).pathname}`)).toEqual(["PUT /api/cultivation/sowing-date", "POST /api/plants"]);
+    expect(JSON.parse(String(writes[0][1]?.body))).toEqual({ sowingDate: "2026-09-12" });
     expect(screen.queryByText(/siklus|Pengaturan/i)).not.toBeInTheDocument();
   });
 
-  it("operator bisa mengoreksi tanggal tanam dari kartu Umur tanaman", async () => {
+  it("operator bisa mengoreksi tanggal semai dari kartu Umur tanaman", async () => {
     signIn();
     const { user } = renderWithProviders(<CultivationPage />);
-    await user.click(await screen.findByRole("button", { name: "Ubah tanggal tanam" }));
-    const date = screen.getByLabelText("Tanggal tanam");
+    await user.click(await screen.findByRole("button", { name: "Ubah tanggal semai" }));
+    const date = screen.getByLabelText("Tanggal semai");
     await user.clear(date);
     await user.type(date, "2026-09-15");
     await user.click(screen.getByRole("button", { name: "Simpan tanggal" }));
     await waitFor(() => {
       const put = fetchMock.mock.calls.find(([, init]) => init?.method === "PUT");
-      expect(JSON.parse(String(put?.[1]?.body))).toEqual({ transplantDate: "2026-09-15" });
+      expect(JSON.parse(String(put?.[1]?.body))).toEqual({ sowingDate: "2026-09-15" });
     });
   });
 
@@ -130,6 +132,6 @@ describe("Halaman Tanaman", () => {
     signIn("VIEWER", "pelihat");
     renderWithProviders(<CultivationPage />);
     expect(await screen.findByText("Melon pojok 03")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Tambah tanaman|Hapus tanaman|Ubah tanggal tanam/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Tambah tanaman|Hapus tanaman|Ubah tanggal semai/ })).not.toBeInTheDocument();
   });
 });

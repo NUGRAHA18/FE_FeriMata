@@ -1,5 +1,5 @@
 import { siteConfig } from "@/config/site";
-import { irrigationReasonText, isSafetyCode } from "@/lib/irrigation-reasons";
+import { AI_NO_WATER_NEEDED, irrigationReasonText, isSafetyCode } from "@/lib/irrigation-reasons";
 
 /*
  * Formatter tampilan: angka, satuan, waktu (WIB) — semua dalam Bahasa Indonesia yang sederhana.
@@ -182,6 +182,7 @@ const alertTypeLabels: Record<string, string> = {
   DEVICE_RECOVERED: "Alat terhubung kembali",
   ACTUATOR_COMMAND_FAILED: "Perintah gagal dijalankan",
   IRRIGATION_SKIPPED: "Penyiraman terjadwal dibatalkan",
+  IRRIGATION_AI_FALLBACK: "Siram memakai durasi cadangan",
   TELEMETRY_REJECTED: "Data sensor ditolak",
   POWER_BACKUP: "Listrik PLN padam, memakai baterai",
   POWER_RESTORED: "Listrik PLN kembali normal",
@@ -317,10 +318,14 @@ export function alertTitleLabel(title: string): string {
   return alertTitleLabels[title] ?? title;
 }
 
-/** `metadata.failureCode` peringatan (backend ≥ 30 Okt 2026), atau null. */
+const str = (v: unknown) => (typeof v === "string" && v ? v : null);
+
+/**
+ * `metadata.failureCode` peringatan (backend ≥ 30 Okt 2026), atau `metadata.reasonCode` bila tidak ada
+ * (sama dengan `failureCode` entri aktivitas dari backend), atau null.
+ */
 export function alertFailureCode(metadata: Record<string, unknown> | null | undefined): string | null {
-  const v = metadata?.failureCode;
-  return typeof v === "string" && v ? v : null;
+  return str(metadata?.failureCode) ?? str(metadata?.reasonCode);
 }
 
 /**
@@ -329,6 +334,7 @@ export function alertFailureCode(metadata: Record<string, unknown> | null | unde
  */
 export function alertHeadline(type: string | null, title: string, failureCode?: string | null): string {
   if (failureCode === "NO_RESPONSE") return "Alat tidak menjawab perintah";
+  if (type === "IRRIGATION_SKIPPED" && failureCode === AI_NO_WATER_NEEDED) return "Tidak perlu siram (keputusan AI)";
   const byType = type ? alertTypeLabel(type) : null;
   if (byType && byType !== type) return byType;
   return alertTitleLabel(title);
@@ -342,17 +348,26 @@ type AlertBodyContext = {
   metadata?: Record<string, unknown> | null;
 };
 
-const str = (v: unknown) => (typeof v === "string" && v ? v : null);
 
 /**
- * Isi peringatan disusun dari kode di data bila ada (NO_RESPONSE, IRRIGATION_SKIPPED + reasonCode),
+ * Isi peringatan disusun dari kode di data bila ada (NO_RESPONSE, IRRIGATION_SKIPPED / IRRIGATION_AI_FALLBACK
+ * + reasonCode),
  * selain itu terjemahan pesan backend.
  */
 export function alertBody(message: string, ctx: AlertBodyContext): string {
+  if (ctx.type === "IRRIGATION_AI_FALLBACK") {
+    const m = ctx.metadata ?? {};
+    const reason = irrigationReasonText(str(m.reasonCode) ?? ctx.failureCode);
+    const at = str(m.time) ? ` jam ${str(m.time)}` : "";
+    return `Siram${at} memakai durasi cadangan karena AI tidak bisa dipakai${reason ? `: ${reason}` : ""}.`;
+  }
   if (ctx.type === "IRRIGATION_SKIPPED") {
     const m = ctx.metadata ?? {};
-    const reason = irrigationReasonText(str(m.reasonCode) ?? ctx.failureCode, str(m.conflictingActuatorCode));
+    const code = str(m.reasonCode) ?? ctx.failureCode;
     const at = str(m.time) ? ` jam ${str(m.time)}` : "";
+    // Keputusan AI, bukan masalah: tanah masih cukup basah.
+    if (code === AI_NO_WATER_NEEDED) return `Penyiraman${at} tidak dijalankan: AI menilai tanah masih cukup basah. Ini normal.`;
+    const reason = irrigationReasonText(code, str(m.conflictingActuatorCode));
     // Tanpa metadata (entri overview) hasilnya ditebak dari kode: kode aturan keselamatan = dibatalkan.
     const failed = m.result ? m.result === "FAILED" : !!ctx.failureCode && !isSafetyCode(ctx.failureCode);
     const what = failed ? "gagal" : "dibatalkan demi keamanan";

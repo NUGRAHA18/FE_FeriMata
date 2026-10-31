@@ -19,6 +19,17 @@ Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah
 
 ---
 
+## 2f. Kontrak backend 31 Oktober 2026
+
+| Prio | Pekerjaan | Hasil |
+|---|---|---|
+| P1 | **Tanggal semai = hari ke-0** | Endpoint `/cultivation/sowing-date`, label "Tanggal semai", bantuan "Hari ke-0 = hari benih disemai"; Beranda "Hari sejak semai". Panduan diperbarui. |
+| P1 | **Lama siram dari AI** | Isian jadi "Lama siram cadangan"; hasil terakhir menampilkan lama sebenarnya + asalnya; "Tidak perlu siram" untuk `AI_NO_WATER_NEEDED`; peringatan `IRRIGATION_AI_FALLBACK`. Panduan diperbarui. |
+| P2 | **Kalibrasi** | `pumpCalibratable`, `details.reason` diterjemahkan per kode, hapus cek drift. |
+
+Rincian di `docs/backend-gaps.md`. Butuh backend dengan kontrak ini (belum di Jetson): menyimpan tanggal semai ke
+backend lama akan gagal (404).
+
 ## 2e. Desain ulang tampilan — 31 Oktober 2026 (permintaan user)
 
 Acuan: `docs/revisi-ui.txt`, `docs/screenshots/revisi-frontend.txt`, catatan palet tiga tema. Tanpa perubahan

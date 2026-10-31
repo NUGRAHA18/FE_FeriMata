@@ -203,6 +203,14 @@ export function useAddDriftCheck(sensorId: number) {
   });
 }
 
+export function useDeleteDriftCheck(sensorId: number) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (checkId: number) => api.deleteDriftCheck(sensorId, checkId),
+    onSuccess: () => void qc.invalidateQueries({ queryKey: qk.driftChecksRoot(sensorId) }),
+  });
+}
+
 // ── Aktuator ─────────────────────────────────────────────────────────────────
 
 export function useActuators<T = Actuator[]>(select?: (a: Actuator[]) => T) {
@@ -339,11 +347,11 @@ export function useCycleToday(enabled = true) {
   return useQuery({ queryKey: qk.cycleToday, queryFn: ({ signal }) => api.getCycleToday(signal), staleTime: 60_000, enabled });
 }
 
-/** Simpan tanggal tanam pindah. Jawaban backend langsung jadi HST & fase; overview diambil ulang. */
-export function useSetTransplantDate() {
+/** Simpan tanggal semai. Jawaban backend langsung jadi HST & fase; overview diambil ulang. */
+export function useSetSowingDate() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (date: string) => api.putTransplantDate(date),
+    mutationFn: (date: string) => api.putSowingDate(date),
     onSuccess: (today) => {
       qc.setQueryData(qk.cycleToday, today);
       void qc.invalidateQueries({ queryKey: qk.overview });
@@ -367,7 +375,7 @@ export function useCreatePlant() {
   });
 }
 
-/** Menghapus tanaman terakhir juga mengosongkan tanggal tanam di backend → umur & overview diambil ulang. */
+/** Menghapus tanaman terakhir juga mengosongkan tanggal semai di backend → umur & overview diambil ulang. */
 export function useDeletePlant() {
   const qc = useQueryClient();
   return useMutation({
