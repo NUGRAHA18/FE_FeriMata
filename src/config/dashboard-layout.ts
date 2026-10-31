@@ -1,18 +1,9 @@
 import { PicEc, PicNitrogen, PicPh, PicPhosphorus, PicPotassium, PicSoilMoisture, PicSoilTemp, type Picto } from "@/components/icons/pictos";
 
-/*
- * SATU-SATUNYA tempat pemetaan metric key → kartu dashboard.
- * Metric key adalah data katalog backend yang bisa berubah tanpa
- * perubahan backend. Kartu yang metric key-nya tidak ada di data tampil "—", bukan error.
- * Satuan TIDAK didefinisikan di sini — selalu diambil dari field `unit` pembacaan.
- * Label ditulis untuk petani: istilah teknis (EC, pH) tetap ada di dalam kurung karena itu yang
- * tertulis di alat ukur, tetapi kata utamanya bahasa sehari-hari.
- */
+// Satu-satunya pemetaan metric key (data katalog, bisa berubah) → kartu; key tak ada tampil "—".
+// Satuan selalu dari field `unit` pembacaan, bukan di sini.
 
-/**
- * Awalan metric key sensor tanah. FERTIMATA Rev A hanya punya satu sensor tanah 7-in-1 (alamat 1);
- * key `soil_a.*` dipertahankan backend supaya riwayat lama tetap nyambung.
- */
+/** Rev A hanya punya satu sensor tanah 7-in-1; prefix `soil_a` dipertahankan agar riwayat lama nyambung. */
 export const soilPrefix = "soil_a";
 
 export type MetricCardDef = { suffix: string; label: string; icon: Picto };
@@ -57,10 +48,7 @@ export const trolleyLayout = {
   stationSpacingCm: 60,
 };
 
-/**
- * Kode aktuator kereta kamera (ditampilkan sebagai aktuator biasa; tidak ada d-pad). TROLLEY-GOTO dan
- * TROLLEY-PATROL adalah aktuator virtual JETSON-01 (BE-1).
- */
+/** Ditampilkan sebagai aktuator biasa (tanpa d-pad). GOTO & PATROL = aktuator virtual JETSON-01 (BE-1). */
 export const trolleyActuatorCodes = ["TROLLEY-RUN", "TROLLEY-DIR", "TROLLEY-GOTO", "TROLLEY-PATROL"];
 
 /** Aktuator virtual patroli kamera; tombol "Patroli sekarang" di kartu kamera memakainya. */
@@ -69,12 +57,8 @@ export const patrolActuatorCode = "TROLLEY-PATROL";
 /** Pompa siram yang dinyalakan jadwal siram; batas lama siram = maxRunSeconds-nya. */
 export const irrigationPumpCode = "DIST-PUMP";
 
-/**
- * Kartu "Kontrol alat" di Beranda: hanya alat yang paling sering dipakai. Satu kode = satu ubin dengan
- * tombol switch (perintah tetap lewat dialog konfirmasi). Beberapa kode = satu ubin ringkasan yang
- * menautkan ke halaman Kontrol (mis. tiga pompa pupuk). `label` kosong → nama dari katalog backend.
- * Kode yang tidak ada di katalog dilewati.
- */
+/** Satu kode = ubin switch (tetap lewat dialog konfirmasi); beberapa kode = ubin ringkasan ke halaman
+ *  Kontrol. `label` kosong → nama katalog; kode tak ada di katalog dilewati. */
 export type DashboardActuatorDef = { codes: string[]; label?: string };
 
 export const dashboardActuators: DashboardActuatorDef[] = [

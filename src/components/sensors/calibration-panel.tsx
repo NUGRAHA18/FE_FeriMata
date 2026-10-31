@@ -31,10 +31,8 @@ import { csvFilename } from "@/lib/csv";
 import { formatDate, formatDateTime, formatNumber, parseDecimal } from "@/lib/format";
 import { serverCsv } from "@/lib/reports";
 
-/*
- * Tab "Kalibrasi" di detail sensor (Protokol-Data §7): sampel tanah diukur di lab berpasangan dengan
- * angka sensor saat itu, lalu backend menghitung model koreksi. Pelihat hanya membaca.
- */
+/* Kalibrasi sensor (Protokol-Data §7): sampel lab dipasangkan dengan angka sensor saat itu, backend
+ * menghitung model koreksi. Pelihat hanya membaca. */
 
 const fmt = (n: number | null | undefined, unit = "") => (n == null ? "—" : `${formatNumber(n)}${unit ? ` ${unit}` : ""}`);
 

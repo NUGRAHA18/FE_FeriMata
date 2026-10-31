@@ -25,11 +25,8 @@ import {
   type SensorReading,
 } from "@/lib/api/types";
 
-/*
- * Penerapan event STOMP ke cache TanStack Query dengan setQueryData — tanpa refetch.
- * Semua pembaruan immutable dan hanya membuat objek baru untuk bagian yang berubah, sehingga
- * komponen yang memakai `select` tidak ikut re-render bila datanya tidak berubah.
- */
+// Event STOMP → cache TanStack Query via setQueryData, tanpa refetch. Hanya bagian yang berubah
+// dibuat baru agar komponen dengan `select` tidak re-render sia-sia.
 
 const LIVE_ACTIVITY_MAX = 15;
 const OVERVIEW_ALERTS_MAX = 10;
@@ -120,10 +117,7 @@ function onActuatorStatus(qc: QueryClient, s: ActuatorStatus) {
 
 const without = <T extends { id: number }>(list: T[], id: number) => (list.some((x) => x.id === id) ? list.filter((x) => x.id !== id) : list);
 
-/**
- * Data master sensor berubah (SENSOR_UPDATED atau PATCH sendiri). Daftar bawaan backend hanya berisi
- * sensor aktif → dimatikan = keluar, diaktifkan = masuk. Daftar `includeDisabled` memuat semuanya.
- */
+/** SENSOR_UPDATED atau PATCH sendiri. Daftar bawaan hanya sensor aktif; `includeDisabled` memuat semuanya. */
 export function applySensor(qc: QueryClient, s: Sensor) {
   qc.setQueryData<Sensor[]>(qk.sensors, (list) => (!list ? list : s.enabled ? upsertById(list, s) : without(list, s.id)));
   qc.setQueryData<Sensor[]>(qk.sensorsAll, (list) => (list ? upsertById(list, s) : list));
@@ -166,11 +160,8 @@ function alertMatches(f: AlertFilters, a: Alert) {
   );
 }
 
-/**
- * ALERT_UPDATED: alert yang sudah ada berubah (di-acknowledge, mungkin oleh operator lain).
- * Daftar diperbarui di tempat; hitungan di overview diambil ulang dari server, karena dari cache
- * tidak bisa dibedakan apakah pengurangan sudah dilakukan oleh mutasi lokal.
- */
+/** ALERT_UPDATED (mis. di-ack operator lain). Hitungan overview diambil ulang: dari cache tak bisa
+ *  dibedakan apakah mutasi lokal sudah menguranginya. */
 function onAlertUpdated(qc: QueryClient, a: Alert) {
   for (const [key, page] of qc.getQueriesData<Page<Alert>>({ queryKey: qk.alertsRoot })) {
     if (!page || !page.content.some((x) => x.id === a.id)) continue;
@@ -229,10 +220,7 @@ function onDetection(qc: QueryClient, d: AiDetection) {
   }
 }
 
-/**
- * Terapkan satu pesan dari /topic/events. Mengembalikan false untuk event yang tidak dikenal
- * atau data yang tidak sesuai kontrak — keduanya diabaikan dengan aman.
- */
+/** Satu pesan /topic/events; false (diabaikan) untuk event tak dikenal atau data tak sesuai kontrak. */
 export function applyRealtimeEvent(qc: QueryClient, raw: unknown): boolean {
   const env = envelopeSchema.safeParse(raw);
   if (!env.success) return false;

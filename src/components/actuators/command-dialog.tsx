@@ -32,10 +32,8 @@ function trackCommand(uid: string): TrackedCommand {
 
 type FieldErrors = Partial<Record<"duration" | "station", string>>;
 
-/**
- * Dialog konfirmasi perintah. Nyalakan selalu menampilkan isian durasi (wajib bila ada maxRunSeconds);
- * pindah kereta meminta nomor stasiun. Perintah berhenti cukup konfirmasi ringan. Tombol kirim nonaktif selama request berjalan.
- */
+/** Konfirmasi perintah. Nyalakan selalu minta durasi (wajib bila ada maxRunSeconds); pindah kereta
+ * minta nomor stasiun; berhenti cukup konfirmasi ringan. */
 export function CommandDialog({ actuator, command, open, onClose, onSent }: CommandDialogProps) {
   const send = useSendCommand(actuator.id);
   const spec = commandSpec(actuator, command);

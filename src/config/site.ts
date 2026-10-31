@@ -1,6 +1,5 @@
-// URL backend. Kosong = origin yang sama dengan halaman: di Jetson, reverse proxy (Caddy) meneruskan
-// /api dan /ws ke backend, jadi halaman yang dibuka lewat tunnel maupun IP LAN memanggil host-nya sendiri.
-// Default dev tetap backend lokal di :8080 supaya `npm run dev` jalan tanpa .env.local.
+// Kosong = origin halaman (Caddy di Jetson meneruskan /api & /ws), jadi tunnel maupun IP LAN jalan.
+// Default dev :8080 agar `npm run dev` jalan tanpa .env.local.
 const devDefault = process.env.NODE_ENV === "production" ? "" : "http://localhost:8080";
 
 export const productName = "FertiMata";

@@ -43,11 +43,8 @@ function revokeOnRemoval(cache: QueryCache) {
   });
 }
 
-/**
- * Sumber `<img>` siap pakai: foto `/captures` diambil sebagai blob (dengan token) lalu dijadikan
- * object URL yang di-cache per URL (berkas foto tidak pernah ditimpa edge), jadi menggeser foto
- * bolak-balik tidak mengunduh ulang.
- */
+/** Foto `/captures` diambil sebagai blob bertoken → object URL, di-cache per URL (edge tak pernah
+ *  menimpa berkas) agar geser foto bolak-balik tidak mengunduh ulang. */
 function useImageSource(src: string | null): { url: string | null; loading: boolean } {
   const qc = useQueryClient();
   revokeOnRemoval(qc.getQueryCache());
@@ -64,10 +61,7 @@ function useImageSource(src: string | null): { url: string | null; loading: bool
   return { url: q.data ?? null, loading: q.isPending };
 }
 
-/**
- * Gambar deteksi. Foto patroli diambil dengan token (BE-2); bila gagal dimuat tampil placeholder
- * bergaya: ikon kamera + kode stasiun.
- */
+/** Foto patroli diambil dengan token (BE-2); gagal dimuat → placeholder ikon kamera + kode stasiun. */
 export function DetectionImage({ detection, className, children }: { detection: AiDetection | null; className?: string; children?: ReactNode }) {
   const resolved = resolveImageUrl(detection?.imageUrl ?? null);
   const { url: src, loading } = useImageSource(resolved);
@@ -103,10 +97,8 @@ export function numericScores(scores: Record<string, unknown> | null): [string, 
   return Object.entries(scores).filter((e): e is [string, number] => typeof e[1] === "number" && Number.isFinite(e[1]));
 }
 
-/**
- * Skor multi-label (sigmoid independen 0–1, tidak berjumlah 1) sebagai bar terpisah.
- * Tanpa ambang / kesimpulan agronomi — hanya angka apa adanya, warna netral.
- */
+/** Skor multi-label (sigmoid independen 0–1, tidak berjumlah 1). Sengaja tanpa ambang/kesimpulan
+ *  agronomi dan berwarna netral. */
 export function ScoreBars({ detection, className }: { detection: AiDetection; className?: string }) {
   const scores = numericScores(detection.scores);
   if (!scores.length) {

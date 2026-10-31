@@ -41,11 +41,7 @@ function Slot({ item, active }: { item: NavItem; active: boolean }) {
   );
 }
 
-/**
- * Bottom navigation (< 768 px): bilah putih datar menempel di bawah layar. Dua menu, "Siram" (jadwal
- * siram, kapsul hijau solid) di tengah, satu menu, lalu "Lainnya" yang membuka lembar berisi menu
- * sisanya (Kamera, Peringatan, Tanaman, Pengaturan, …).
- */
+/** Bottom nav (< 768 px): dua menu, "Siram" di tengah, satu menu, lalu "Lainnya" berisi menu sisanya. */
 export function BottomNav({ alertBadge }: { alertBadge?: boolean }) {
   const pathname = usePathname();
   const canWrite = useCanWrite();

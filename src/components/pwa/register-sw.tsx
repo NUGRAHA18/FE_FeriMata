@@ -2,10 +2,8 @@
 
 import { useEffect } from "react";
 
-/**
- * Daftarkan service worker. Di dev cache-nya dimatikan (`?cache=off`, cache aset mengganggu HMR) tapi
- * tetap didaftarkan supaya notifikasi push bisa dicoba di http://localhost.
- */
+// Di dev cache SW dimatikan (`?cache=off`, mengganggu HMR) tapi tetap didaftarkan agar push bisa
+// dicoba di http://localhost.
 export function RegisterServiceWorker() {
   useEffect(() => {
     if (!("serviceWorker" in navigator)) return;

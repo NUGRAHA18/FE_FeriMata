@@ -2,11 +2,8 @@ import Link from "next/link";
 import { productName } from "@/config/site";
 import { cn } from "@/lib/cn";
 
-/*
- * Logo FertiMata dari public/icons/logo-1.png. Gambarnya berlatar putih, jadi selalu ditaruh di
- * ubin putih (juga pada tema gelap). Ditulis sebagai <img> biasa: berkasnya sudah diperkecil
- * (logo-mark.webp untuk ubin kecil, logo-full.webp dengan tulisan untuk halaman login).
- */
+/* Logo berlatar putih, jadi selalu di ubin putih (juga tema gelap). <img> biasa karena berkas
+ * sudah diperkecil (logo-mark.webp kecil, logo-full.webp untuk login). */
 
 /** Ubin logo kecil (emblem greenhouse) yang menautkan ke Beranda. */
 export function Logo({ className }: { className?: string }) {

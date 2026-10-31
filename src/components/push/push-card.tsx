@@ -16,10 +16,7 @@ import { qk } from "@/lib/api/query-keys";
 import { severityLabel } from "@/lib/format";
 import { currentSubscription, disablePush, enablePush, pushSupport, sameServerKey, type PushSupport } from "@/lib/push";
 
-/*
- * Kartu "Notifikasi di HP ini" (halaman Akun). Berlaku untuk semua peran, termasuk Pelihat.
- * Status langganan dibaca dari browser; jumlah perangkat akun ini dari backend.
- */
+// Berlaku untuk semua peran (termasuk Pelihat). Status langganan dari browser; jumlah perangkat dari backend.
 
 type State = "loading" | "on" | "off" | "blocked";
 

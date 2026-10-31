@@ -57,10 +57,7 @@ export function Chip({ tone = "neutral", icon, className, children, ...props }: 
   );
 }
 
-/**
- * Badge status (tidak bisa diklik, jadi tidak boleh mirip tombol): pill ringkas, titik + teks.
- * `dot={false}` untuk label yang bukan status (mis. nama perlakuan).
- */
+/** Badge tak bisa diklik, jadi tidak boleh mirip tombol. `dot={false}` untuk label non-status. */
 export function Badge({ tone = "neutral", dot = false, className, children }: { tone?: Tone; dot?: boolean; className?: string; children: ReactNode }) {
   return (
     <span className={cn("inline-flex max-w-full items-center gap-1.5 rounded-full px-2 py-0.5 text-[11px] leading-4 font-medium", chipTone[tone], className)}>

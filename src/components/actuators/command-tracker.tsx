@@ -10,11 +10,8 @@ import { cn } from "@/lib/cn";
 
 export type TrackedCommand = { uid: string; sentAtLocal: number };
 
-/**
- * Status perintah yang dilacak: 202 hanya berarti "terkirim". Menunggu event
- * ACTUATOR_COMMAND_UPDATED dengan commandUid yang sama sampai EXECUTED / FAILED.
- * Tanpa jawaban ±30 dtk → peringatan (tidak pernah dianggap berhasil).
- */
+// 202 hanya "terkirim"; tunggu ACTUATOR_COMMAND_UPDATED (commandUid sama) sampai EXECUTED/FAILED.
+// Tanpa jawaban ±30 dtk → peringatan, tidak pernah dianggap berhasil.
 export function CommandTracker({ tracked, className }: { tracked: TrackedCommand; className?: string }) {
   const cmd = useTrackedCommand(tracked.uid);
   const now = useNow();

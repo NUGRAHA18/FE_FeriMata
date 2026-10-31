@@ -22,11 +22,8 @@ import { cn } from "@/lib/cn";
 
 const lastTone: Record<Tone, string> = { ok: "text-accent-ink", warn: "text-warn-ink", danger: "text-danger-ink", info: "text-info-ink", neutral: "text-ink-2" };
 
-/*
- * Jadwal siram harian: backend menyalakan pompa siram pada jamnya lewat jalur perintah biasa, jadi
- * semua aturan keselamatan (PLN padam, air drum habis, …) tetap berlaku. Operator/admin mengatur;
- * Pelihat hanya melihat.
- */
+/* Backend menjalankan jadwal lewat jalur perintah biasa, jadi aturan keselamatan (PLN padam, drum
+ * habis, …) tetap berlaku. Operator/admin mengatur; Pelihat hanya melihat. */
 
 /** Lama siram terpanjang: maxRunSeconds pompa siram (null bila belum diketahui → batas dicek backend). */
 function usePumpMaxSeconds(): number | null {

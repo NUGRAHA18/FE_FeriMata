@@ -46,10 +46,8 @@ const startIcons: Record<string, LucideIcon> = { ON: Power, START: Play, HOME: H
 
 export const isOnState = (a: Pick<Actuator, "currentState">) => a.currentState?.toUpperCase() === "ON";
 
-/**
- * Aktuator dua keadaan (relay Nyalakan/Matikan, patroli Mulai/Hentikan) dikendalikan dengan switch;
- * selain itu (mis. pindah kereta ke stasiun) tetap tombol. Null = bukan dua keadaan.
- */
+/** Aktuator dua keadaan (relay Nyalakan/Matikan, patroli Mulai/Hentikan) pakai switch; lainnya
+ * (mis. pindah stasiun) tetap tombol. Null = bukan dua keadaan. */
 export function switchSpecs(a: Parameters<typeof commandSpecsFor>[0]): { start: CommandSpec; stop: CommandSpec } | null {
   const specs = commandSpecsFor(a);
   const starts = specs.filter((s) => !s.stop);
@@ -57,11 +55,8 @@ export function switchSpecs(a: Parameters<typeof commandSpecsFor>[0]): { start: 
   return starts.length === 1 && stops.length === 1 && starts[0].params !== "station" ? { start: starts[0], stop: stops[0] } : null;
 }
 
-/**
- * Switch satu aktuator. Posisinya = status yang DILAPORKAN alat; menekannya hanya meminta perintah
- * (pemanggil membuka dialog konfirmasi). Mematikan selalu boleh; menyalakan tidak bila alat
- * dinonaktifkan. Null untuk Pelihat atau aktuator yang bukan dua keadaan.
- */
+/** Switch aktuator: posisi = status yang DILAPORKAN alat; menekan hanya membuka konfirmasi perintah.
+ * Mematikan selalu boleh, menyalakan tidak bila alat dinonaktifkan. Null untuk Pelihat/bukan dua keadaan. */
 export function ActuatorSwitch({ actuator: a, name, onCommand }: { actuator: Actuator; name?: string; onCommand: (command: string) => void }) {
   const canWrite = useCanWrite();
   const sw = switchSpecs(a);
@@ -135,10 +130,8 @@ function CommandButtons({ actuator: a, onCommand, onEnable }: { actuator: Actuat
   );
 }
 
-/**
- * Kendali di halaman detail: baris switch untuk aktuator dua keadaan, tombol untuk yang lain.
- * Semua perintah lewat dialog konfirmasi. Pelihat hanya melihat status (tidak ada yang bisa ditekan).
- */
+/** Kendali halaman detail: switch untuk dua keadaan, tombol untuk lainnya, semua lewat konfirmasi.
+ * Pelihat hanya melihat status. */
 export function ActuatorControls({ actuator: a, className }: { actuator: Actuator; className?: string }) {
   const canWrite = useCanWrite();
   const flow = useCommandFlow(a);
@@ -169,13 +162,8 @@ export function ActuatorControls({ actuator: a, className }: { actuator: Actuato
   );
 }
 
-/**
- * Ubin aktuator di halaman Kontrol (gaya sama dengan kartu Kontrol alat di Beranda):
- *   [ikon bulat] Nama alat ›            [switch]
- *                Jenis alat
- *   ● Menyala · 2 mnt lalu                paling lama 15 menit
- * Aktuator yang bukan dua keadaan menampilkan tombol perintah di bawahnya.
- */
+/** Ubin aktuator halaman Kontrol (gaya kartu Kontrol alat di Beranda): ikon, nama, switch, status.
+ * Aktuator bukan dua keadaan menampilkan tombol perintah di bawahnya. */
 export function ActuatorCard({ actuator: a }: { actuator: Actuator }) {
   const canWrite = useCanWrite();
   const flow = useCommandFlow(a);

@@ -10,10 +10,8 @@ import { loadSnapshot, saveSnapshot } from "./snapshot";
 
 const LIVE_SAVE_INTERVAL_MS = 60_000;
 
-/**
- * Isi cache dari snapshot bila belum ada data. `updatedAt` = waktu snapshot disimpan, jadi data
- * langsung dianggap basi dan overview tetap diambil ulang begitu ada jaringan.
- */
+/** `updatedAt` = waktu snapshot disimpan, jadi data langsung basi dan overview diambil ulang begitu
+ *  ada jaringan. */
 export function hydrateFromSnapshot(qc: QueryClient, username: string): boolean {
   if (qc.getQueryData(qk.overview)) return false;
   const s = loadSnapshot(username);
@@ -31,11 +29,8 @@ function snapshotOf(qc: QueryClient): DashboardOverview | undefined {
   return readings.length ? { ...o, sensors: { ...o.sensors, latestReadings: readings } } : o;
 }
 
-/**
- * Menyimpan angka terakhir untuk mode offline: setiap overview baru dari server, lalu tiap menit dan
- * saat aplikasi ditutup selama data langsung (WebSocket) tersambung. Snapshot dimuat sebelum anak
- * dirender, jadi Beranda langsung berisi angka terakhir meski jaringan putus.
- */
+/** Simpan snapshot tiap overview baru, lalu tiap menit & saat ditutup selama WebSocket tersambung.
+ *  Dimuat sebelum anak dirender agar Beranda langsung berisi angka meski offline. */
 export function useOfflineSnapshot(username: string, connection: ConnectionState) {
   const qc = useQueryClient();
   useState(() => hydrateFromSnapshot(qc, username));

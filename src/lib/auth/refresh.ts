@@ -13,10 +13,7 @@ export function needsRefresh(expiresAt: string, now: number = Date.now(), leeway
 
 let inFlight: Promise<boolean> | null = null;
 
-/**
- * Menukar refresh token dengan pasangan baru. Mengembalikan true bila sesi berhasil diperpanjang.
- * Bila refresh token ditolak (401), sesi diakhiri dengan alasan "expired".
- */
+/** True bila sesi diperpanjang. Refresh token ditolak (401) → sesi diakhiri dengan alasan "expired". */
 export function refreshSession(): Promise<boolean> {
   if (inFlight) return inFlight;
   inFlight = (async () => {

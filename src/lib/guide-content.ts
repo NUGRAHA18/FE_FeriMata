@@ -16,12 +16,8 @@ import {
   type LucideIcon,
 } from "lucide-react";
 
-/*
- * Isi Panduan (/panduan) dan petunjuk singkat Beranda (components/onboarding/guide.tsx) — satu
- * sumber. Nama komponen ditulis SAMA PERSIS dengan label di layar. Teks utama tanpa istilah teknis;
- * istilah dijelaskan di bagian "Istilah". Fakta perilaku alat dari backend (BE-melonSmart), jangan
- * menjanjikan fitur yang tidak ada (jadwal siram/pupuk otomatis milik layanan tim AI).
- */
+/* Isi Panduan (/panduan) & petunjuk Beranda, satu sumber. Nama komponen SAMA PERSIS dengan label layar;
+ * istilah teknis hanya di "Istilah". Jangan janjikan fitur yang tidak ada di backend (jadwal milik tim AI). */
 
 export type GuideTerm = { term: string; meaning: string };
 export type GuideTrouble = { sign: string; action: string };

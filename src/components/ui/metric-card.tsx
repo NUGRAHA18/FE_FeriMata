@@ -30,12 +30,8 @@ type MetricCardProps = {
 
 const iconTone: Record<NonNullable<MetricCardProps["tone"]>, Tone> = { default: "ok", accent: "ok", warn: "warn", danger: "danger" };
 
-/**
- * Kartu angka sensor: kotak ikon di atas, label, angka besar (fokus utama), satuan lebih kecil, badge
- * penilaian, lalu satu baris keterangan. Semua kartu putih dengan susunan sama; status hanya mewarnai
- * kotak ikon dan badge. Dengan `href` seluruh kartu menjadi tautan (panah kecil di pojok sebagai
- * penanda), jadi grid tidak dipenuhi tombol panah terpisah.
- */
+/** Status hanya mewarnai kotak ikon & badge. Dengan `href` seluruh kartu jadi tautan (panah kecil di
+ *  pojok), agar grid tak dipenuhi tombol panah terpisah. */
 export function MetricCard({ label, icon: Icon, value, unit, hint, href, tone = "default", badge, status, stale, compact, className }: MetricCardProps) {
   // Angka panjang (mis. EC "1.242 µS/cm") sedikit diperkecil agar tidak meluap dari kartu.
   const long = (value?.length ?? 0) + (unit?.length ?? 0) > 8;

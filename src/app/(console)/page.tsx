@@ -23,10 +23,7 @@ function firstName(fullName: string | null | undefined, username: string | undef
   return (fullName?.trim().split(/\s+/)[0] || username || "").trim();
 }
 
-/**
- * Kepala beranda tablet/desktop: judul besar di kiri, status di kanan, rumpun daun di pojok.
- * Di ponsel kepala Beranda adalah blok hijau MobileHero (AppShell).
- */
+/** Kepala beranda tablet/desktop; di ponsel diganti MobileHero (AppShell). */
 function DashboardHeader() {
   const { alertCount, connection } = useShell();
   const user = useSession()?.user;
@@ -60,23 +57,16 @@ export default function DashboardPage() {
       {overviewError && overview.data === undefined && (
         <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
       )}
-      {/* items-start: tiap kolom setinggi isinya sendiri. Tanpa ini kartu Alat ikut memanjang setinggi
-          kolom kiri dan menyisakan kotak putih kosong yang panjang di bagian bawah.
-          Desktop lebar (xl): baris 1 = kondisi/kontrol/umur | Alat; baris 2 = Angka sensor selebar dua kolom
-          (supaya kolom Alat tidak menyisakan ruang kosong panjang); kamera & aktivitas di kolom kanan
-          sepanjang dua baris. Di bawah xl dua kolom seperti tablet; urutan mengikuti DOM. */}
+      {/* items-start agar kartu Alat tidak memanjang kosong. xl: baris 1 kondisi/kontrol/umur | Alat,
+          baris 2 angka sensor dua kolom; kamera & aktivitas di kanan. Di bawah xl: dua kolom. */}
       <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)] xl:grid-rows-[auto_1fr]">
         <div className="flex min-w-0 flex-col gap-4 md:col-span-2 xl:col-span-1 xl:col-start-1 xl:row-start-1">
           <ConditionsCard />
           <ControlCard />
           <CultivationCard />
         </div>
-        {/*
-          Dua kolom di ponsel supaya angkanya besar dan terbaca; tiga kolom di tablet, empat mulai lg.
-          Status alat + 7 sensor tanah mengisi baris penuh (di tiga kolom kartu status selebar dua), lalu
-          tangki pupuk satu baris sendiri. Dengan begitu tidak ada sel kosong dan tidak ada kartu yang
-          ikut memanjang mengikuti kartu tangki yang lebih tinggi.
-        */}
+        {/* Kolom 2/3/4 (ponsel/tablet/lg). Status alat + 7 sensor tanah mengisi baris penuh, tangki pupuk
+            baris sendiri: tanpa sel kosong dan tanpa kartu ikut memanjang. */}
         <section aria-labelledby="judul-sensor" className="min-w-0 md:col-span-2 xl:col-start-1 xl:row-start-2">
           <SectionHeader id="judul-sensor" title="Angka sensor" href="/sensors" linkLabel="Semua sensor" />
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4">

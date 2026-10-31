@@ -11,11 +11,8 @@ import { useCanWrite } from "@/lib/auth/use-session";
 import { cn } from "@/lib/cn";
 import { filterGlossary, filterSections, glossary, guideSections, type GuideSection, type GuideTerm } from "@/lib/guide-content";
 
-/*
- * Panduan penggunaan untuk petani. Isi di lib/guide-content.ts. Bagian yang terbuka mengikuti
- * #anchor di alamat, jadi ikon "?" dari halaman lain langsung membuka bagian yang tepat.
- * Hanya satu bagian terbuka sekaligus; saat mencari, semua bagian yang cocok terbuka.
- */
+/* Isi di lib/guide-content.ts. Bagian terbuka mengikuti #anchor (ikon "?" halaman lain); hanya satu
+ * terbuka sekaligus, kecuali saat mencari (semua yang cocok terbuka). */
 
 const GLOSSARY_ID = "istilah";
 
@@ -156,8 +153,7 @@ export default function GuidePage() {
   const isOpen = (id: string) => searching || hash === id;
   const toggle = (id: string) => setHash(hash === id ? null : id);
 
-  // Halaman ini baru dirender setelah sesi diketahui, jadi lompatan bawaan browser ke #anchor sudah
-  // lewat. Gulir sendiri ke bagian yang dibuka dari ikon "?" halaman lain.
+  // Dirender setelah sesi diketahui, jadi lompatan bawaan browser ke #anchor sudah lewat; gulir sendiri.
   useEffect(() => {
     const id = readHash();
     if (id) document.getElementById(id)?.scrollIntoView({ block: "start" });

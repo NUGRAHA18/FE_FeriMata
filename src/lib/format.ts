@@ -1,12 +1,8 @@
 import { siteConfig } from "@/config/site";
 import { AI_NO_WATER_NEEDED, irrigationReasonText, isSafetyCode } from "@/lib/irrigation-reasons";
 
-/*
- * Formatter tampilan: angka, satuan, waktu (WIB) — semua dalam Bahasa Indonesia yang sederhana.
- * Pengguna utama adalah petani, jadi label domain menghindari istilah teknis (liveness, acknowledge,
- * broker, interlock) dan memakai kata sehari-hari (alat terhubung, sudah ditangani, listrik padam).
- * Timestamp dari backend selalu ISO-8601 UTC.
- */
+// Formatter tampilan (waktu dalam WIB; input backend ISO-8601 UTC). Pengguna utama petani:
+// label memakai kata sehari-hari, bukan istilah teknis (liveness, interlock, broker).
 
 const TZ = siteConfig.timeZone;
 
@@ -27,10 +23,7 @@ export function formatUnit(unit: string | null | undefined): string {
   }
 }
 
-/**
- * Isian angka dari ponsel: koma desimal diterima ("13,5"). Kosong → undefined; bukan angka → NaN
- * (pemanggil menampilkan pesan per isian).
- */
+/** Menerima koma desimal ("13,5"). Kosong → undefined; bukan angka → NaN. */
 export function parseDecimal(v: string): number | undefined {
   const t = v.trim().replace(",", ".");
   if (t === "") return undefined;
@@ -45,7 +38,6 @@ export function formatNumber(value: number | null | undefined, maxFractionDigits
   return new Intl.NumberFormat("id-ID", { maximumFractionDigits: digits }).format(value);
 }
 
-/** Nilai pembacaan sensor: angka bila ada, jika tidak textValue, jika tidak null. */
 export function formatReading(r: { value: number | null; textValue: string | null } | null | undefined): string | null {
   if (!r) return null;
   if (r.value != null) return formatNumber(r.value);
@@ -156,7 +148,6 @@ export function powerSourceLabel(source: string | null | undefined): string {
   }
 }
 
-/** Status koneksi alat, bahasa sehari-hari. */
 export const livenessLabel: Record<string, string> = {
   ONLINE: "Terhubung",
   OFFLINE: "Terputus",
@@ -211,7 +202,6 @@ const alertTypeLabels: Record<string, string> = {
   EC_PH_INVALID: "Bacaan EC/pH drum tidak masuk akal",
 };
 
-/** Label Indonesia untuk tipe peringatan yang dikenal; tipe lain ditampilkan mentah. */
 export function alertTypeLabel(type: string): string {
   return alertTypeLabels[type] ?? type;
 }
@@ -228,12 +218,10 @@ const detectionTypeLabels: Record<string, string> = {
   DISEASE: "Penyakit",
 };
 
-/** Label jenis deteksi kamera; jenis baru dari model ditampilkan apa adanya. */
 export function detectionTypeLabel(type: string): string {
   return detectionTypeLabels[type] ?? type;
 }
 
-/** Tipe aktuator (dari katalog hardware) → kata sehari-hari. */
 const actuatorTypeLabels: Record<string, string> = {
   DISTRIBUTION_PUMP: "Pompa air utama",
   DOSING_PUMP: "Pompa pupuk",
@@ -256,7 +244,6 @@ export function actuatorTypeLabel(type: string | null | undefined): string | nul
   return actuatorTypeLabels[type] ?? type;
 }
 
-/** Tipe perangkat (dari katalog hardware) → kata sehari-hari. */
 const deviceTypeLabels: Record<string, string> = {
   EDGE_GATEWAY: "Komputer utama",
   POWER_METER: "Pengukur listrik",
@@ -283,7 +270,6 @@ export function stationCode(n: number): string {
 
 const panDirectionLabels: Record<string, string> = { TIMUR: "Timur", BARAT: "Barat" };
 
-/** Arah kamera saat memotret (TIMUR/BARAT); arah lain ditampilkan apa adanya. */
 export function panDirectionLabel(dir: string | null | undefined): string | null {
   if (!dir) return null;
   return panDirectionLabels[dir.toUpperCase()] ?? dir;
@@ -320,18 +306,12 @@ export function alertTitleLabel(title: string): string {
 
 const str = (v: unknown) => (typeof v === "string" && v ? v : null);
 
-/**
- * `metadata.failureCode` peringatan (backend ≥ 30 Okt 2026), atau `metadata.reasonCode` bila tidak ada
- * (sama dengan `failureCode` entri aktivitas dari backend), atau null.
- */
+/** `metadata.failureCode` (backend ≥ 30 Okt 2026), atau `reasonCode` — sama seperti `failureCode` aktivitas. */
 export function alertFailureCode(metadata: Record<string, unknown> | null | undefined): string | null {
   return str(metadata?.failureCode) ?? str(metadata?.reasonCode);
 }
 
-/**
- * Judul peringatan: dari kode di data bila ada (NO_RESPONSE → "Alat tidak menjawab perintah"), lalu
- * label tipe, lalu terjemahan judul lama, lalu judul apa adanya. Tidak menebak dari teks pesan.
- */
+/** Urutan: kode di data, label tipe, terjemahan judul lama, judul mentah. Tidak menebak dari teks pesan. */
 export function alertHeadline(type: string | null, title: string, failureCode?: string | null): string {
   if (failureCode === "NO_RESPONSE") return "Alat tidak menjawab perintah";
   if (type === "IRRIGATION_SKIPPED" && failureCode === AI_NO_WATER_NEEDED) return "Tidak perlu siram (keputusan AI)";
@@ -349,11 +329,7 @@ type AlertBodyContext = {
 };
 
 
-/**
- * Isi peringatan disusun dari kode di data bila ada (NO_RESPONSE, IRRIGATION_SKIPPED / IRRIGATION_AI_FALLBACK
- * + reasonCode),
- * selain itu terjemahan pesan backend.
- */
+/** Disusun dari kode di data bila ada (NO_RESPONSE, IRRIGATION_* + reasonCode); selain itu terjemahan pesan. */
 export function alertBody(message: string, ctx: AlertBodyContext): string {
   if (ctx.type === "IRRIGATION_AI_FALLBACK") {
     const m = ctx.metadata ?? {};
@@ -394,10 +370,7 @@ function deviceReason(raw: string): string {
   return m ? m[1] : raw;
 }
 
-/*
- * Pesan peringatan backend ditulis untuk developer. Pola yang dikenal diterjemahkan ke kalimat yang
- * langsung menyebut langkah yang perlu dicek; pesan lain (mis. dari alat) ditampilkan apa adanya.
- */
+// Pesan backend (untuk developer) → kalimat petani beserta langkah cek; pola tak dikenal tampil apa adanya.
 const alertMessageRules: [RegExp, (m: RegExpExecArray) => string][] = [
   [
     /^No message received from (\S+) for more than (\d+) seconds$/,
@@ -429,7 +402,7 @@ export function alertMessageLabel(message: string): string {
   return message;
 }
 
-/** Nama perangkat bawaan backend (bahasa Inggris/teknis) → nama yang dikenali petani. */
+/** Nama perangkat bawaan backend → nama yang dikenali petani. */
 const deviceNameLabels: Record<string, string> = {
   "development edge device": "Komputer Simulasi (Dev)",
   "greenhouse edge device": "Komputer Utama Greenhouse",

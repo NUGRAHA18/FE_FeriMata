@@ -34,11 +34,8 @@ function stationY(n: number) {
   return FIRST_Y - (Math.min(n, trolleyLayout.stationCount) - 1) * step;
 }
 
-/**
- * Denah greenhouse buatan sendiri: tanaman sisi barat & timur, rel kamera selatan→utara dengan
- * 10 stasiun (jarak 60 cm), posisi trolley, dan tangki fertigasi. Di tiap stasiun kamera memotret
- * ke dua arah (timur dan barat).
- */
+/** Rel kamera selatan→utara, 10 stasiun berjarak 60 cm; di tiap stasiun kamera memotret ke timur
+ *  dan barat. */
 export function GreenhouseMap({ trolleyStation, selectedStation, onStationSelect, className }: GreenhouseMapProps) {
   const stations = Array.from({ length: trolleyLayout.stationCount }, (_, i) => i + 1);
   const trolleyKnown = trolleyStation != null && Number.isFinite(trolleyStation);

@@ -44,11 +44,8 @@ function selectSystem(o: {
   };
 }
 
-/**
- * Kartu "Alat terhubung": jumlah alat yang terhubung + sumber listrik. Kartu putih seperti yang lain;
- * kotak ikon & badge hijau bila semua terhubung & PLN, kuning bila ada yang terputus, merah bila
- * memakai baterai.
- */
+/** Jumlah alat terhubung + sumber listrik: hijau bila semua terhubung & PLN, kuning bila ada yang
+ *  terputus, merah bila memakai baterai. */
 export function SystemStatusCard({ compact, className }: { compact?: boolean; className?: string }) {
   const s = useOverview(selectSystem).data;
   const tone = !s ? "accent" : s.backup ? "danger" : s.issues > 0 ? "warn" : "accent";
@@ -69,10 +66,8 @@ export function SystemStatusCard({ compact, className }: { compact?: boolean; cl
   );
 }
 
-/**
- * EC tangki dibanding target EC fase tanam berjalan (dari backend, mS/cm). Tanpa tanggal semai atau
- * target → null, karena frontend tidak mengarang rentang ideal.
- */
+/** EC tangki vs target EC fase berjalan dari backend (mS/cm). Tanpa tanggal semai/target → null;
+ *  frontend tidak mengarang rentang ideal. */
 export function ecTargetStatus(
   ec: { value: number | null; unit: string | null } | null | undefined,
   target: { min: number | null; max: number | null } | null | undefined,
@@ -87,10 +82,8 @@ export function ecTargetStatus(
   return { tone: "ok", label: "Sesuai target" };
 }
 
-/**
- * Float LOW drum → status air. 1 = air cukup; selain itu air rendah atau kabel putus, dan backend
- * menolak pompa air utama, pompa pupuk & pengaduk. Tanpa pembacaan → null.
- */
+/** Float LOW: 1 = air cukup; selain itu air rendah/kabel putus dan backend menolak pompa air utama,
+ *  pompa pupuk & pengaduk. Tanpa pembacaan → null. */
 export function floatLowStatus(r: { value: number | null; textValue?: string | null } | null | undefined): MetricStatus | null {
   if (!r) return null;
   const raw = r.value != null ? String(r.value) : (r.textValue ?? "").trim().toUpperCase();

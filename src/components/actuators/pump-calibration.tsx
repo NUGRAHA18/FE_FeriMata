@@ -17,15 +17,10 @@ import { useCanWrite } from "@/lib/auth/use-session";
 import { calibrationErrorMessage, pumpFlow } from "@/lib/calibration";
 import { formatDate, formatDateTime, formatDuration, formatNumber, parseDecimal } from "@/lib/format";
 
-/*
- * Kalibrasi debit pompa peristaltik (Protokol-Data §8): jalankan pompa beberapa kali, tampung, ukur
- * volumenya. Debit = total volume / total waktu. Dari debit itu backend menghitung volume pupuk.
- */
+/* Kalibrasi debit pompa (Protokol-Data §8): debit = total volume / total waktu beberapa ulangan;
+ * backend memakainya untuk menghitung volume pupuk. */
 
-/**
- * Pompa yang debitnya bisa dikalibrasi: flag `pumpCalibratable` dari backend (sumbernya
- * `app.calibration.pump.types`). Backend lama tanpa flag → cek tipe DOSING_PUMP.
- */
+/** Flag `pumpCalibratable` dari backend; backend lama tanpa flag → cek tipe DOSING_PUMP. */
 export const isCalibratablePump = (a: Pick<Actuator, "type" | "pumpCalibratable">) => a.pumpCalibratable ?? a.type === "DOSING_PUMP";
 
 const MIN_TRIALS = 3;

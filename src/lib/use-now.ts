@@ -2,10 +2,7 @@
 
 import { useSyncExternalStore } from "react";
 
-/*
- * Satu ticker bersama untuk semua tampilan waktu relatif/jam, supaya tidak ada puluhan
- * setInterval. Hanya komponen kecil yang memakai hook ini yang ikut re-render tiap detik.
- */
+// Satu ticker bersama (bukan puluhan setInterval); hanya komponen pemakai hook ini yang re-render tiap detik.
 
 const listeners = new Set<() => void>();
 let now = 0;

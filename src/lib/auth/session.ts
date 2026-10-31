@@ -1,11 +1,8 @@
 import type { User } from "@/lib/api/types";
 import { clearSnapshot } from "@/lib/offline/snapshot";
 
-/*
- * Sesi pengguna. Backend memberi dua token: token akses (60 menit, dikirim di header Authorization)
- * dan refresh token (7 hari). Sesi dianggap hidup selama refresh token belum kedaluwarsa; token
- * akses diperbarui diam-diam oleh lib/auth/refresh.ts.
- */
+/* Token akses 60 menit, refresh token 7 hari. Sesi hidup selama refresh token belum kedaluwarsa;
+ * token akses diperbarui diam-diam oleh lib/auth/refresh.ts. */
 
 export type Session = { token: string; expiresAt: string; refreshToken: string; refreshExpiresAt: string; user: User };
 export type EndReason = "logout" | "expired" | "unauthorized";

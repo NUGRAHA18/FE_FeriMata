@@ -16,10 +16,7 @@ type BaseProps = {
   dismissible?: boolean;
 };
 
-/**
- * Dialog berbasis <dialog> native: showModal() memberi focus trap, Esc, dan inert
- * pada latar tanpa library tambahan.
- */
+/** <dialog> native: showModal() memberi focus trap, Esc, dan latar inert tanpa library. */
 function useNativeDialog(open: boolean) {
   const ref = useRef<HTMLDialogElement>(null);
   useEffect(() => {

@@ -3,12 +3,8 @@ import type { SensorReading } from "@/lib/api/types";
 import { csvTime, toCsv, type CsvColumn } from "@/lib/csv";
 import { pool, RANGES, type RangeKey } from "@/lib/history";
 
-/*
- * Data mentah untuk ekspor CSV. Berbeda dengan grafik (lib/history), di sini tidak ada rata-rata:
- * setiap pembacaan menjadi satu baris. Jumlah request dibatasi; bila data melebihi batas, ekspor
- * memuat yang terbaru dan `truncated` bernilai true. Pengamatan, panen, dan sampel lab disusun
- * backend (`serverCsv`).
- */
+/* Ekspor CSV mentah (tanpa rata-rata, satu baris per pembacaan). Melebihi batas → hanya yang terbaru,
+ * `truncated` = true. Pengamatan, panen, dan sampel lab disusun backend (`serverCsv`). */
 
 const HISTORY_PAGE = 1000; // batas backend
 export const HISTORY_EXPORT_LIMIT = 25_000; // 7 hari × interval 30 s ≈ 20.160 baris

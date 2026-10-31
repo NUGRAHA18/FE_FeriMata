@@ -39,10 +39,8 @@ function TimePlace() {
   );
 }
 
-/*
- * Kartu kecil berwarna lembut + border halus. Warna hanya pembeda kelompok (air, cahaya, kamera),
- * bukan status. Angka diperkecil mengikuti lebar kartu supaya tiga kolom tetap muat di HP 360 px.
- */
+/* Warna hanya pembeda kelompok, bukan status. Angka mengecil mengikuti lebar kartu agar tiga kolom
+ * muat di HP 360 px. */
 const tints = {
   blue: "bg-tint-blue ring-tint-blue-line",
   yellow: "bg-tint-yellow ring-tint-yellow-line",
@@ -73,13 +71,8 @@ function ReadingTile({ icon, label, metricKey, tint, stale }: { icon: Picto; lab
   );
 }
 
-/**
- * Kartu utama Beranda "Kondisi greenhouse" (susunan mengikuti referensi): ikon bulat + suhu udara
- * besar di kiri, jam & lokasi di kanan dipisah garis tegak, lalu tiga kartu kecil berwarna lembut
- * (kelembapan udara, cahaya, posisi kamera). Kartu posisi kamera membuka/menutup denah greenhouse.
- * Tidak ada badge "Normal": backend tidak mengirim rentang acuan suhu/kelembapan/cahaya udara, jadi
- * yang ditampilkan hanya kapan angka diperbarui.
- */
+/** Tanpa badge "Normal": backend tak mengirim rentang acuan suhu/kelembapan/cahaya udara. Kartu posisi
+ *  kamera membuka/menutup denah greenhouse. */
 export function ConditionsCard() {
   const air = useReadingByMetric(conditionKeys.airTemperature);
   const station = useTrolleyStation();

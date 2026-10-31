@@ -20,11 +20,7 @@ import type { Actuator } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { cn } from "@/lib/cn";
 
-/*
- * Ubin: [ikon bulat] Nama            [switch]
- *                    ● Menyala
- * Kartu sempit (dua kolom di HP): ikon + switch di baris atas, nama & status di bawahnya.
- */
+/* Ubin: ikon, nama, status, switch. Kartu sempit (dua kolom di HP): ikon + switch di atas, nama & status di bawah. */
 const tileCls = "@container flex min-h-[76px] w-full min-w-0 rounded-[16px] bg-card p-3 ring-1 ring-line";
 
 function TileBody({ icon, name, title, state, tone, right }: { icon: ReactNode; name: string; title?: string; state: string; tone: "ok" | "neutral"; right: ReactNode }) {
