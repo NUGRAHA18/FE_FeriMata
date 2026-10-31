@@ -1,4 +1,4 @@
-# Status Pekerjaan Frontend FertiMata — 29 Oktober 2026
+# Status Pekerjaan Frontend FertiMata — 31 Oktober 2026
 
 Pelacak pekerjaan frontend. Disusun dari `BE-melonSmart/docs/status-pekerjaan.md` (bagian 3),
 `BE-melonSmart/docs/rencana-pengembangan.md` (Fase 3–6), dan `docs/backend-gaps.md`.
@@ -12,12 +12,28 @@ Legenda prioritas: **P1** menghambat pemakaian di lapangan · **P2** perlu sebel
 
 | Prio | Pekerjaan | Status |
 |---|---|---|
-| P1 | **Uji dengan pengguna petani** di ponsel sungguhan: ukuran huruf, kontras di bawah sinar matahari, mode Hijau, pemahaman bahasa, dan petunjuk Beranda. | ⏳ Menunggu jadwal uji di lapangan. Bukan pekerjaan teknis; hasilnya dicatat di sini sebagai butir baru. |
+| P1 | **Uji dengan pengguna petani** di ponsel sungguhan: ukuran huruf, kontras di bawah sinar matahari (terang & gelap), pemahaman bahasa, dan petunjuk Beranda. | ⏳ Menunggu jadwal uji di lapangan. Bukan pekerjaan teknis; hasilnya dicatat di sini sebagai butir baru. |
 
 Yang perlu diamati saat uji: apakah petunjuk Beranda dibaca sampai habis, apakah banner offline dipahami
 ("data terakhir pukul …"), dan apakah mode sederhana sebaiknya aktif secara bawaan.
 
 ---
+
+## 2e. Desain ulang tampilan — 31 Oktober 2026 (permintaan user)
+
+Acuan: `docs/revisi-ui.txt`, `docs/screenshots/revisi-frontend.txt`, catatan palet tiga tema. Tanpa perubahan
+business logic, API, atau sumber data.
+
+| Prio | Pekerjaan | Hasil |
+|---|---|---|
+| P2 | **Kepala halaman ponsel** | `mobile-top-bar.tsx` diganti `shell/mobile-hero.tsx`: kepala hijau tua melengkung (salam, tanggal, status koneksi, jumlah peringatan, panduan, akun); kartu utama sedikit menumpang di bawahnya. Bottom nav putih dengan safe area. |
+| P2 | **Kartu Beranda** | Kartu kondisi (suhu besar + kelembapan/cahaya/posisi kamera), kartu "Kontrol alat" (`dashboard/control-card.tsx`, `auto-mode-tile.tsx`), baris alat & aktivitas seragam (ikon di kotak hijau muda, nama semibold, status + waktu), ikon gambar baru di `components/icons/pictos.tsx` (menggantikan `lib/icons.tsx`). Desktop lebar (≥ 1280): "Angka sensor" selebar dua kolom di bawah kontrol & Alat; di bawah 1280 dua kolom seperti tablet. |
+| P2 | **Tema** | Tema Hijau dihapus; tinggal Terang & Gelap dari token yang sama. Gelap memakai abu-abu netral (#121212 / #1e1e1e / #2a2a2a), bukan hijau tua; hijau hanya untuk aksen & status. Kontras teks dicek: semua pasangan token teks ≥ 4.5:1 di kedua tema (`--muted` terang digelapkan ke #5e7066). |
+| P3 | **Rapikan di 360 px** | Daftar "yang dimatikan" di Pengaturan tidak lagi meluber; filter Peringatan turun baris alih-alih menyembunyikan opsi; kartu di halaman Sensor: ikon di atas nama supaya nama & satuan tidak terpotong; track saklar mati memakai `--line`. |
+
+Diperiksa di Chrome (360 / 768 / 1024 / 1280 / 1440, terang & gelap): Beranda, Sensor, Alat, Kontrol, Jadwal siram,
+Peringatan, Pengaturan, Tanaman, AI, Panduan — tanpa scroll horizontal dan tanpa error console. Belum diuji di
+ponsel sungguhan.
 
 ## 2d. Jadwal siram — 29 Oktober 2026
 

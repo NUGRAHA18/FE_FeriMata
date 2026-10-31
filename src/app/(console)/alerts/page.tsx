@@ -39,6 +39,7 @@ export default function AlertsPage() {
         <div className="mb-4 flex flex-wrap gap-2">
           <Segmented<AckFilter>
             label="Status penanganan"
+            className="flex-wrap"
             value={ack}
             onChange={(v) => (setAck(v), setPage(0))}
             options={[
@@ -49,6 +50,7 @@ export default function AlertsPage() {
           />
           <Segmented<SevFilter>
             label="Tingkat"
+            className="flex-wrap"
             value={sev}
             onChange={(v) => (setSev(v), setPage(0))}
             options={[

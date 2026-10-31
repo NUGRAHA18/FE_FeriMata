@@ -5,13 +5,14 @@
 
 :root {
   /*
-   * Design tokens FertiMata (docs/collor-pallet.txt). Tiga tema = tiga varian dari satu sistem:
+   * Design tokens FertiMata. Dua tema (terang & gelap) = dua varian dari satu sistem:
    * nama token sama, nilainya per tema. Komponen hanya memakai token, tidak pernah hex langsung.
    *
    *   bg / card / card-2 (permukaan terangkat atau sisipan) / sunken (lekukan, track bar)
    *   ink (teks utama) / ink-2 (teks isi) / muted (teks sekunder) / line (border & pemisah)
    *   accent (aksi utama) / accent-hover / accent-soft (latar ikon) / accent-ink (teks & ikon hijau)
    *   active (elemen terpilih: segmented, nomor langkah) — sama dengan aksi utama
+   *   hero / hero-fg / hero-muted / hero-chip: kepala halaman di ponsel (hijau tua di tema terang, abu netral di gelap)
    *   success · warn · danger · info: warna status, maknanya tidak berubah antar tema.
    *     <x>      = titik, garis, bar (selalu didampingi teks)
    *     <x>-soft = latar badge / ikon
@@ -23,7 +24,7 @@
   --sunken: #e4eee7;
   --ink: #183126;
   --ink-2: #3e5347;
-  --muted: #63756b;
+  --muted: #5e7066; /* sedikit lebih gelap dari #63756b agar ≥ 4.5:1 juga di atas --bg */
   --line: #dce7df;
 
   --active: #218653;
@@ -51,7 +52,38 @@
   --info-soft: #e3edf9;
   --info-ink: #2b5e9c;
 
+  --hero: #1a6a43;
+  --hero-fg: #ffffff;
+  --hero-muted: rgb(255 255 255 / 0.78);
+  --hero-chip: rgb(255 255 255 / 0.14);
+
   --shadow: 0 1px 2px rgb(24 49 38 / 0.05);
+  --float: 0 6px 24px -10px rgb(24 49 38 / 0.22);
+
+  /* Ikon bergambar (components/icons/pictos.tsx): warna benda, bukan warna status. */
+  --pic-water: #3d8fe0;
+  --pic-water-2: #b5d8f8;
+  --pic-soil: #a87b55;
+  --pic-soil-2: #d9b893;
+  --pic-heat: #e5533d;
+  --pic-sun: #f6b628;
+  --pic-ray: #f08a24;
+  --pic-leaf: #2f9d5c;
+  --pic-leaf-2: #a6dbb6;
+  --pic-violet: #8a63d2;
+  --pic-orange: #ee8a2a;
+  --pic-glass: #dbe6ec;
+  --pic-metal: #8e9ea6;
+  --pic-dark: #3a4950;
+  --pic-white: #ffffff;
+
+  /* Kartu kecil berwarna lembut (kartu kondisi Beranda): latar + border halus setema. */
+  --tint-blue: #f0f7fe;
+  --tint-blue-line: #d5e7f8;
+  --tint-yellow: #fffaeb;
+  --tint-yellow-line: #f5e5b5;
+  --tint-violet: #f5f2fe;
+  --tint-violet-line: #e0d8f7;
 
   /* Ilustrasi dekoratif (daun, melon, greenhouse). */
   --leaf-1: #2e9c57;
@@ -71,23 +103,23 @@
 }
 
 [data-theme="dark"] {
-  --bg: #111815;
-  --card: #1b2420;
-  --card-2: #24312a;
-  --sunken: #0d1310;
-  --ink: #e7f0e9;
-  --ink-2: #c7d4cb;
-  --muted: #a5b6aa;
-  --line: #34453a;
+  --bg: #121212;
+  --card: #1e1e1e;
+  --card-2: #2a2a2a;
+  --sunken: #0b0b0b;
+  --ink: #ececec;
+  --ink-2: #c8c8c8;
+  --muted: #a0a0a0;
+  --line: #353535;
 
   --active: #4cc786;
-  --active-fg: #0e1c14;
+  --active-fg: #0f0f0f;
 
   --accent: #4cc786;
   --accent-hover: #70d99d;
   --accent-2: #70d99d;
-  --accent-fg: #0e1c14;
-  --accent-soft: #203b2d;
+  --accent-fg: #0f0f0f;
+  --accent-soft: #23302a;
   --accent-ink: #70d99d;
 
   --success: #4cc786;
@@ -105,77 +137,50 @@
   --info-soft: #182b40;
   --info-ink: #8dbbf0;
 
+  --hero: #1e1e1e;
+  --hero-fg: #ececec;
+  --hero-muted: rgb(236 236 236 / 0.72);
+  --hero-chip: rgb(255 255 255 / 0.1);
+
   --shadow: none;
+  --float: 0 6px 24px -10px rgb(0 0 0 / 0.5);
+
+  --pic-water: #5aa5ec;
+  --pic-water-2: #2e5878;
+  --pic-soil: #9a7150;
+  --pic-soil-2: #5e4636;
+  --pic-heat: #f07560;
+  --pic-sun: #f3c14a;
+  --pic-ray: #e9963f;
+  --pic-leaf: #4cc786;
+  --pic-leaf-2: #2c6e48;
+  --pic-violet: #a586e6;
+  --pic-orange: #f3a04e;
+  --pic-glass: #3e4246;
+  --pic-metal: #8a9ba3;
+  --pic-dark: #c4d1d7;
+  --pic-white: #ffffff;
+
+  --tint-blue: #172430;
+  --tint-blue-line: #29405a;
+  --tint-yellow: #26241e;
+  --tint-yellow-line: #4a4126;
+  --tint-violet: #211f2e;
+  --tint-violet-line: #3d3757;
 
   --leaf-1: #2c7a49;
   --leaf-2: #3f925d;
   --leaf-3: #24563a;
-  --leaf-4: #1b3326;
+  --leaf-4: #22302a;
   --leaf-vein: rgb(255 255 255 / 0.25);
   --melon: #6f7d48;
   --melon-net: rgb(255 255 255 / 0.3);
   --flower: #c9a227;
   --flower-core: #9c6c0c;
-  --soil: #3d3027;
+  --soil: #3a322c;
   --glass: rgb(255 255 255 / 0.08);
   --deco-opacity: 0.55;
   color-scheme: dark;
-}
-
-/*
- * Mode "Hijau": nuansa greenhouse yang lembut. Latar hijau pucat, kartu hampir putih supaya tetap
- * terpisah dari latar; hijau solid hanya untuk aksi utama. Kontras teks ≥ 4.5:1 terhadap kartu.
- */
-[data-theme="green"] {
-  --bg: #e6f2e9;
-  --card: #f8fcf9;
-  --card-2: #ffffff;
-  --sunken: #d6e8db;
-  --ink: #173b29;
-  --ink-2: #2f5240;
-  --muted: #587263;
-  --line: #c9dfd0;
-
-  --active: #218653;
-  --active-fg: #ffffff;
-
-  --accent: #218653;
-  --accent-hover: #176b42;
-  --accent-2: #45b06c;
-  --accent-fg: #ffffff;
-  --accent-soft: #d9f0df;
-  --accent-ink: #176b42;
-
-  --success: #16854b;
-
-  --warn: #a96800;
-  --warn-soft: #f6ecd3;
-  --warn-ink: #7f4e00;
-
-  --danger: #b83232;
-  --danger-soft: #f7e0e0;
-  --danger-ink: #962424;
-  --danger-fg: #ffffff;
-
-  --info: #2f6fb3;
-  --info-soft: #dde9f5;
-  --info-ink: #275c96;
-
-  --shadow: 0 1px 2px rgb(16 64 34 / 0.05);
-
-  --leaf-1: #23874a;
-  --leaf-2: #52ad70;
-  --leaf-3: #a5d4b2;
-  --leaf-4: #cbe6d3;
-  --leaf-vein: rgb(255 255 255 / 0.5);
-  --melon: #c6d891;
-  --melon-net: rgb(255 255 255 / 0.65);
-  --flower: #f0bd2a;
-  --flower-core: #d4840a;
-  --soil: #6a523f;
-  --glass: rgb(255 255 255 / 0.5);
-  --deco-opacity: 0.9;
-  color-scheme: light;
 }
 
 @theme inline {
@@ -210,6 +215,16 @@
   --color-leaf-2: var(--leaf-2);
   --color-leaf-3: var(--leaf-3);
   --color-leaf-4: var(--leaf-4);
+  --color-tint-blue: var(--tint-blue);
+  --color-tint-blue-line: var(--tint-blue-line);
+  --color-tint-yellow: var(--tint-yellow);
+  --color-tint-yellow-line: var(--tint-yellow-line);
+  --color-tint-violet: var(--tint-violet);
+  --color-tint-violet-line: var(--tint-violet-line);
+  --color-hero: var(--hero);
+  --color-hero-fg: var(--hero-fg);
+  --color-hero-muted: var(--hero-muted);
+  --color-hero-chip: var(--hero-chip);
 
   /* Kartu utama 18, kartu di dalam kartu 14, tombol & input 10. */
   --radius-card: 18px;
@@ -217,6 +232,7 @@
   --radius-control: 10px;
 
   --shadow-card: var(--shadow);
+  --shadow-float: var(--float);
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 }
@@ -226,12 +242,7 @@ html {
 }
 
 body {
-  /* Cahaya lembut di pojok, seperti latar referensi. */
-  background:
-    radial-gradient(1200px 520px at 85% -10%, color-mix(in srgb, var(--accent-soft) 70%, transparent), transparent 70%),
-    radial-gradient(900px 480px at -10% 110%, color-mix(in srgb, var(--accent-soft) 45%, transparent), transparent 70%),
-    var(--bg);
-  background-attachment: fixed;
+  background: var(--bg);
   color: var(--ink);
   font-feature-settings: "cv11", "ss01";
 }

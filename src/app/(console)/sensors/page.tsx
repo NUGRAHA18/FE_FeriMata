@@ -13,7 +13,7 @@ import { errorMessage } from "@/lib/api/client";
 import { useDevices, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
 import { deviceNameLabel, formatNumber, formatReading, formatUnit } from "@/lib/format";
-import { SensorIcon } from "@/lib/icons";
+import { pictoTile, SensorPicto } from "@/components/icons/pictos";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
@@ -28,20 +28,19 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
       href={`/sensors/${s.id}`}
       className={cn("flex min-w-0 flex-col rounded-inner bg-card-2 p-4 transition hover:ring-1 hover:ring-line", !s.enabled && "opacity-70")}
     >
-      <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
-          <SensorIcon kind={s.type} aria-hidden className="size-5" strokeWidth={1.8} />
-        </span>
-        <div className="min-w-0 flex-1">
-          <p className="line-clamp-2 text-sm font-medium leading-snug text-ink">{s.name}</p>
-          <div className="mt-1 flex flex-wrap gap-1.5">
-            {!s.enabled && <Badge tone="warn">Dimatikan</Badge>}
-            {s.autoRegistered && <Badge tone="info">Baru terdeteksi</Badge>}
-          </div>
+      {/* Ikon di atas, nama selebar kartu: di ponsel dua kolom, nama di samping ikon terpotong. */}
+      <span className={cn(pictoTile, "size-11 bg-card")}>
+        <SensorPicto kind={s.type} className="size-7" />
+      </span>
+      <p className="mt-3 line-clamp-2 text-sm font-medium leading-snug text-ink">{s.name}</p>
+      {(!s.enabled || s.autoRegistered) && (
+        <div className="mt-1 flex flex-wrap gap-1.5">
+          {!s.enabled && <Badge tone="warn">Dimatikan</Badge>}
+          {s.autoRegistered && <Badge tone="info">Baru terdeteksi</Badge>}
         </div>
-      </div>
-      <p className={cn("tabular mt-3 flex items-baseline gap-1 text-ink", stale && r && "opacity-60")}>
-        <span className="metric-value text-[34px] sm:text-[40px]">{value ?? "—"}</span>
+      )}
+      <p className={cn("tabular mt-2 flex flex-wrap items-baseline gap-x-1 text-ink", stale && r && "opacity-60")}>
+        <span className="metric-value text-[30px] sm:text-[40px]">{value ?? "—"}</span>
         {value && unit && <span className="text-base text-muted">{unit}</span>}
       </p>
       {r?.calibratedValue != null && (

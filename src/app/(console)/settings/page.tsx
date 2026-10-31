@@ -22,7 +22,6 @@ import { useConnectionState } from "@/lib/realtime/stomp";
 const themeSamples = [
   { theme: "light", label: "Terang", note: "Putih dan hijau mint, cocok di siang hari." },
   { theme: "dark", label: "Gelap", note: "Nyaman di malam hari." },
-  { theme: "green", label: "Hijau", note: "Nuansa hijau daun." },
 ];
 
 export default function SettingsPage() {
@@ -60,7 +59,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader title="Tampilan" icon={Palette} />
           <ThemeSwitcher />
-          <div className="mt-4 grid grid-cols-3 gap-2">
+          <div className="mt-4 grid grid-cols-2 gap-2">
             {themeSamples.map((t) => (
               <div key={t.theme} data-theme={t.theme} className="rounded-inner bg-bg p-2.5 text-ink ring-1 ring-line">
                 <div className="flex gap-1.5">

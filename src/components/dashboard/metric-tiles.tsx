@@ -1,6 +1,6 @@
 "use client";
 
-import { Activity, BatteryWarning, Beaker, type LucideIcon } from "lucide-react";
+import { PicBattery, PicDevices, PicTank, pictoTile, type Picto } from "@/components/icons/pictos";
 import { MetricCard, type MetricStatus } from "@/components/ui/metric-card";
 import { Badge } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
@@ -11,7 +11,7 @@ import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
 /** Kartu angka untuk satu metric key. Tanpa data → "—" (bukan error). */
-export function ReadingMetricCard({ metricKey, label, icon, compact }: { metricKey: string; label: string; icon: LucideIcon; compact?: boolean }) {
+export function ReadingMetricCard({ metricKey, label, icon, compact }: { metricKey: string; label: string; icon: Picto; compact?: boolean }) {
   const r = useReadingByMetric(metricKey);
   const stale = useConnectionState() !== "connected";
   return (
@@ -52,11 +52,11 @@ function selectSystem(o: {
 export function SystemStatusCard({ compact, className }: { compact?: boolean; className?: string }) {
   const s = useOverview(selectSystem).data;
   const tone = !s ? "accent" : s.backup ? "danger" : s.issues > 0 ? "warn" : "accent";
-  const status = !s ? "memuat…" : s.backup ? "Memakai baterai" : s.issues > 0 ? `${s.issues} alat terputus` : "Semua alat terhubung";
+  const status = !s ? "memuat…" : s.backup ? "Memakai baterai" : s.issues > 0 ? `${s.issues} alat terputus` : "Semua terhubung";
   return (
     <MetricCard
       label="Alat terhubung"
-      icon={s?.backup ? BatteryWarning : Activity}
+      icon={s?.backup ? PicBattery : PicDevices}
       value={s ? `${s.online}` : null}
       unit={s ? `dari ${s.total}` : null}
       tone={tone}
@@ -115,8 +115,8 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
   const valueCls = cn("metric-value truncate", compact ? "text-[clamp(1.375rem,17cqi,1.75rem)]" : "text-[clamp(1.5rem,19cqi,2.25rem)]");
   return (
     <section aria-label="Tangki pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5", className)}>
-      <span className={cn("grid shrink-0 place-items-center rounded-[12px] bg-info-soft text-info-ink", compact ? "size-9" : "size-10 sm:size-11")}>
-        <Beaker aria-hidden className={cn(compact ? "size-[18px]" : "size-5 sm:size-[22px]")} strokeWidth={1.8} />
+      <span className={cn(pictoTile, compact ? "size-10" : "size-12")}>
+        <PicTank className={compact ? "size-7" : "size-8"} />
       </span>
       <p className={cn("mt-3 font-semibold text-ink-2", compact ? "text-sm" : "text-sm sm:text-[15px]")}>Tangki pupuk</p>
       <dl className={cn("tabular mt-2 grid grid-cols-1 gap-2.5 @[12rem]:grid-cols-2 @[26rem]:grid-cols-3", stale && latest && "opacity-60")}>

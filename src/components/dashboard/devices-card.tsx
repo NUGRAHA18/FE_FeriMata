@@ -43,8 +43,8 @@ export function DevicesCard({ className }: { className?: string }) {
   const d = overview.data;
 
   return (
-    <Card className={cn("@container flex min-w-0 flex-col", className)}>
-      <CardHeader title="Alat" icon={Cpu} href="/devices" hrefLabel="Buka daftar alat" />
+    <Card mobileBare className={cn("@container flex min-w-0 flex-col", className)}>
+      <CardHeader mobileSection title="Alat" icon={Cpu} href="/devices" hrefLabel="Buka daftar alat" />
       {overview.error ? (
         <ErrorState message={errorMessage(overview.error)} onRetry={() => overview.refetch()} />
       ) : !d ? (
@@ -62,7 +62,8 @@ export function DevicesCard({ className }: { className?: string }) {
       ) : (
         <>
           {/* Kartu sempit (tablet, kolom tengah): 2×2 supaya label tidak bertabrakan; lebar: 4 sejajar. */}
-          <div className="mb-4 grid grid-cols-2 items-end gap-x-4 gap-y-3 px-1 @[22rem]:grid-cols-4">
+          {/* Ponsel (tanpa kartu pembungkus): ringkasan jadi satu strip putih sendiri. */}
+          <div className="mb-3 grid grid-cols-2 items-end gap-x-4 gap-y-3 px-1 @[22rem]:grid-cols-4 md:mb-4 max-md:rounded-inner max-md:bg-card max-md:p-3.5 max-md:shadow-card max-md:ring-1 max-md:ring-line">
             <Summary label="Alat" value={d.total} />
             <Summary label="Terhubung" value={d.online} />
             <Summary label="Sensor" value={d.sensors} />

@@ -1,13 +1,12 @@
 export const THEME_STORAGE_KEY = "fertimata.theme";
 
-export const THEMES = ["light", "dark", "green"] as const;
+export const THEMES = ["light", "dark"] as const;
 export type ResolvedTheme = (typeof THEMES)[number];
 
 /** Warna bilah status browser/PWA per tema (= warna latar). */
 export const THEME_COLORS: Record<ResolvedTheme, string> = {
   light: "#eef5f0",
-  dark: "#111815",
-  green: "#e6f2e9",
+  dark: "#121212",
 };
 
 /**

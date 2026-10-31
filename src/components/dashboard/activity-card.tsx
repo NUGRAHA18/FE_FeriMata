@@ -166,8 +166,8 @@ export function ActivityCard({ className }: { className?: string }) {
   const pct = d && d.total ? Math.round((d.on / d.total) * 100) : 0;
 
   return (
-    <Card className={cn("flex min-w-0 flex-col", className)}>
-      <CardHeader title="Baru saja terjadi" icon={ListChecks} href="/actuators" hrefLabel="Buka halaman kontrol" />
+    <Card mobileBare className={cn("flex min-w-0 flex-col", className)}>
+      <CardHeader mobileSection title="Baru saja terjadi" icon={ListChecks} href="/actuators" hrefLabel="Buka halaman kontrol" />
       {overview.error ? (
         <ErrorState message={errorMessage(overview.error)} onRetry={() => overview.refetch()} />
       ) : !d ? (
@@ -181,7 +181,7 @@ export function ActivityCard({ className }: { className?: string }) {
         </>
       ) : (
         <>
-          <div>
+          <div className="max-md:rounded-inner max-md:bg-card max-md:p-3.5 max-md:shadow-card max-md:ring-1 max-md:ring-line">
             <div className="flex items-baseline justify-between text-sm">
               <span className="tabular text-base font-bold text-ink">{pct}%</span>
               <span className="text-ink-2">
@@ -207,7 +207,7 @@ export function ActivityCard({ className }: { className?: string }) {
           ) : (
             // Tanpa area gulir di dalam kartu (scrollbar ganda di dalam halaman yang juga bergulir):
             // tampilkan beberapa kejadian terbaru, sisanya lewat tombol.
-            <ol className="mt-4 flex flex-col gap-2">
+            <ol className="mt-3 flex flex-col gap-2 md:mt-4">
               {(showAll ? feed : feed.slice(0, FEED_PREVIEW)).map((f) => {
                 const { icon: Icon, tone, spin } = feedIcon[f.icon];
                 return (

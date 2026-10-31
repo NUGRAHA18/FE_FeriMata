@@ -1,4 +1,4 @@
-import { Atom, Droplets, FlaskConical, Leaf, Sprout, Thermometer, Zap, type LucideIcon } from "lucide-react";
+import { PicEc, PicNitrogen, PicPh, PicPhosphorus, PicPotassium, PicSoilMoisture, PicSoilTemp, type Picto } from "@/components/icons/pictos";
 
 /*
  * SATU-SATUNYA tempat pemetaan metric key → kartu dashboard.
@@ -15,17 +15,17 @@ import { Atom, Droplets, FlaskConical, Leaf, Sprout, Thermometer, Zap, type Luci
  */
 export const soilPrefix = "soil_a";
 
-export type MetricCardDef = { suffix: string; label: string; icon: LucideIcon };
+export type MetricCardDef = { suffix: string; label: string; icon: Picto };
 
 /** Kartu metrik tanah; key = `${soilPrefix}.${suffix}`. */
 export const soilMetricCards: MetricCardDef[] = [
-  { suffix: "moisture", label: "Kelembapan tanah", icon: Droplets },
-  { suffix: "temperature", label: "Suhu tanah", icon: Thermometer },
-  { suffix: "ph", label: "Keasaman tanah (pH)", icon: FlaskConical },
-  { suffix: "ec", label: "Kepekatan pupuk tanah (EC)", icon: Zap },
-  { suffix: "nitrogen", label: "Nitrogen (N)", icon: Leaf },
-  { suffix: "phosphorus", label: "Fosfor (P)", icon: Sprout },
-  { suffix: "potassium", label: "Kalium (K)", icon: Atom },
+  { suffix: "moisture", label: "Kelembapan tanah", icon: PicSoilMoisture },
+  { suffix: "temperature", label: "Suhu tanah", icon: PicSoilTemp },
+  { suffix: "ph", label: "Keasaman tanah (pH)", icon: PicPh },
+  { suffix: "ec", label: "Kepekatan pupuk tanah (EC)", icon: PicEc },
+  { suffix: "nitrogen", label: "Nitrogen (N)", icon: PicNitrogen },
+  { suffix: "phosphorus", label: "Fosfor (P)", icon: PicPhosphorus },
+  { suffix: "potassium", label: "Kalium (K)", icon: PicPotassium },
 ];
 
 export function soilMetricKey(suffix: string) {
@@ -68,3 +68,18 @@ export const patrolActuatorCode = "TROLLEY-PATROL";
 
 /** Pompa siram yang dinyalakan jadwal siram; batas lama siram = maxRunSeconds-nya. */
 export const irrigationPumpCode = "DIST-PUMP";
+
+/**
+ * Kartu "Kontrol alat" di Beranda: hanya alat yang paling sering dipakai. Satu kode = satu ubin dengan
+ * tombol switch (perintah tetap lewat dialog konfirmasi). Beberapa kode = satu ubin ringkasan yang
+ * menautkan ke halaman Kontrol (mis. tiga pompa pupuk). `label` kosong → nama dari katalog backend.
+ * Kode yang tidak ada di katalog dilewati.
+ */
+export type DashboardActuatorDef = { codes: string[]; label?: string };
+
+export const dashboardActuators: DashboardActuatorDef[] = [
+  { codes: [irrigationPumpCode], label: "Pompa siram" },
+  { codes: ["STIRRER"] },
+  { codes: ["DOSING-N", "DOSING-P", "DOSING-K"], label: "Pompa pupuk" },
+  { codes: [patrolActuatorCode] },
+];

@@ -8,7 +8,6 @@ export type ThemePreference = ResolvedTheme | "system";
 export const themeLabels: Record<ThemePreference, string> = {
   light: "Terang",
   dark: "Gelap",
-  green: "Hijau",
   system: "Ikuti sistem",
 };
 
@@ -81,7 +80,7 @@ export function useTheme() {
     window.dispatchEvent(new Event(CHANGE_EVENT));
   }, []);
 
-  /** Terang → Gelap → Hijau → Terang (untuk tombol cepat). */
+  /** Terang ↔ Gelap (untuk tombol cepat). */
   const cycle = useCallback(() => {
     const i = THEMES.indexOf(readResolved());
     setPreference(THEMES[(i + 1) % THEMES.length]);
