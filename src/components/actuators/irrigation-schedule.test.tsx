@@ -36,7 +36,7 @@ describe("Kartu Jadwal siram", () => {
     signIn();
     renderWithProviders(<IrrigationScheduleCard />);
     expect(await screen.findByText("06:00")).toBeInTheDocument();
-    expect(screen.getByText("siram 5 mnt")).toBeInTheDocument();
+    expect(screen.getByText("lama ditentukan AI · cadangan 5 mnt")).toBeInTheDocument();
     expect(screen.getByText("Dibatalkan demi keamanan: listrik PLN padam, memakai baterai")).toBeInTheDocument();
     expect(screen.queryByText(/backup power/)).not.toBeVisible();
   });
@@ -54,7 +54,7 @@ describe("Kartu Jadwal siram", () => {
     await user.clear(time);
     await user.type(time, "1730");
     expect(time).toHaveValue("17:30");
-    const minutes = screen.getByRole("textbox", { name: "Lama siram" });
+    const minutes = screen.getByRole("textbox", { name: "Lama siram cadangan" });
     await user.clear(minutes);
     await user.type(minutes, "1,5");
     await user.click(screen.getByRole("button", { name: "Simpan jadwal 17:30" }));
@@ -72,7 +72,7 @@ describe("Kartu Jadwal siram", () => {
     const time = screen.getByRole("textbox", { name: /Jam siram/ });
     await user.clear(time);
     await user.type(time, "2575");
-    const minutes = screen.getByRole("textbox", { name: "Lama siram" });
+    const minutes = screen.getByRole("textbox", { name: "Lama siram cadangan" });
     await user.clear(minutes);
     await user.type(minutes, "20");
     await user.click(screen.getByRole("button", { name: "Simpan jadwal" }));

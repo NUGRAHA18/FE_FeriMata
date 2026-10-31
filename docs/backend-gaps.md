@@ -1,6 +1,6 @@
 # Celah backend (dicatat oleh frontend)
 
-Acuan: backend `BE-melonSmart` per 29 Oktober 2026 (setelah BE-1…BE-7, Fase 3, agregasi riwayat). Frontend tidak
+Acuan: backend `BE-melonSmart` per 31 Oktober 2026 (setelah BE-1…BE-7, Fase 3, agregasi riwayat, kontrak 31 Okt). Frontend tidak
 mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini dicatat di tiap butir.
 
 ## Sudah ditutup backend (frontend sudah memakainya)
@@ -20,6 +20,11 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Tidak ada endpoint agregasi riwayat. | `GET /sensors/{id}/history/aggregate` (min/avg/max, interval otomatis). Grafik riwayat memakainya; rentang 30 & 90 hari ditambahkan. |
 | Tidak ada event realtime data master. | `SENSOR_UPDATED`, `ACTUATOR_UPDATED`; cache daftar & detail diperbarui. |
 | Tidak ada push notification. | `/api/push/*` (VAPID). Kartu "Notifikasi di HP ini" di Akun, service worker menampilkan & membuka notifikasi. |
+| Tipe pompa yang dikalibrasi (`calibration.pump.types`) tidak diekspos. | `ActuatorResponse.pumpCalibratable` (31 Okt). Kartu "Takaran pompa" memakai flag ini; backend lama tanpa flag → cek `type === "DOSING_PUMP"`. |
+| Pesan `BUSINESS_RULE_VIOLATION` kalibrasi berbahasa Inggris tanpa kode. | `details.reason` (31 Okt): NOT_CALIBRATABLE_PUMP, TOO_FEW_TRIALS, TRIALS_OR_FLOW_REQUIRED, INVALID_RANGE, TOO_FEW_SAMPLES, SINGULAR_MODEL, NO_RECENT_READING, COEFFICIENT_OUT_OF_RANGE. Diterjemahkan per kode di `lib/calibration.ts`; regex teks Inggris tinggal cadangan untuk backend lama. |
+| Cek drift yang salah ketik tidak bisa dihapus. | `DELETE /api/sensors/{sensorId}/drift-checks/{checkId}` (31 Okt). Tombol tempat sampah + konfirmasi di "Cek di larutan standar" (operator/admin). |
+| HST dihitung dari tanggal tanam pindah. | Hari ke-0 = tanggal semai (31 Okt): `PUT /api/cultivation/sowing-date` `{ sowingDate }`, respons `cycle.sowingDate` / `cultivation.sowingDate`. Label "Tanggal semai" + "Hari ke-0 = hari benih disemai". Respons lama berisi `transplantDate` dibaca sebagai `sowingDate`; penulisan hanya lewat endpoint baru (backend lama → 404). |
+| Lama siram jadwal tetap. | Lama diputuskan fuzzy AI saat jam tiba (31 Okt). `durationSeconds` = lama cadangan; `lastDurationSeconds` + `lastDurationSource` (AI/FALLBACK/MANUAL) tampil sebagai "Disiram 1 mnt 25 dtk (ditentukan AI)". `AI_NO_WATER_NEEDED` = "Tidak perlu siram" (normal, tidak merah); `AI_CAPPED`, `AI_NOT_CONFIGURED`, `AI_INPUTS_NOT_READY`, `AI_UNAVAILABLE` diterjemahkan; peringatan `IRRIGATION_AI_FALLBACK` berlabel. |
 | Kalibrasi belum ada. | `/calibration-samples` (+ CSV di `/sensors/{id}/calibration-samples.csv`), `/calibrations(/fit)`, `/drift-checks`, kalibrasi pompa + `/dispensed`. Dipakai frontend. Modul riset (`/research/*`) dan metrik sistem (`/metrics/system`) dihapus backend 29 Okt 2026 bersama UI-nya. |
 
 ## Fitur yang belum ada
@@ -32,10 +37,9 @@ mengarang endpoint atau angka untuk menutup celah di bawah; perilaku UI saat ini
 | Task / jadwal (capture terjadwal, aturan peringatan). | Kartu "Baru saja terjadi" (perintah ke alat & peringatan) sebagai pengganti kartu task di referensi. |
 | Push hanya jalan di https (atau localhost). | Jetson diakses lewat http://IP: kartu notifikasi meminta admin memasang domain. |
 | Stream kamera live (CCTV). | Kartu kamera hanya menampilkan foto tersimpan; patroli manual lewat "Patroli sekarang". |
-| Ubah/hapus catatan panen (`/plants/{id}/harvests`) dan cek drift. Hanya GET/POST. | Salah ketik tidak bisa diperbaiki dari aplikasi. Sampel lab bisa dihapus (DELETE ada). |
+| Ubah/hapus catatan panen (`/plants/{id}/harvests`). Hanya GET/POST. | Salah ketik tidak bisa diperbaiki dari aplikasi. Sampel lab dan cek drift bisa dihapus (DELETE ada). |
 | Agregasi riwayat hanya nilai mentah (tanpa `calibratedValue`). | Keterangan grafik menyebut "angka mentah, belum dikoreksi kalibrasi". |
-| Tipe pompa yang dikalibrasi (`calibration.pump.types`) tidak diekspos. | Kartu "Takaran pompa" hanya untuk `type === "DOSING_PUMP"` (bawaan backend). Bila daftar tipe diubah di konfigurasi, frontend perlu ikut diubah. Usul: flag di `ActuatorResponse`. |
-| Pesan `BUSINESS_RULE_VIOLATION` kalibrasi & `notes` metrik berbahasa Inggris tanpa kode. | Pesan yang sering muncul dicocokkan dengan regex (`lib/calibration.ts`) lalu diterjemahkan; sisanya tampil apa adanya. `notes` metrik hanya di "Info teknis". Usul: kode alasan di `details`. |
+| `notes` metrik berbahasa Inggris tanpa kode. | Hanya di "Info teknis". |
 | Daftar metric key kovariat yang valid untuk satu sensor. | Isian teks bebas (dipisah koma) di "Info teknis". |
 | Daftar tipe deteksi AI. | Pilihan = daftar tetap (`NUTRIENT_DEFICIENCY`, `DISEASE`) + tipe yang terlihat di data; label Indonesia di `lib/format.ts`. |
 | Endpoint `/api/dev/outbox` tidak terdokumentasi bentuk responsnya. | Dev Tools memvalidasi tiap item sebagai `ActuatorCommand` dan mengabaikan yang tidak cocok. |

@@ -40,7 +40,7 @@ export default function SettingsPage() {
         <Card className="lg:col-span-2">
           <CardHeader title="Tanaman" icon={Sprout} />
           <p className="text-sm text-ink-2">
-            {canWrite ? "Lihat umur dan fase tanaman, tambah atau hapus tanaman, dan ubah tanggal tanam." : "Lihat umur tanaman, fase pertumbuhan, dan daftar tanaman."}
+            {canWrite ? "Lihat umur dan fase tanaman, tambah atau hapus tanaman, dan ubah tanggal semai." : "Lihat umur tanaman, fase pertumbuhan, dan daftar tanaman."}
           </p>
           <Link href="/cultivation" className="mt-3 inline-flex h-11 items-center gap-2 rounded-control bg-active px-4 text-sm font-medium text-active-fg hover:opacity-90">
             Buka halaman Tanaman <ArrowUpRight aria-hidden className="size-4" />

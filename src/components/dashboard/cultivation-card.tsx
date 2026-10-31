@@ -21,7 +21,7 @@ export function CultivationCard() {
         <Skeleton className="h-16 w-full" />
       ) : !c ? (
         <p className="text-sm text-ink-2">
-          Tanggal tanam belum diisi.{" "}
+          Tanggal semai belum diisi.{" "}
           <Link href="/cultivation?tambah=1" className="font-semibold text-accent-ink underline-offset-2 hover:underline">
             Tambahkan tanaman pertama
           </Link>{" "}
@@ -30,11 +30,11 @@ export function CultivationCard() {
       ) : (
         <div className="relative grid grid-cols-2 gap-x-4 gap-y-4 @2xl:grid-cols-3 @2xl:gap-0 @2xl:divide-x @2xl:divide-line @2xl:[&>div]:px-4 @2xl:[&>div:first-child]:pl-0">
           <div>
-            <p className="text-sm text-ink-2">Hari setelah tanam</p>
+            <p className="text-sm text-ink-2">Hari sejak semai</p>
             <p className="tabular metric-value mt-1 text-[40px] text-ink">
-              {c.hst} <span className="text-base font-medium text-ink-2">HST</span>
+              {c.hst} <span className="text-base font-medium text-ink-2">hari</span>
             </p>
-            <p className="mt-0.5 text-xs text-ink-2">tanam {formatDate(c.transplantDate)}</p>
+            <p className="mt-0.5 text-xs text-ink-2">semai {formatDate(c.sowingDate)}</p>
           </div>
           <div>
             <p className="text-sm text-ink-2">Fase sekarang</p>

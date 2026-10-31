@@ -247,6 +247,9 @@ export const actuatorSchema = z.object({
   // Perintah yang diterima tipe ini (BE-1), mis. ["START", "STOP"] untuk patroli. Null = bebas.
   // Opsional supaya backend lama tetap terbaca.
   supportedCommands: z.array(z.string()).nullable().optional(),
+  // Debit pompa ini bisa dikalibrasi (backend `app.calibration.pump.types`, ≥ 31 Okt 2026). Opsional
+  // supaya backend lama tetap terbaca; tanpa field ini frontend memakai cek tipe DOSING_PUMP.
+  pumpCalibratable: z.boolean().optional(),
   description: z.string().nullable(),
   metadata: json.nullable(),
   createdAt: instant,
@@ -339,10 +342,21 @@ export type AiDetection = z.infer<typeof aiDetectionSchema>;
 
 // ── Umur tanaman & tanaman ────────────────────────────────────────────────────
 /*
- * Backend masih menyimpan fase dalam "siklus" aktif, tetapi UI hanya memakai tanggal tanam pindah,
- * HST, dan nama/target EC fase. Field lain dibuat opsional supaya pembersihan backend tidak membuat
+ * Backend masih menyimpan fase dalam "siklus" aktif, tetapi UI hanya memakai tanggal semai (hari ke-0
+ * HST), HST, dan nama/target EC fase. Field lain dibuat opsional supaya pembersihan backend tidak membuat
  * respons ditolak (zod juga membuang field yang tidak dikenal).
  */
+/**
+ * Backend sebelum 31 Okt 2026 hanya mengirim `transplantDate` (kini alias deprecated dengan nilai sama).
+ * Disalin ke `sowingDate` sebelum divalidasi supaya UI hanya mengenal satu nama.
+ */
+function withSowingDate(v: unknown) {
+  if (v && typeof v === "object" && !("sowingDate" in v) && "transplantDate" in v) {
+    return { ...v, sowingDate: (v as { transplantDate: unknown }).transplantDate };
+  }
+  return v;
+}
+
 export const growthPhaseSchema = z.object({
   id: z.number().nullable().optional(),
   code: z.string(),
@@ -355,17 +369,21 @@ export const growthPhaseSchema = z.object({
 });
 export type GrowthPhase = z.infer<typeof growthPhaseSchema>;
 
-export const plantingCycleSchema = z.object({
-  id: z.number().optional(),
-  code: z.string().optional(),
-  name: z.string().optional(),
-  transplantDate: z.string(),
-  status: z.string().optional(),
-  phases: z.array(growthPhaseSchema).optional(),
-});
+export const plantingCycleSchema = z.preprocess(
+  withSowingDate,
+  z.object({
+    id: z.number().optional(),
+    code: z.string().optional(),
+    name: z.string().optional(),
+    /** Tanggal benih disemai = hari ke-0 HST. */
+    sowingDate: z.string(),
+    status: z.string().optional(),
+    phases: z.array(growthPhaseSchema).optional(),
+  }),
+);
 export type PlantingCycle = z.infer<typeof plantingCycleSchema>;
 
-/** GET /cultivation/active & PUT /cultivation/transplant-date. */
+/** GET /cultivation/active & PUT /cultivation/sowing-date. */
 export const cycleTodaySchema = z.object({
   cycle: plantingCycleSchema,
   today: z.string(),
@@ -394,6 +412,7 @@ export const irrigationScheduleSchema = z.object({
   id: z.number(),
   /** "06:00", waktu kebun (WIB). */
   time: z.string(),
+  /** Lama siram CADANGAN: dipakai bila AI tidak bisa dipakai. Lama sebenarnya diputuskan AI saat jamnya tiba. */
   durationSeconds: z.number(),
   enabled: z.boolean(),
   notes: z.string().nullable(),
@@ -404,8 +423,15 @@ export const irrigationScheduleSchema = z.object({
   lastResult: z.string().nullable(),
   /** Teks teknis bahasa Inggris — hanya untuk "Info teknis". */
   lastMessage: z.string().nullable(),
-  /** Kode alasan (interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, kode error API); null bila Disiram. */
+  /**
+   * Kode alasan (interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, kode error API, atau keputusan AI:
+   * AI_NO_WATER_NEEDED, AI_CAPPED, AI_NOT_CONFIGURED, AI_INPUTS_NOT_READY, AI_UNAVAILABLE).
+   */
   lastReasonCode: z.string().nullable().optional(),
+  /** Detik yang benar-benar dikirim ke pompa pada jalan terakhir (backend >= 31 Okt 2026). */
+  lastDurationSeconds: z.number().nullable().optional(),
+  /** Asal lama siram terakhir: AI · FALLBACK (durasi cadangan) · MANUAL. String agar nilai baru tidak ditolak. */
+  lastDurationSource: z.string().nullable().optional(),
   lastCommandUid: z.string().nullable(),
 });
 export type IrrigationSchedule = z.infer<typeof irrigationScheduleSchema>;
@@ -459,16 +485,19 @@ export const dashboardOverviewSchema = z.object({
   }),
   latestAiDetection: aiDetectionSchema.nullable().optional(),
   recentActivity: z.array(activityEntrySchema),
-  // Null bila tanggal tanam pindah belum diisi; opsional agar backend lama tetap lolos.
+  // Null bila tanggal semai belum diisi; opsional agar backend lama tetap lolos.
   cultivation: z
-    .object({
-      transplantDate: z.string(),
-      hst: z.number(),
-      currentPhase: growthPhaseSchema.nullable(),
-      nextPhase: growthPhaseSchema.nullable(),
-      daysUntilNextPhase: z.number().nullable(),
-      plantCount: z.number(),
-    })
+    .preprocess(
+      withSowingDate,
+      z.object({
+        sowingDate: z.string(),
+        hst: z.number(),
+        currentPhase: growthPhaseSchema.nullable(),
+        nextPhase: growthPhaseSchema.nullable(),
+        daysUntilNextPhase: z.number().nullable(),
+        plantCount: z.number(),
+      }),
+    )
     .nullable()
     .optional(),
 });

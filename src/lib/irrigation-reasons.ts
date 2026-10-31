@@ -15,9 +15,18 @@ const reasonText: Record<string, string> = {
   DEVICE_NOT_ONLINE: "panel pompa sedang terputus",
   PUMP_UNAVAILABLE: "pompa siram tidak ditemukan atau dimatikan",
   BACKEND_DOWN: "sistem mati saat jamnya",
+  // Keputusan AI (fuzzy) saat jam siram tiba.
+  AI_NO_WATER_NEEDED: "AI menilai tanah masih cukup basah",
+  AI_CAPPED: "lama dari AI dipotong ke batas pompa",
+  AI_NOT_CONFIGURED: "AI belum diatur",
+  AI_INPUTS_NOT_READY: "data sensor tanah belum ada atau sudah lama",
+  AI_UNAVAILABLE: "layanan AI tidak menjawab",
 };
 
 const SAFETY_CODES = new Set(["BACKUP_POWER", "FLOAT_LOW", "EXCLUSIVE_OPERATION", "BLOCKED_WHILE_ACTIVE", "DEVICE_NOT_ONLINE"]);
+
+/** AI memutuskan tidak perlu siram: hasil normal, bukan pembatalan atau kegagalan. */
+export const AI_NO_WATER_NEEDED = "AI_NO_WATER_NEEDED";
 
 /** Kode aturan keselamatan (interlock): penyiraman dibatalkan, bukan gagal. */
 export const isSafetyCode = (code: string) => SAFETY_CODES.has(code);

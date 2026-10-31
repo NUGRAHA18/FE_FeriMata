@@ -19,11 +19,12 @@ import {
   useCalibrationSamples,
   useCreateSensorCalibration,
   useDeleteCalibrationSample,
+  useDeleteDriftCheck,
   useDriftChecks,
   useFitCalibration,
   useSensorCalibrations,
 } from "@/lib/api/queries";
-import type { CalibrationSample, Sensor, SensorCalibration } from "@/lib/api/types";
+import type { CalibrationSample, DriftCheck, Sensor, SensorCalibration } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { calibrationErrorMessage, formatEquation, localInputToIso, nowLocalInput } from "@/lib/calibration";
 import { csvFilename } from "@/lib/csv";
@@ -407,7 +408,9 @@ function DriftChecks({ sensor, unit }: { sensor: Sensor; unit: string }) {
   const canWrite = useCanWrite();
   const [page, setPage] = useState(0);
   const [adding, setAdding] = useState(false);
+  const [deleting, setDeleting] = useState<DriftCheck | null>(null);
   const q = useDriftChecks(sensor.id, page);
+  const del = useDeleteDriftCheck(sensor.id);
 
   return (
     <Section
@@ -433,13 +436,16 @@ function DriftChecks({ sensor, unit }: { sensor: Sensor; unit: string }) {
           <ol className="flex flex-col gap-2">
             {q.data.content.map((d) => (
               <li key={d.id} className="rounded-inner bg-card-2 p-3 text-sm ring-1 ring-line">
-                <p className="flex flex-wrap items-baseline justify-between gap-x-2 text-ink">
-                  <span className="font-medium">{d.standardName}</span>
-                  <span className="text-xs text-muted">
-                    {formatDateTime(d.checkedAt)}
-                    {d.performedBy ? ` · ${d.performedBy}` : ""}
-                  </span>
-                </p>
+                <div className="flex items-start gap-2">
+                  <p className="flex min-w-0 flex-1 flex-wrap items-baseline justify-between gap-x-2 text-ink">
+                    <span className="font-medium">{d.standardName}</span>
+                    <span className="text-xs text-muted">
+                      {formatDateTime(d.checkedAt)}
+                      {d.performedBy ? ` · ${d.performedBy}` : ""}
+                    </span>
+                  </p>
+                  {canWrite && <IconButton icon={Trash2} label={`Hapus cek ${formatDateTime(d.checkedAt)}`} size="sm" className="-my-1" onClick={() => setDeleting(d)} />}
+                </div>
                 <p className="tabular mt-1 text-ink-2">
                   Standar {fmt(d.referenceValue, unit)} · terbaca {fmt(d.measuredValue, unit)}
                   {d.deviationPercent != null && ` · selisih ${formatNumber(d.deviationPercent, 1)}%`}
@@ -453,6 +459,18 @@ function DriftChecks({ sensor, unit }: { sensor: Sensor; unit: string }) {
           <Pagination page={page} totalPages={q.data.totalPages} totalElements={q.data.totalElements} onChange={setPage} busy={q.isFetching} />
         </>
       )}
+      <ConfirmDialog
+        open={deleting !== null}
+        onClose={() => setDeleting(null)}
+        onConfirm={() => deleting && del.mutate(deleting.id, { onSuccess: () => setDeleting(null) })}
+        pending={del.isPending}
+        error={deleting && del.error ? errorMessage(del.error) : null}
+        tone="danger"
+        title="Hapus cek larutan standar ini?"
+        confirmLabel="Hapus"
+      >
+        {deleting && `Cek ${deleting.standardName} ${formatDateTime(deleting.checkedAt)} (terbaca ${fmt(deleting.measuredValue, unit)}) akan dihapus. Pakai ini untuk catatan yang salah ketik.`}
+      </ConfirmDialog>
     </Section>
   );
 }

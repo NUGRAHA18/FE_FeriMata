@@ -92,14 +92,14 @@ function ScheduleRow({ s, onEdit, onDelete }: { s: IrrigationSchedule; onEdit: (
   const patch = usePatchIrrigation();
   const now = useNow();
   const next = nextRunLabel(s.nextRunAt, now || undefined);
-  const last = lastRunView(s.lastResult, s.lastReasonCode);
+  const last = lastRunView(s.lastResult, s.lastReasonCode, { seconds: s.lastDurationSeconds, source: s.lastDurationSource });
 
   return (
     <li className="flex min-w-0 items-start gap-3 rounded-inner bg-card p-3 ring-1 ring-line">
       <div className="min-w-0 flex-1">
         <p className="flex flex-wrap items-baseline gap-x-2">
           <span className="tabular text-2xl leading-none font-semibold text-ink">{s.time}</span>
-          <span className="text-sm text-ink-2">siram {formatDuration(s.durationSeconds)}</span>
+          <span className="text-sm text-ink-2">lama ditentukan AI · cadangan {formatDuration(s.durationSeconds)}</span>
           {!s.enabled && <Badge tone="neutral">Mati</Badge>}
         </p>
         {s.notes && <p className="mt-1 truncate text-xs text-ink-2">{s.notes}</p>}
@@ -157,7 +157,7 @@ export function IrrigationScheduleCard() {
           )
         }
       />
-      <p className="mb-3 text-sm text-ink-2">Setiap hari pada jam berikut, pompa siram menyala selama waktu yang tertulis.</p>
+      <p className="mb-3 text-sm text-ink-2">Setiap hari pada jam berikut, AI menentukan berapa lama pompa siram menyala dari kondisi tanah. Bila AI tidak menjawab, dipakai lama cadangan.</p>
       {editing === "new" && <ScheduleForm onDone={() => setEditing(null)} />}
       {q.isPending ? (
         <Skeleton className="h-24 w-full rounded-inner" />
