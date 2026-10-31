@@ -1,101 +1,151 @@
 "use client";
 
-import { CalendarDays, Camera, Droplet, MapPin, Sun, Thermometer } from "lucide-react";
+import { ChevronDown, ChevronRight, MapPin } from "lucide-react";
+import { PicAirTemp, PicCamera, PicHumidity, PicLight, type Picto } from "@/components/icons/pictos";
 import { Card } from "@/components/ui/card";
-import { Chip } from "@/components/ui/status";
+import { StatusDot } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { siteConfig } from "@/config/site";
 import { conditionKeys, trolleyLayout } from "@/config/dashboard-layout";
 import { useReadingByMetric } from "@/lib/api/queries";
-import { formatDate, formatLongDate, formatReading, formatTime, formatUnit, stationCode } from "@/lib/format";
+import { formatLongDate, formatReading, formatTime, formatUnit, stationCode } from "@/lib/format";
+import { useLocalChoice } from "@/lib/local-state";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/cn";
 import { GreenhouseMap } from "./greenhouse-map";
 
-function Clock() {
-  const now = useNow();
-  return (
-    <div className="flex items-start gap-2 text-right text-sm text-ink-2" suppressHydrationWarning>
-      <CalendarDays aria-hidden className="mt-0.5 hidden size-4 shrink-0 text-accent sm:block" strokeWidth={1.9} />
-      <div>
-      <p className="tabular hidden sm:block">{now ? formatLongDate(now) : " "}</p>
-        <p className="tabular sm:hidden">{now ? formatDate(now) : " "}</p>
-      <p className="tabular text-xs">{now ? `${formatTime(now, true)} WIB` : " "}</p>
-      </div>
-    </div>
-  );
-}
-
-function SmallStat({ icon: Icon, label, metricKey, iconCls }: { icon: typeof Sun; label: string; metricKey: string; iconCls: string }) {
-  const r = useReadingByMetric(metricKey);
-  const v = formatReading(r);
-  return (
-    <div className="min-w-0">
-      <p className="flex items-center gap-2 text-sm text-ink-2">
-        <span className={cn("grid size-7 shrink-0 place-items-center rounded-[8px]", iconCls)}>
-          <Icon aria-hidden className="size-4" strokeWidth={2} />
-        </span>
-        {label}
-      </p>
-      <p className="tabular mt-1 pl-9 text-[clamp(1.25rem,6vw,1.625rem)] font-semibold whitespace-nowrap text-ink">
-        {v ?? "—"}
-        {v && r?.unit && <span className="ml-1 text-sm font-normal text-ink-2">{formatUnit(r.unit)}</span>}
-      </p>
-    </div>
-  );
-}
+const MAP_KEY = "fertimata.dashboard.denah";
 
 export function useTrolleyStation(): number | null {
   const r = useReadingByMetric(trolleyLayout.stationKey);
   return r?.value ?? null;
 }
 
-/** Kartu besar "Kondisi Greenhouse + Denah" — pengganti kartu cuaca di referensi. */
+/** Kolom kanan atas: jam (pill), lokasi, tanggal. */
+function TimePlace() {
+  const now = useNow();
+  return (
+    <div className="flex min-w-0 flex-col items-start gap-2" suppressHydrationWarning>
+      <span className="tabular rounded-full bg-accent-soft px-2 py-1 text-[11px] font-semibold whitespace-nowrap text-accent-ink sm:px-2.5 sm:text-xs">
+        {now ? `${formatTime(now, true)} WIB` : " "}
+      </span>
+      <p className="flex min-w-0 items-start gap-1.5 text-[13px] leading-5 font-semibold text-ink">
+        <MapPin aria-hidden className="mt-0.5 size-4 shrink-0 text-accent" strokeWidth={2} />
+        <span className="line-clamp-2 break-words">{siteConfig.location || "Lokasi belum diatur"}</span>
+      </p>
+      <p className="tabular hidden text-xs text-muted sm:block">{now ? formatLongDate(now) : " "}</p>
+    </div>
+  );
+}
+
+/*
+ * Kartu kecil berwarna lembut + border halus. Warna hanya pembeda kelompok (air, cahaya, kamera),
+ * bukan status. Angka diperkecil mengikuti lebar kartu supaya tiga kolom tetap muat di HP 360 px.
+ */
+const tints = {
+  blue: "bg-tint-blue ring-tint-blue-line",
+  yellow: "bg-tint-yellow ring-tint-yellow-line",
+  violet: "bg-tint-violet ring-tint-violet-line",
+};
+const tileCls = "@container flex min-w-0 flex-col rounded-[16px] p-3 text-left ring-1 sm:p-3.5";
+
+function TileTop({ icon: Icon, label }: { icon: Picto; label: string }) {
+  return (
+    <>
+      <Icon className="size-7" />
+      <p className="mt-2 min-h-8 text-xs leading-4 text-ink-2 @[8.5rem]:min-h-0 @[8.5rem]:text-[13px]">{label}</p>
+    </>
+  );
+}
+
+function ReadingTile({ icon, label, metricKey, tint, stale }: { icon: Picto; label: string; metricKey: string; tint: keyof typeof tints; stale: boolean }) {
+  const r = useReadingByMetric(metricKey);
+  const v = formatReading(r);
+  return (
+    <div className={cn(tileCls, tints[tint])}>
+      <TileTop icon={icon} label={label} />
+      <p className={cn("tabular mt-1.5 leading-tight font-semibold text-ink", stale && r && "opacity-60")}>
+        <span className="text-[clamp(15px,19cqi,22px)]">{v ?? "—"}</span>
+        {v && r?.unit && <span className="ml-1 text-[clamp(11px,11cqi,14px)] font-medium text-ink-2">{formatUnit(r.unit)}</span>}
+      </p>
+    </div>
+  );
+}
+
+/**
+ * Kartu utama Beranda "Kondisi greenhouse" (susunan mengikuti referensi): ikon bulat + suhu udara
+ * besar di kiri, jam & lokasi di kanan dipisah garis tegak, lalu tiga kartu kecil berwarna lembut
+ * (kelembapan udara, cahaya, posisi kamera). Kartu posisi kamera membuka/menutup denah greenhouse.
+ * Tidak ada badge "Normal": backend tidak mengirim rentang acuan suhu/kelembapan/cahaya udara, jadi
+ * yang ditampilkan hanya kapan angka diperbarui.
+ */
 export function ConditionsCard() {
   const air = useReadingByMetric(conditionKeys.airTemperature);
   const station = useTrolleyStation();
-  const stale = useConnectionState() !== "connected";
+  const connection = useConnectionState();
+  const stale = connection !== "connected";
   const airValue = formatReading(air);
+  const [map, setMap] = useLocalChoice(MAP_KEY, ["open", "closed"] as const, "closed");
+  const mapOpen = map === "open";
 
   return (
-    <Card>
-      <div className="flex items-start justify-between gap-3">
-        <p className="flex min-w-0 items-center gap-2 text-[15px] font-semibold text-ink">
-          <MapPin aria-hidden className="size-5 shrink-0 text-accent" strokeWidth={2} />
-          <span className="truncate">{siteConfig.location || "Lokasi belum diatur"}</span>
-        </p>
-        <Clock />
-      </div>
-      <div className="mt-4 grid gap-4 sm:grid-cols-[minmax(0,0.72fr)_minmax(0,1.28fr)] sm:gap-5">
-        <div className="flex min-w-0 flex-col">
-          <p className="flex items-center gap-2 text-sm font-medium text-ink-2">
-            <span className="grid size-8 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
-              <Thermometer aria-hidden className="size-[18px]" strokeWidth={2} />
+    <Card className="shadow-float md:shadow-card">
+      <div className="flex gap-3 sm:gap-5">
+        <div className="flex min-w-0 flex-1 items-start gap-2.5 sm:gap-4">
+          <span className="grid size-11 shrink-0 place-items-center rounded-full bg-accent-soft min-[400px]:size-14 sm:size-16">
+            <PicAirTemp className="size-7 min-[400px]:size-9 sm:size-10" />
+          </span>
+          <div className="min-w-0">
+            <p className="text-[15px] font-semibold text-ink">Suhu udara</p>
+            <p className={cn("tabular mt-0.5 flex items-start text-ink", stale && air && "opacity-60")}>
+              <span className="metric-value text-[clamp(2.25rem,11vw,3.75rem)]">{airValue ?? "—"}</span>
+              {airValue && air?.unit && <span className="mt-1 ml-0.5 text-lg font-medium text-ink-2 sm:text-2xl">{formatUnit(air.unit)}</span>}
+            </p>
+            <span className="mt-2 inline-flex max-w-full items-center gap-1.5 rounded-full bg-card-2 px-2.5 py-1 text-xs text-ink-2 ring-1 ring-line">
+              <StatusDot tone={air && !stale ? "ok" : "neutral"} className="size-1.5" />
+              <span className="truncate">{air ? <RelativeTime iso={air.recordedAt} /> : "belum ada data"}</span>
             </span>
-            Suhu udara di dalam greenhouse
-          </p>
-          <p className={cn("tabular mt-3 flex items-start text-ink", stale && air && "opacity-60")}>
-            <span className="metric-value text-[clamp(3.25rem,17vw,4.75rem)]">{airValue ?? "—"}</span>
-            {airValue && air?.unit && <span className="mt-2 ml-0.5 text-3xl font-medium text-ink-2">{formatUnit(air.unit)}</span>}
-          </p>
-          <p className="mt-1 text-xs text-ink-2">{air ? <RelativeTime iso={air.recordedAt} prefix="diperbarui " /> : "belum ada data"}</p>
-
-          <div className="mt-5 grid grid-cols-2 gap-3 sm:grid-cols-1">
-            <SmallStat icon={Droplet} label="Kelembapan udara" metricKey={conditionKeys.airHumidity} iconCls="bg-info-soft text-info-ink" />
-            <SmallStat icon={Sun} label="Cahaya" metricKey={conditionKeys.illuminance} iconCls="bg-warn-soft text-warn-ink" />
-          </div>
-
-          <div className="mt-auto flex flex-col items-start gap-2 pt-5">
-            <Chip tone="ok" icon={Camera} className="px-3 py-1.5 text-[13px]">
-              Kamera: {station == null ? "—" : stationCode(Math.round(station))}
-            </Chip>
           </div>
         </div>
-        <div className="self-center rounded-inner bg-gradient-to-b from-accent-soft/70 to-accent-soft/30 p-2 ring-1 ring-line">
+        <div className="w-[34%] max-w-48 shrink-0 border-l border-line pl-3 sm:pl-5">
+          <TimePlace />
+        </div>
+      </div>
+
+      <div className="mt-4 grid grid-cols-3 gap-2 sm:gap-3">
+        <ReadingTile icon={PicHumidity} label="Kelembapan udara" metricKey={conditionKeys.airHumidity} tint="blue" stale={stale} />
+        <ReadingTile icon={PicLight} label="Cahaya" metricKey={conditionKeys.illuminance} tint="yellow" stale={stale} />
+        <button
+          type="button"
+          onClick={() => setMap(mapOpen ? "closed" : "open")}
+          aria-expanded={mapOpen}
+          aria-controls="denah-beranda"
+          className={cn(
+            tileCls,
+            tints.violet,
+            "transition hover:ring-accent/40 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent",
+          )}
+        >
+          <TileTop icon={PicCamera} label="Posisi kamera" />
+          <span className="tabular mt-1.5 flex items-center gap-0.5 leading-tight font-semibold text-ink">
+            <span className="text-[clamp(15px,19cqi,22px)]">{station == null ? "—" : stationCode(Math.round(station))}</span>
+            {mapOpen ? (
+              <ChevronDown aria-hidden className="size-4 shrink-0 text-accent-ink" strokeWidth={2.2} />
+            ) : (
+              <ChevronRight aria-hidden className="size-4 shrink-0 text-accent-ink" strokeWidth={2.2} />
+            )}
+          </span>
+          <span className="sr-only">{mapOpen ? "Tutup denah greenhouse" : "Buka denah greenhouse"}</span>
+        </button>
+      </div>
+
+      {mapOpen && (
+        <div id="denah-beranda" className="mt-3 rounded-[16px] bg-card-2 p-2 ring-1 ring-line">
+          <p className="px-1.5 pt-1 pb-1 text-xs text-muted">Denah greenhouse · posisi kereta kamera</p>
           <GreenhouseMap trolleyStation={station} />
         </div>
-      </div>
+      )}
     </Card>
   );
 }

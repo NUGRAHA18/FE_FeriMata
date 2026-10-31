@@ -1,14 +1,14 @@
 "use client";
 
-import { Leaf, Monitor, Moon, Sun } from "lucide-react";
+import { Monitor, Moon, Sun } from "lucide-react";
 import { Segmented } from "@/components/ui/segmented";
 import { cn } from "@/lib/cn";
 import { themeLabels, useTheme, type ThemePreference } from "@/lib/theme";
 
-const icons = { light: Sun, dark: Moon, green: Leaf, system: Monitor };
-const next = { light: "dark", dark: "green", green: "light" } as const;
+const icons = { light: Sun, dark: Moon, system: Monitor };
+const next = { light: "dark", dark: "light" } as const;
 
-/** Tombol cepat: Terang → Gelap → Hijau. Ikon menunjukkan tema yang sedang aktif. */
+/** Tombol cepat: Terang ↔ Gelap. Ikon menunjukkan tema yang sedang aktif. */
 export function ThemeToggle({ className }: { className?: string }) {
   const { resolved, cycle } = useTheme();
   const Icon = icons[resolved];
@@ -30,9 +30,9 @@ export function ThemeToggle({ className }: { className?: string }) {
   );
 }
 
-const options: ThemePreference[] = ["light", "dark", "green", "system"];
+const options: ThemePreference[] = ["light", "dark", "system"];
 
-/** Pemilih tema lengkap (Pengaturan & menu Lainnya). Ponsel: 2×2 supaya keempat pilihan terlihat. */
+/** Pemilih tema lengkap (Pengaturan & menu Lainnya). Ponsel: tiga kolom selebar layar. */
 export function ThemeSwitcher() {
   const { preference, setPreference } = useTheme();
   return (
@@ -40,7 +40,7 @@ export function ThemeSwitcher() {
       label="Tema tampilan"
       value={preference}
       onChange={setPreference}
-      className="grid w-full grid-cols-2 sm:inline-flex sm:w-auto"
+      className="grid w-full grid-cols-3 sm:inline-flex sm:w-auto"
       options={options.map((v) => ({ value: v, label: themeLabels[v], icon: icons[v] }))}
     />
   );

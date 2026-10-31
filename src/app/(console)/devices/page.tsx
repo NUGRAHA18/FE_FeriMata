@@ -40,9 +40,9 @@ export default function DevicesPage() {
             </div>
             <Card>
               {d.items.length ? (
-                <ul className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+                <ul className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
                   {d.items.map((s) => (
-                    <li key={s.id}>
+                    <li key={s.id} className="min-w-0">
                       <DeviceRow status={s} name={devices.data?.[s.id]?.name} type={devices.data?.[s.id]?.type} href={`/devices/${s.id}`} className="h-full" />
                     </li>
                   ))}

@@ -6,7 +6,7 @@ import { Chip, StatusLine, type Tone } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import type { DeviceStatus } from "@/lib/api/types";
 import { deviceNameLabel, deviceTypeLabel, formatDuration, livenessLabel, powerSourceLabel } from "@/lib/format";
-import { DeviceIcon } from "@/lib/icons";
+import { DevicePicto, pictoTile } from "@/components/icons/pictos";
 import { cn } from "@/lib/cn";
 
 /** Terhubung · Terputus · Belum pernah terhubung (tidak diketahui). */
@@ -50,7 +50,7 @@ type DeviceRowProps = {
  * Item alat:  [ikon] Nama alat                    ›
  *                    Jenis alat
  *                    ● Terhubung · kabar terakhir 34 dtk lalu
- * Ikon di kotak hijau muda (bukan lingkaran gelap), status satu baris dengan titik + teks.
+ * Ikon bergambar sesuai tipe alat di kotak netral, status satu baris dengan titik + teks.
  */
 export function DeviceRow({ status: s, name: rawName, type, href, className }: DeviceRowProps) {
   const name = deviceNameLabel(rawName) ?? s.deviceCode;
@@ -58,8 +58,8 @@ export function DeviceRow({ status: s, name: rawName, type, href, className }: D
   const problem = s.status === "OFFLINE" || s.onBackupPower;
   const body = (
     <div className="flex items-start gap-3">
-      <span className="grid size-10 shrink-0 place-items-center rounded-[12px] bg-accent-soft text-accent-ink">
-        <DeviceIcon kind={type} aria-hidden className="size-5" strokeWidth={1.8} />
+      <span className={cn(pictoTile, "size-10")}>
+        <DevicePicto kind={type} className="size-7" />
       </span>
       <div className="min-w-0 flex-1">
         <p className="truncate text-[15px] leading-5 font-semibold text-ink" title={name}>
