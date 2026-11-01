@@ -107,7 +107,7 @@ export default function ActuatorDetailPage() {
     <>
       <PageHeader backHref="/actuators" title={a?.name ?? "Kontrol"} subtitle={a ? (actuatorTypeLabel(a.type) ?? a.code) : undefined} />
       {q.isPending ? (
-        <div className="grid gap-4 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           <Skeleton className="h-64 rounded-card" />
           <Skeleton className="h-64 rounded-card" />
         </div>
@@ -115,7 +115,7 @@ export default function ActuatorDetailPage() {
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : (
         a && (
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
             <Card>
               <CardHeader title="Status & kendali" icon={SlidersHorizontal} action={!a.enabled && <Badge tone="warn">Dinonaktifkan</Badge>} />
               <ReportedState actuator={a} large />
