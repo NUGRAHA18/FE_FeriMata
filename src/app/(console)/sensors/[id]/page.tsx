@@ -126,7 +126,7 @@ export default function SensorDetailPage() {
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : (
         s && (
-          <div className="grid gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)]">
+          <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.6fr)]">
             <div className="flex flex-col gap-4">
               <LatestValue sensor={s} />
               {(s.autoRegistered || !s.enabled) && (
