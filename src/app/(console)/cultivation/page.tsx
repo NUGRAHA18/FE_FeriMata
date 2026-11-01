@@ -16,13 +16,8 @@ import { useCanWrite } from "@/lib/auth/use-session";
 import { csvTime } from "@/lib/csv";
 import { formatDate } from "@/lib/format";
 
-/*
- * Halaman Tanaman untuk petani: umur tanaman (hari ke-N) dan fase sekarang, serta menambah/menghapus
- * tanaman. Semua benih disemai bersamaan, jadi ada SATU tanggal semai (= hari ke-0) untuk seluruh
- * greenhouse: diminta saat menambah tanaman pertama (PUT /cultivation/sowing-date), sesudahnya hanya
- * ditampilkan dan bisa dikoreksi lewat "Ubah tanggal semai". Target EC per fase tetap disimpan
- * backend dan dipakai kartu tangki pupuk di Beranda.
- */
+/* Halaman Tanaman: umur (hari ke-N), fase, tambah/hapus tanaman. SATU tanggal semai (= hari ke-0) untuk seluruh
+ * greenhouse, diminta saat tanaman pertama (PUT /cultivation/sowing-date); target EC per fase disimpan backend. */
 
 const DATE_HINT = "Hari ke-0 = hari benih disemai. Hari ke-berapa dan fasenya dihitung dari tanggal ini.";
 
@@ -115,10 +110,7 @@ function NoDateCard({ onAdd }: { onAdd: () => void }) {
 
 /* ── Tanaman ───────────────────────────────────────────────────────────────── */
 
-/**
- * Tambah tanaman. Bila tanggal semai belum ada, isian "Tanggal semai" ikut diminta (wajib) dan
- * disimpan dulu; bila sudah ada, cukup ditampilkan sebagai keterangan.
- */
+/** Tambah tanaman; bila tanggal semai belum ada, isiannya ikut diminta (wajib) dan disimpan dulu. */
 function NewPlantForm({ today, onDone }: { today: CycleToday | null; onDone: () => void }) {
   const create = useCreatePlant();
   const setDate = useSetSowingDate();

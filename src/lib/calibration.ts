@@ -2,11 +2,8 @@ import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import type { SensorCalibration } from "@/lib/api/types";
 import { formatNumber } from "@/lib/format";
 
-/*
- * Kalibrasi sensor (Protokol-Data §7) dan pompa (§8). Penolakan aturan (BUSINESS_RULE_VIOLATION)
- * diterjemahkan dari `details.reason` (backend ≥ 31 Okt 2026). Pesan Inggris backend lama dicocokkan
- * dengan regex sebagai cadangan; sisanya ditampilkan apa adanya.
- */
+/* Kalibrasi sensor (Protokol-Data §7) dan pompa (§8). BUSINESS_RULE_VIOLATION diterjemahkan dari
+ * `details.reason` (BE ≥ 31 Okt 2026); pesan Inggris BE lama via regex, sisanya apa adanya. */
 
 const num = (v: unknown) => (typeof v === "number" ? v : null);
 

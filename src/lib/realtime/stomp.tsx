@@ -30,10 +30,8 @@ export function useConnectionState(): ConnectionState {
   );
 }
 
-/**
- * Koneksi STOMP (WebSocket native, bukan SockJS) selama ada token. Token dikirim di frame
- * CONNECT. Setiap kali (re)connect, overview di-refetch untuk menutup celah event yang terlewat.
- */
+/** STOMP via WebSocket native (bukan SockJS); token di frame CONNECT. Tiap (re)connect, overview
+ * di-refetch untuk menutup celah event yang terlewat. */
 export function useRealtime(token: string | null) {
   const qc = useQueryClient();
 

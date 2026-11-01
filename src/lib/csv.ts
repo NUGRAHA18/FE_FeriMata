@@ -1,10 +1,7 @@
 import { siteConfig } from "@/config/site";
 
-/*
- * Ekspor CSV untuk laporan penelitian (rencana Fase 3.7). RFC 4180: pemisah koma, titik desimal,
- * baris CRLF, BOM UTF-8 agar Excel membaca huruf non-ASCII. Waktu ditulis "YYYY-MM-DD HH:mm:ss" WIB
- * supaya langsung dikenali sebagai tanggal oleh Excel / Google Sheets / pandas.
- */
+/* CSV RFC 4180 (Fase 3.7): koma, titik desimal, CRLF, BOM UTF-8 untuk Excel. Waktu
+ * "YYYY-MM-DD HH:mm:ss" WIB agar dikenali sebagai tanggal oleh Excel/Sheets/pandas. */
 
 export type CsvValue = string | number | boolean | null | undefined;
 export type CsvColumn<T> = { header: string; value: (row: T) => CsvValue };

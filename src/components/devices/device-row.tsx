@@ -46,12 +46,7 @@ type DeviceRowProps = {
   className?: string;
 };
 
-/**
- * Item alat:  [ikon] Nama alat                    ›
- *                    Jenis alat
- *                    ● Terhubung · kabar terakhir 34 dtk lalu
- * Ikon bergambar sesuai tipe alat di kotak netral, status satu baris dengan titik + teks.
- */
+/** Item alat: ikon tipe, nama, jenis, dan status satu baris (titik + teks + kabar terakhir). */
 export function DeviceRow({ status: s, name: rawName, type, href, className }: DeviceRowProps) {
   const name = deviceNameLabel(rawName) ?? s.deviceCode;
   // Terputus atau memakai baterai: bingkai kartu sedikit kemerahan, selain itu netral.

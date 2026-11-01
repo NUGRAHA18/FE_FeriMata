@@ -62,10 +62,7 @@ export function SystemBanners() {
   );
 }
 
-/**
- * Data tidak bisa diperbarui (tanpa internet, atau server tidak menjawab): angka yang tampil adalah
- * data terakhir yang tersimpan di HP ini — sebutkan kapan, supaya tidak dikira angka sekarang.
- */
+/** Offline/server diam: angka = data terakhir di HP ini; sebutkan kapan agar tidak dikira terkini. */
 export function OfflineBanner() {
   const online = useIsOnline();
   const q = useOverview((o) => o.system.generatedAt);

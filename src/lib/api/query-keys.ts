@@ -1,10 +1,7 @@
 import type { AlertFilters, DetectionFilter } from "./endpoints";
 import type { ActuatorCommand, Alert } from "./types";
 
-/*
- * Kunci cache TanStack Query. Event realtime menulis langsung ke kunci-kunci ini
- * (lib/realtime/apply.ts), jadi bentuknya adalah bagian dari kontrak internal.
- */
+/* Kunci cache TanStack Query. lib/realtime/apply.ts menulis langsung ke sini, jadi bentuknya kontrak internal. */
 export const qk = {
   me: ["me"] as const,
   users: ["users"] as const,

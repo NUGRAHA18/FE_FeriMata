@@ -5,10 +5,8 @@ import { csvTime } from "@/lib/csv";
 import { formatDate, formatDuration } from "@/lib/format";
 import { AI_NO_WATER_NEEDED, irrigationReasonText } from "@/lib/irrigation-reasons";
 
-/*
- * Jadwal siram harian. Jam selalu waktu kebun (WIB). Hasil terakhir diterjemahkan dari kode
- * (`lastResult` + `lastReasonCode`); `lastMessage` backend berbahasa Inggris, hanya untuk Info teknis.
- */
+/* Jadwal siram harian; jam selalu WIB. Hasil dibaca dari kode (`lastResult` + `lastReasonCode`);
+ * `lastMessage` berbahasa Inggris, hanya untuk Info teknis. */
 
 /** "YYYY-MM-DD" dan "HH:mm" di WIB. */
 const wibDate = (v: string | number) => csvTime(v).slice(0, 10);
@@ -43,13 +41,8 @@ export function lastDurationText({ seconds, source }: LastDuration, reasonCode?:
   return `${formatDuration(seconds)}${how ? ` (${how})` : ""}`;
 }
 
-/**
- * Hasil terakhir dari kode (bukan dari `lastMessage` yang berbahasa Inggris):
- * STARTED → "Disiram <lama> (ditentukan AI / durasi cadangan)", SKIPPED karena AI_NO_WATER_NEEDED →
- * "Tidak perlu siram" (normal, bukan merah/kuning), SKIPPED lain → "Dibatalkan demi keamanan: <alasan>",
- * MISSED → "Terlewat (sistem mati)", FAILED → "Gagal: <alasan>". `detail` = penjelasan panjang aturan
- * keselamatan bila alasannya interlock, atau mengapa durasi cadangan dipakai.
- */
+/** SKIPPED karena AI_NO_WATER_NEEDED = normal (bukan merah/kuning). `detail` = penjelasan interlock
+ *  atau alasan durasi cadangan dipakai. */
 export function lastRunView(result: string | null, reasonCode: string | null | undefined, duration: LastDuration = {}): LastRunView | null {
   const reason = irrigationReasonText(reasonCode);
   const detail = interlockExplanation(reasonCode);

@@ -1,10 +1,7 @@
 import { cn } from "@/lib/cn";
 
-/*
- * Ilustrasi dekoratif bergaya referensi (docs/referensi-ui*.png): daun, melon, bunga, greenhouse.
- * Murni hiasan — selalu aria-hidden dan tidak menangkap klik. Warna dari token --leaf-* di
- * globals.css sehingga ikut tema (lebih redup di tema gelap lewat --deco-opacity).
- */
+/* Ilustrasi dekoratif (docs/referensi-ui*.png): selalu aria-hidden dan tidak menangkap klik.
+ * Warna dari token --leaf-* di globals.css, diredupkan di tema gelap lewat --deco-opacity. */
 
 const LEAF = "M0 0 C 0.22 -0.34 0.68 -0.4 1 0 C 0.68 0.4 0.22 0.34 0 0 Z";
 
@@ -76,10 +73,7 @@ export function LeafCorner({ className }: { className?: string }) {
   );
 }
 
-/**
- * Pemandangan kebun untuk dasar kartu: bukit lembut, daun melon, bunga, dan satu buah melon.
- * Diletakkan absolut di dasar kartu; konten kartu tetap di atasnya.
- */
+/** Pemandangan kebun (bukit, daun, bunga, melon), diletakkan absolut di dasar kartu di bawah konten. */
 export function GardenStrip({ className }: { className?: string }) {
   return (
     <svg aria-hidden viewBox="0 0 400 90" preserveAspectRatio="xMaxYMax meet" className={cn(decoCls, className)} style={decoStyle}>

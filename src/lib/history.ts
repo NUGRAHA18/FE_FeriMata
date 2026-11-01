@@ -1,11 +1,8 @@
 import { getSensorHistoryAggregate } from "@/lib/api/endpoints";
 import type { SensorHistorySeries } from "@/lib/api/types";
 
-/*
- * Riwayat sensor untuk grafik, dari GET /sensors/{id}/history/aggregate: backend meringkas per
- * interval (min/avg/max) dan memilih sendiri lebarnya (±300 titik) bila `interval` dikosongkan.
- * Interval ≥ 1 jam juga mencakup data di luar masa retensi pembacaan mentah.
- */
+/* GET /sensors/{id}/history/aggregate: min/avg/max per interval; `interval` kosong → backend pilih (±300
+ * titik). Interval ≥ 1 jam juga mencakup data di luar retensi pembacaan mentah. */
 
 const DAY = 24 * 3_600_000;
 export const RANGES = {
@@ -22,10 +19,8 @@ export type RangeKey = keyof typeof RANGES;
 export type Point = { t: number; avg: number | null; band: [number, number] | null; min: number | null; max: number | null; count: number };
 export type HistoryResult = { points: Point[]; total: number; interval: string; intervalSeconds: number };
 
-/**
- * Titik backend → titik grafik, terurut naik. Ember kosong tidak dikirim backend; bila jarak dua
- * titik lebih dari 1,5× interval, disisipkan satu titik null supaya garis tidak menyambung celah.
- */
+/** Ember kosong tidak dikirim backend; jarak > 1,5× interval → sisipkan titik null agar garis tidak
+ *  menyambung celah. */
 export function toPoints(series: Pick<SensorHistorySeries, "points" | "intervalSeconds">): Point[] {
   const step = series.intervalSeconds * 1000;
   const sorted = series.points

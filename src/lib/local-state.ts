@@ -2,10 +2,7 @@
 
 import { useCallback, useSyncExternalStore } from "react";
 
-/*
- * Preferensi kecil per-perangkat (plot terpilih, dll.) di localStorage. Aman bila storage
- * tidak tersedia: nilai bawaan dipakai dan perubahan hanya berlaku di memori.
- */
+// Preferensi per-perangkat di localStorage. Tanpa storage: pakai nilai bawaan, perubahan hanya di memori.
 
 const memory = new Map<string, string>();
 const EVENT = "fertimata:local-state";

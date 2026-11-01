@@ -5,11 +5,8 @@ import { cn } from "@/lib/cn";
 type Variant = "primary" | "dark" | "soft" | "ghost" | "danger" | "accent";
 type Size = "sm" | "md" | "lg";
 
-/*
- * Aturan tombol: hijau solid hanya untuk aksi utama (primary / dark / accent — sama tampilannya;
- * nama lama dipertahankan agar pemanggil tidak berubah). Aksi kedua: soft. Navigasi kecil: IconButton
- * atau CornerLink, bukan tombol solid. Disabled: pudar + kursor dilarang, tanpa efek hover.
- */
+// Hijau solid hanya untuk aksi utama (primary/dark/accent sama; nama lama dipertahankan). Aksi kedua: soft.
+// Navigasi kecil: IconButton/CornerLink. Disabled: pudar, kursor dilarang, tanpa hover.
 const solid = "bg-accent text-accent-fg hover:bg-accent-hover disabled:hover:bg-accent";
 const variants: Record<Variant, string> = {
   primary: solid,

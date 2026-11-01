@@ -3,11 +3,8 @@
 import { useId, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-/*
- * Isian jam & lama siram yang cukup diketik (tanpa <input type="time"> bawaan yang ikut AM/PM locale,
- * tanpa tombol +/−). Keyboard angka di HP, huruf besar, titik dua disisipkan otomatis, dan pilihan
- * cepat yang paling sering dipakai. Kesalahan diberi tahu tanpa menghapus isian.
- */
+/* Isian jam & lama siram yang diketik (tanpa <input type="time"> yang ikut AM/PM locale): keyboard angka,
+ * titik dua otomatis, pilihan cepat; kesalahan diberi tahu tanpa menghapus isian. */
 
 const pad = (n: number) => String(n).padStart(2, "0");
 
@@ -15,10 +12,7 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 export const QUICK_TIMES = ["06:00", "08:00", "16:00", "17:00"];
 
-/**
- * Rapikan ketikan jam: "." / "," dianggap ":", titik dua disisipkan sendiri.
- * "0600" → "06:00", "600" → "6:00", "060" → "06:0", "2400" → "24:00", "6.3" → "6:3".
- */
+/** Rapikan ketikan jam: "."/"," → ":", titik dua disisipkan sendiri ("0600" → "06:00", "600" → "6:00"). */
 export function formatTimeTyping(raw: string): string {
   const t = raw.replace(/[.,]/g, ":");
   if (t.includes(":")) {
@@ -27,9 +21,8 @@ export function formatTimeTyping(raw: string): string {
   }
   const d = t.replace(/\D/g, "");
   if (d.length <= 2) return d;
-  // Angka pertama 3–9 pasti jam satu digit ("600" → 6:00, "930" → 9:30); selain itu dua angka pertama
-  // adalah jam ("0600" → 06:00, "2400" → 24:00). Salah ketik tidak diam-diam berubah jadi jam lain;
-  // yang tidak sah (24:00, 25:75) ditolak saat disimpan dengan pesan.
+  // Angka pertama 3–9 = jam satu digit ("930" → 9:30), selain itu dua angka pertama = jam.
+  // Jam tidak sah (24:00, 25:75) ditolak saat disimpan, bukan diubah diam-diam.
   return d[0] >= "3" ? `${d[0]}:${d.slice(1, 3)}` : `${d.slice(0, 2)}:${d.slice(2, 4)}`;
 }
 

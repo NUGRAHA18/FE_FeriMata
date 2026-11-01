@@ -1,12 +1,8 @@
 import type { ComponentType, CSSProperties, ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-/*
- * Ikon bergambar (piktogram) untuk benda yang diukur: tanah, air, suhu, cahaya, hara, tangki, alat.
- * Gaya: datar, dua-tiga warna, tanpa garis tepi dan tanpa gradien, supaya tetap sederhana di ukuran
- * 20–32 px. Warnanya warna benda (token --pic-*, per tema), bukan warna status: status tetap
- * disampaikan lewat badge/teks. Ikon UI (navigasi, judul kartu, status) tetap memakai lucide.
- */
+/* Piktogram benda yang diukur: datar, 2–3 warna, tanpa garis tepi/gradien agar jelas di 20–32 px.
+ * Warna = token --pic-* (per tema), bukan status (status lewat badge/teks). Ikon UI tetap lucide. */
 
 export type Picto = ComponentType<{ className?: string }>;
 

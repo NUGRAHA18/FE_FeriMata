@@ -21,11 +21,8 @@ export function isOnState(state: string | null | undefined) {
 
 type FeedItem = { key: string; kind: "ALERT" | "COMMAND"; at: string; title: string; detail: string; icon: "EXECUTED" | "PENDING" | "FAILED" | "CANCELLED" | "WARNING" | "CRITICAL" | "INFO" };
 
-/*
- * Semua kejadian memakai kartu putih yang sama; warnanya hanya di kotak ikon kecil. Warna diambil
- * dari status perintah / tingkat peringatan di data (bukan ditebak dari teks judul), dan bentuk
- * ikonnya berbeda per jenis supaya tidak hanya mengandalkan warna.
- */
+/* Warna dari status perintah / tingkat peringatan di data (bukan ditebak dari judul); bentuk ikon
+ * berbeda per jenis agar tidak hanya mengandalkan warna. */
 const feedIcon: Record<FeedItem["icon"], { icon: LucideIcon; tone: Tone; spin?: boolean }> = {
   EXECUTED: { icon: CheckCircle2, tone: "ok" },
   PENDING: { icon: Loader2, tone: "neutral", spin: true },
@@ -80,10 +77,8 @@ function severityIcon(sev: string | null | undefined): FeedItem["icon"] {
   return sev === "CRITICAL" ? "CRITICAL" : sev === "INFO" ? "INFO" : "WARNING";
 }
 
-/**
- * Entri overview backend. Field terstruktur (status, commandType, actuatorCode, actor) dipakai bila
- * ada; `summary`/`detail` hanya cadangan untuk backend lama yang belum mengirimnya.
- */
+/** Field terstruktur (status, commandType, actuatorCode, actor) diutamakan; `summary`/`detail` hanya
+ *  cadangan untuk backend lama. */
 export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
   const key = e.refId != null ? `o-${e.kind}-${e.refId}` : `o${i}`;
   if (e.kind === "ACTUATOR_COMMAND") {
@@ -121,7 +116,6 @@ export function fromOverviewEntry(e: ActivityEntry, i: number): FeedItem {
   return { key, kind: "ALERT", at: e.at, title: e.summary, detail: e.detail ?? "", icon: "INFO" };
 }
 
-/** Kartu Aktivitas: apa yang baru saja terjadi (perintah & peringatan) + berapa alat yang sedang menyala. */
 export function ActivityCard({ className }: { className?: string }) {
   const overview = useOverview((o) => ({
     on: o.actuators.filter((a) => isOnState(a.currentState)).length,
@@ -205,8 +199,7 @@ export function ActivityCard({ className }: { className?: string }) {
           {feed.length === 0 ? (
             <EmptyState className="mt-3" title="Belum ada kejadian" hint="Perintah ke alat dan peringatan akan muncul di sini." />
           ) : (
-            // Tanpa area gulir di dalam kartu (scrollbar ganda di dalam halaman yang juga bergulir):
-            // tampilkan beberapa kejadian terbaru, sisanya lewat tombol.
+            // Sengaja tanpa area gulir di kartu (hindari scrollbar ganda); sisanya lewat tombol.
             <ol className="mt-3 flex flex-col gap-2 md:mt-4">
               {(showAll ? feed : feed.slice(0, FEED_PREVIEW)).map((f) => {
                 const { icon: Icon, tone, spin } = feedIcon[f.icon];

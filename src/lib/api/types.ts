@@ -1,11 +1,7 @@
 import { z } from "zod";
 
-/*
- * Kontrak API backend FertiMata. Semua respons divalidasi di batas jaringan.
- * Konvensi: Instant = string ISO-8601 UTC; BigDecimal = number; field boleh null.
- * Enum yang di backend bertipe String (mode, kind) sengaja dibiarkan string agar nilai baru
- * tidak membuat seluruh respons ditolak.
- */
+// Kontrak API FertiMata, divalidasi di batas jaringan. Instant = ISO-8601 UTC; BigDecimal = number.
+// Enum String backend (mode, kind) dibiarkan string agar nilai baru tidak menolak respons.
 
 const instant = z.string();
 const json = z.record(z.string(), z.unknown());
@@ -93,8 +89,7 @@ export const sensorReadingSchema = z.object({
   deviceId: z.number(),
   deviceCode: z.string(),
   value: z.number().nullable(),
-  // Nilai setelah koreksi kalibrasi yang berlaku saat recordedAt; null = belum dikalibrasi (atau
-  // kovariat tidak ada). Opsional supaya backend lama tetap terbaca.
+  // Nilai terkoreksi kalibrasi saat recordedAt; null = belum dikalibrasi/kovariat kosong. Opsional (backend lama).
   calibratedValue: z.number().nullable().optional(),
   textValue: z.string().nullable(),
   unit: z.string().nullable(),
@@ -244,11 +239,9 @@ export const actuatorSchema = z.object({
   currentState: z.string().nullable(),
   stateUpdatedAt: instant.nullable(),
   maxRunSeconds: z.number().nullable(),
-  // Perintah yang diterima tipe ini (BE-1), mis. ["START", "STOP"] untuk patroli. Null = bebas.
-  // Opsional supaya backend lama tetap terbaca.
+  // Perintah yang diterima tipe ini (BE-1); null = bebas. Opsional (backend lama).
   supportedCommands: z.array(z.string()).nullable().optional(),
-  // Debit pompa ini bisa dikalibrasi (backend `app.calibration.pump.types`, ≥ 31 Okt 2026). Opsional
-  // supaya backend lama tetap terbaca; tanpa field ini frontend memakai cek tipe DOSING_PUMP.
+  // Debit bisa dikalibrasi (`app.calibration.pump.types`, BE ≥ 31 Okt 2026). Tanpa field: cek tipe DOSING_PUMP.
   pumpCalibratable: z.boolean().optional(),
   description: z.string().nullable(),
   metadata: json.nullable(),
@@ -341,15 +334,7 @@ export const aiDetectionSchema = z.object({
 export type AiDetection = z.infer<typeof aiDetectionSchema>;
 
 // ── Umur tanaman & tanaman ────────────────────────────────────────────────────
-/*
- * Backend masih menyimpan fase dalam "siklus" aktif, tetapi UI hanya memakai tanggal semai (hari ke-0
- * HST), HST, dan nama/target EC fase. Field lain dibuat opsional supaya pembersihan backend tidak membuat
- * respons ditolak (zod juga membuang field yang tidak dikenal).
- */
-/**
- * Backend sebelum 31 Okt 2026 hanya mengirim `transplantDate` (kini alias deprecated dengan nilai sama).
- * Disalin ke `sowingDate` sebelum divalidasi supaya UI hanya mengenal satu nama.
- */
+/** Backend < 31 Okt 2026 hanya mengirim `transplantDate` (alias deprecated); disalin ke `sowingDate`. */
 function withSowingDate(v: unknown) {
   if (v && typeof v === "object" && !("sowingDate" in v) && "transplantDate" in v) {
     return { ...v, sowingDate: (v as { transplantDate: unknown }).transplantDate };
@@ -412,7 +397,7 @@ export const irrigationScheduleSchema = z.object({
   id: z.number(),
   /** "06:00", waktu kebun (WIB). */
   time: z.string(),
-  /** Lama siram CADANGAN: dipakai bila AI tidak bisa dipakai. Lama sebenarnya diputuskan AI saat jamnya tiba. */
+  /** Lama siram cadangan bila AI tak tersedia; lama sebenarnya diputuskan AI saat jamnya tiba. */
   durationSeconds: z.number(),
   enabled: z.boolean(),
   notes: z.string().nullable(),
@@ -423,10 +408,8 @@ export const irrigationScheduleSchema = z.object({
   lastResult: z.string().nullable(),
   /** Teks teknis bahasa Inggris — hanya untuk "Info teknis". */
   lastMessage: z.string().nullable(),
-  /**
-   * Kode alasan (interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, kode error API, atau keputusan AI:
-   * AI_NO_WATER_NEEDED, AI_CAPPED, AI_NOT_CONFIGURED, AI_INPUTS_NOT_READY, AI_UNAVAILABLE).
-   */
+  /** Kode alasan: interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, error API, atau keputusan AI (AI_NO_WATER_NEEDED,
+   *  AI_CAPPED, AI_NOT_CONFIGURED, AI_INPUTS_NOT_READY, AI_UNAVAILABLE). */
   lastReasonCode: z.string().nullable().optional(),
   /** Detik yang benar-benar dikirim ke pompa pada jalan terakhir (backend >= 31 Okt 2026). */
   lastDurationSeconds: z.number().nullable().optional(),
@@ -442,15 +425,15 @@ export const activityEntrySchema = z.object({
   at: instant,
   summary: z.string(),
   detail: z.string().nullable(),
-  // Field terstruktur (backend >= Oktober 2026). Opsional agar backend lama tetap lolos validasi.
+  // Field terstruktur (backend ≥ Okt 2026); opsional untuk backend lama.
   status: z.string().nullable().optional(),
   commandType: z.string().nullable().optional(),
   actuatorCode: z.string().nullable().optional(),
   deviceCode: z.string().nullable().optional(),
   actor: z.string().nullable().optional(),
   refId: z.number().nullable().optional(),
-  // Perintah: failureCode perintah; peringatan: metadata.failureCode, atau metadata.reasonCode bila
-  // tidak ada (mis. IRRIGATION_SKIPPED → BACKUP_POWER). Null selain itu.
+  // Perintah: failureCode; peringatan: metadata.failureCode, atau metadata.reasonCode bila kosong
+  // (mis. IRRIGATION_SKIPPED → BACKUP_POWER).
   failureCode: z.string().nullable().optional(),
   /** Tipe peringatan untuk entri ALERT (mis. IRRIGATION_SKIPPED); null untuk perintah. */
   alertType: z.string().nullable().optional(),

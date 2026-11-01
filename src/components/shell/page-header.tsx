@@ -39,12 +39,8 @@ function BackLink({ href, className }: { href: string; className: string }) {
   );
 }
 
-/**
- * Header halaman.
- * Ponsel: isinya dipasang (portal) ke kepala hijau MobileHero — tombol kembali di kiri atas, judul &
- * subjudul selebar layar, lalu `actions`. State tetap milik halaman karena portal ada di pohon halaman.
- * Tablet/desktop: judul besar di kiri, status global (koneksi, pill peringatan) dan `actions` di kanan.
- */
+/** Ponsel: di-portal ke MobileHero (state tetap milik halaman). Tablet/desktop: judul di kiri,
+ * status global dan `actions` di kanan. */
 export function PageHeader({ title, subtitle, actions, backHref, className }: PageHeaderProps) {
   const { alertCount, connection, heroSlots } = useShell();
   return (

@@ -1,11 +1,5 @@
-/*
- * Alasan jadwal siram tidak berjalan, dari kode backend (`lastReasonCode` jadwal, `metadata.reasonCode`
- * peringatan IRRIGATION_SKIPPED). Pesan teks backend berbahasa Inggris dan tidak ditampilkan ke petani.
- * Modul tanpa import supaya bisa dipakai lib/format dan lib/irrigation tanpa saling bergantung.
- *
- * Kode interlock sama dengan `details.interlock` penolakan perintah biasa (penjelasan panjangnya di
- * lib/actuator-safety → interlockExplanation).
- */
+/* Kode alasan siram dari backend (`lastReasonCode`, `metadata.reasonCode` IRRIGATION_SKIPPED; teks Inggris
+ * tak ditampilkan). Sengaja tanpa import agar lib/format & lib/irrigation tak saling bergantung. */
 
 const reasonText: Record<string, string> = {
   BACKUP_POWER: "listrik PLN padam, memakai baterai",
@@ -31,11 +25,8 @@ export const AI_NO_WATER_NEEDED = "AI_NO_WATER_NEEDED";
 /** Kode aturan keselamatan (interlock): penyiraman dibatalkan, bukan gagal. */
 export const isSafetyCode = (code: string) => SAFETY_CODES.has(code);
 
-/**
- * Alasan singkat (huruf kecil, untuk disambung setelah "Dibatalkan demi keamanan: "). Kode lain yang
- * bukan interlock (INVALID_COMMAND, MESSAGE_PUBLISH_FAILED, …) → "gagal mengirim perintah".
- * `conflictingActuatorCode` (EXCLUSIVE_OPERATION, hanya di metadata peringatan) menyebut alatnya.
- */
+/** Huruf kecil, disambung setelah "Dibatalkan demi keamanan: "; kode tak dikenal → "gagal mengirim perintah".
+ *  `conflictingActuatorCode` hanya ada di metadata peringatan EXCLUSIVE_OPERATION. */
 export function irrigationReasonText(code: string | null | undefined, conflictingActuatorCode?: string | null): string | null {
   if (!code) return null;
   if (code === "EXCLUSIVE_OPERATION" && conflictingActuatorCode) return `${conflictingActuatorCode} sedang berjalan`;

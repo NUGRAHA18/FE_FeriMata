@@ -1,10 +1,7 @@
 import { trolleyLayout } from "@/config/dashboard-layout";
 
-/*
- * Perintah per tipe aktuator. Relay biasa memakai ON/OFF; aktuator virtual (BE-1) menjalankan urutan
- * di edge: patroli kamera, pindah kereta ke stasiun. Kosakata akhirnya milik backend
- * (`supportedCommands`); di sini hanya label, isian, dan urutan tombol untuk petani.
- */
+/* Perintah per tipe aktuator: relay ON/OFF; aktuator virtual (BE-1) menjalankan urutan di edge.
+ * Kosakata milik backend (`supportedCommands`); di sini hanya label, isian, dan urutan tombol. */
 
 /** Isian tambahan yang dibutuhkan perintah. */
 export type CommandParams = "duration" | "station" | null;
@@ -65,10 +62,7 @@ const specsByType: Record<string, CommandSpec[]> = {
   ],
 };
 
-/**
- * Tipe yang sudah dipensiunkan backend (dinonaktifkan migrasi V9) dan tidak ditampilkan lagi. Campur pupuk
- * otomatis dan jadwal siram/pupuk dijalankan layanan terpisah tim AI lewat pompa biasa.
- */
+/** Tipe yang dipensiunkan backend (migrasi V9) dan disembunyikan; campur pupuk & jadwal kini layanan tim AI. */
 const retiredActuatorTypes = new Set(["DOSING_LOOP"]);
 
 export function isRetiredActuator(a: { type?: string | null }): boolean {
@@ -85,10 +79,8 @@ export function isSequenceActuator(a: CommandSource): boolean {
   return !!cmds && cmds.some((c) => !["ON", "OFF"].includes(c.toUpperCase()));
 }
 
-/**
- * Tombol untuk satu aktuator, urutan tampil = urutan array (berhenti selalu terakhir). Tipe virtual yang
- * belum dikenal frontend mendapat tombol mentah per perintah dari `supportedCommands`.
- */
+/** Tombol satu aktuator, urutan array = urutan tampil (berhenti terakhir). Tipe virtual tak dikenal
+ * mendapat tombol mentah per perintah dari `supportedCommands`. */
 export function commandSpecsFor(a: CommandSource): CommandSpec[] {
   const supported = a.supportedCommands?.map((c) => c.toUpperCase()) ?? null;
   const known = (a.type && specsByType[a.type]) || (isSequenceActuator(a) ? null : relaySpecs);

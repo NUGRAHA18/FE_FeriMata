@@ -24,11 +24,8 @@ export const secondaryNav: NavItem[] = [
 /** Tombol bulat di tengah bottom nav mobile: Jadwal siram. */
 export const mobileFab: NavItem = primaryNav.find((i) => i.href === "/jadwal-siram")!;
 
-/**
- * Susunan bottom nav mobile: [kiri ×2] (Siram) [kanan ×1] [Lainnya]. Menu yang tidak muat (termasuk
- * Tanaman) masuk lembar "Lainnya". Peran tanpa hak ubah tidak melihat Kontrol, jadi Kamera naik ke
- * slot kanan.
- */
+/** Bottom nav mobile: [kiri ×2] (Siram) [kanan ×1] [Lainnya]; sisanya masuk "Lainnya".
+ * Tanpa hak ubah, Kontrol hilang sehingga Kamera naik ke slot kanan. */
 export function mobileNav(canWrite: boolean) {
   const all = navFor(primaryNav, canWrite).filter((i) => i.href !== mobileFab.href);
   const left = all.slice(0, 2);

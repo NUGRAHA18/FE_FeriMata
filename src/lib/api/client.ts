@@ -100,8 +100,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
   };
 
   let res = await send();
-  // 401 pada request ber-token: coba perpanjang sesi sekali, lalu ulangi. Kalau refresh gagal,
-  // refreshSession sudah mengakhiri sesi.
+  // 401: perpanjang sesi sekali lalu ulangi; bila gagal, refreshSession sudah mengakhiri sesi.
   if (res.status === 401 && auth && getSession()?.refreshToken && (await refreshSession())) {
     res = await send();
   }
@@ -143,11 +142,8 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
   return result.data as never;
 }
 
-/**
- * Berkas terlindungi di luar `/api` (foto patroli di `/captures/**`, BE-2). Backend meminta token yang
- * sama dengan API, sedangkan `<img src>` tidak bisa mengirim header, jadi gambar diambil sebagai blob.
- * 401 dicoba sekali lagi setelah perpanjang sesi; gagal tidak mengakhiri sesi (cukup placeholder).
- */
+/** `/captures/**` (BE-2) butuh token, padahal `<img src>` tak bisa kirim header → ambil sebagai blob.
+ *  401 dicoba sekali setelah refresh; gagal tidak mengakhiri sesi (cukup placeholder). */
 export async function fetchProtectedBlob(url: string, signal?: AbortSignal): Promise<Blob> {
   await ensureFreshToken();
   const send = () => {
@@ -167,7 +163,6 @@ export async function fetchApiText(path: string, query?: Query, signal?: AbortSi
   return (await fetchProtectedBlob(buildUrl(path, query), signal)).text();
 }
 
-/** Pesan ramah untuk ditampilkan di kartu error. */
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
     if (error.code === "MESSAGING_ERROR") return "Koneksi ke alat terputus; perintah dicatat sebagai gagal.";

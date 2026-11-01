@@ -22,10 +22,7 @@ const scenarios: { label: string; path: string; body: unknown }[] = [
   },
 ];
 
-/**
- * Dev Tools — hanya dirender saat system.mode === DEVELOPMENT. Memanggil endpoint /api/dev/*
- * untuk memverifikasi alur realtime (tidak pernah dipakai di produksi).
- */
+/** Hanya saat system.mode === DEVELOPMENT: memanggil /api/dev/* untuk menguji alur realtime. */
 export function DevTools() {
   const [msg, setMsg] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);

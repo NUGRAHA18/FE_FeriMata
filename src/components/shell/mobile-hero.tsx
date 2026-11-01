@@ -82,12 +82,8 @@ function StatusRow() {
   );
 }
 
-/**
- * Kepala halaman di ponsel (< 768 px): blok hijau tua selebar layar dengan sudut bawah melengkung.
- * Beranda: sapaan + tanggal + baris status. Halaman lain: baris atas (logo, atau tombol kembali dari
- * PageHeader) lalu judul & subjudul selebar layar, dan kontrol halaman (mis. kotak cari) di posisi
- * kotak pencarian referensi. Isi halaman menumpang di tepi bawahnya (AppShell).
- */
+/** Kepala halaman ponsel (< 768 px). Beranda: sapaan + tanggal + status; halaman lain: logo/tombol
+ * kembali, judul, dan kontrol halaman. Isi halaman menumpang di tepi bawahnya (AppShell). */
 export function MobileHero({ initials }: { initials: string }) {
   const { alertCount, openAlertDrawer } = useShell();
   const pathname = usePathname();

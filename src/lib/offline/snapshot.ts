@@ -1,10 +1,7 @@
 import { dashboardOverviewSchema, type DashboardOverview } from "@/lib/api/types";
 
-/*
- * Salinan terakhir overview dashboard di localStorage, supaya angka terakhir tetap bisa dilihat saat
- * jaringan greenhouse putus. Hanya untuk DIBACA: perintah ke alat tetap selalu lewat jaringan.
- * Disimpan per pengguna dan dihapus saat keluar, karena HP bisa dipakai bergantian.
- */
+/* Salinan overview di localStorage untuk dibaca saat jaringan putus; perintah tetap lewat jaringan.
+ * Per pengguna dan dihapus saat keluar, karena HP bisa dipakai bergantian. */
 
 const KEY = "fertimata.last-overview";
 const VERSION = 1;

@@ -72,10 +72,7 @@ export function SectionLink({ href, label, text = "Lihat semua", className }: { 
   );
 }
 
-/**
- * Judul seksi di luar kartu: judul di kiri, tautan opsional di kanan, isi tepat di bawahnya.
- * Dipakai untuk kelompok kartu (mis. grid angka sensor) yang tidak perlu dibungkus kartu lagi.
- */
+/** Judul seksi tanpa kartu (judul kiri, tautan opsional kanan), untuk grup yang tak perlu dibungkus lagi. */
 export function SectionHeader({ id, title, href, linkLabel, className }: { id?: string; title: ReactNode; href?: string; linkLabel?: string; className?: string }) {
   return (
     <div className={cn("mb-3 flex items-center justify-between gap-3 md:mb-3.5", className)}>

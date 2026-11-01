@@ -1,10 +1,7 @@
 import { ApiRequestError } from "@/lib/api/client";
 
-/*
- * Aturan keselamatan kontrol aktuator (lihat docs/arsip/prompt-frontend-awal.md § Kontrol aktuator).
- * Keputusan akhir selalu milik backend; fungsi di sini hanya menerjemahkan & memvalidasi input.
- * Pesan ditulis untuk petani: tanpa istilah "interlock", "dosing", "broker".
- */
+// Keselamatan aktuator: keputusan akhir milik backend; di sini hanya terjemahan & validasi input.
+// Pesan untuk petani, tanpa istilah "interlock"/"dosing"/"broker".
 
 /** Batas tunggu jawaban alat sebelum menampilkan peringatan. */
 export const ACK_WARNING_MS = 30_000;
@@ -24,7 +21,6 @@ export function interlockExplanation(code: string | null | undefined): string | 
 
 export type CommandErrorView = { kind: "interlock"; interlock: string | null; title: string; message: string } | { kind: "error"; title: string; message: string };
 
-/** Terjemahkan error POST /commands menjadi pesan untuk pengguna. */
 export function describeCommandError(err: unknown): CommandErrorView {
   if (err instanceof ApiRequestError) {
     if (err.code === "SAFETY_INTERLOCK") {
@@ -47,10 +43,8 @@ export function describeCommandError(err: unknown): CommandErrorView {
   return { kind: "error", title: "Perintah gagal dikirim", message: err instanceof Error ? err.message : "Kesalahan tidak diketahui." };
 }
 
-/**
- * Validasi input durasi untuk perintah ON. Wajib bila maxRunSeconds tidak null (dan ≤ batas).
- * Bila tidak wajib dan kosong → null (tanpa durasi). Backend tetap bisa menolak (INVALID_COMMAND).
- */
+/** Durasi ON wajib (≤ batas) bila maxRunSeconds ada; selain itu kosong → null. Backend tetap bisa
+ *  menolak (INVALID_COMMAND). */
 export function validateDuration(raw: string, maxRunSeconds: number | null): { ok: true; value: number | null } | { ok: false; error: string } {
   const text = raw.trim();
   if (!text) {
@@ -69,10 +63,7 @@ export function buildCommand(command: "ON" | "OFF", durationSeconds: number | nu
   return { command };
 }
 
-/**
- * Penolakan kosakata dari backend (400 INVALID_COMMAND, BE-1): details menyebut `parameter` beserta
- * batasnya, atau `supportedCommands` bila nama perintahnya yang salah.
- */
+/** 400 INVALID_COMMAND (BE-1): details berisi `parameter` + batas, atau `supportedCommands` bila nama salah. */
 function invalidCommandText(err: ApiRequestError): string {
   const d = err.details ?? {};
   const num = (v: unknown) => String(v).replace(".", ",");
@@ -84,10 +75,8 @@ function invalidCommandText(err: ApiRequestError): string {
   return err.message;
 }
 
-/*
- * Kode alasan ACK gagal dari edge agent (BE-7, kontrak MQTT §4.3: "KODE: teks"). Backend menyimpannya
- * di `failureCode`; kode yang belum dikenal di sini ditampilkan dengan teks dari alat.
- */
+// Kode ACK gagal edge agent (BE-7, MQTT §4.3 "KODE: teks"), disimpan di `failureCode`.
+// Kode tak dikenal ditampilkan dengan teks dari alat.
 const failureCodeText: Record<string, string> = {
   EXPIRED: "Perintah terlambat sampai ke alat dan sudah kedaluwarsa. Coba kirim lagi.",
   UNSUPPORTED: "Alat belum bisa menjalankan perintah ini.",
@@ -113,7 +102,6 @@ export function isNoResponse(cmd: { status: string; failureCode?: string | null 
   return cmd.status === "FAILED" && cmd.failureCode === "NO_RESPONSE";
 }
 
-/** Label status perintah: "Alat tidak menjawab" untuk NO_RESPONSE, selain itu label biasa. */
 export function commandStatusText(cmd: { status: string; failureCode?: string | null }, labels: Record<string, string>): string {
   return isNoResponse(cmd) ? "Alat tidak menjawab" : (labels[cmd.status] ?? cmd.status);
 }
@@ -127,10 +115,7 @@ export function splitFailureMessage(text: string | null | undefined): { code: st
   return m ? { code: m[1], text: m[2] || null } : { code: null, text: text.trim() };
 }
 
-/**
- * Alasan perintah gagal untuk petani. `message` = terjemahan kode bila dikenal, selain itu teks dari alat;
- * `detail` = teks asli alat bila berbeda (untuk tooltip / panel teknis).
- */
+/** `message` = terjemahan kode bila dikenal, selain itu teks alat; `detail` = teks asli alat bila berbeda. */
 export function describeCommandFailure(cmd: { failureCode?: string | null; errorMessage: string | null }): CommandFailureView | null {
   const parsed = splitFailureMessage(cmd.errorMessage);
   const code = cmd.failureCode ?? parsed.code;

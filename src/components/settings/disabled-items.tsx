@@ -12,11 +12,8 @@ import { actuatorTypeLabel } from "@/lib/format";
 import { ActuatorPicto, pictoTile, SensorPicto } from "@/components/icons/pictos";
 import { cn } from "@/lib/cn";
 
-/*
- * Sensor & alat yang dimatikan tidak tampil di layar lain (backend menyaringnya). Di sini saja
- * daftarnya diambil dengan `includeDisabled`, supaya operator bisa meninjau sensor yang baru
- * terdeteksi dan mengaktifkan kembali yang perlu. Mengaktifkan dilakukan di halaman detailnya.
- */
+// Item nonaktif disaring backend di layar lain; hanya di sini diambil dengan `includeDisabled`
+// agar sensor baru terdeteksi bisa ditinjau. Pengaktifan dilakukan di halaman detail.
 
 type Item = { key: string; href: string; name: string; kind: string; isNew: boolean; icon: ReactNode };
 

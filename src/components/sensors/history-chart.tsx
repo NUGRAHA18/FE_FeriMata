@@ -24,10 +24,8 @@ function ChartTooltip({ active, payload, unit }: Partial<TooltipContentProps<num
   );
 }
 
-/**
- * Satu seri: garis = rata-rata tiap titik, pita tipis = terendah–tertinggi (tanpa legenda: judul
- * kartu menamai serinya). Titik null memutus garis, jadi celah berarti alat tidak mengirim data.
- */
+// Garis = rata-rata, pita = min–maks (tanpa legenda; judul kartu menamai seri).
+// Titik null memutus garis: celah = alat tidak mengirim data.
 export default function HistoryChart({ points, unit, spanMs }: Props) {
   const multiDay = spanMs > 24 * 3_600_000;
   return (

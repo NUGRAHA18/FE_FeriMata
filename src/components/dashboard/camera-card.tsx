@@ -24,10 +24,8 @@ const noFilter = { kind: "none" } as const;
 const overlayBtn =
   "grid size-9 place-items-center rounded-[10px] bg-black/35 text-white backdrop-blur-md transition hover:bg-black/50 disabled:opacity-40 focus-visible:outline-2 focus-visible:outline-white";
 
-/**
- * Baris patroli di bawah foto: status aktuator virtual TROLLEY-PATROL dan tombol "Patroli sekarang"
- * (atau "Hentikan" selama patroli berjalan). Tidak tampil bila katalog tidak punya aktuator patroli.
- */
+// Status aktuator virtual TROLLEY-PATROL + tombol Patroli/Hentikan; tidak tampil bila katalog tanpa
+// aktuator patroli.
 function PatrolBar() {
   const patrol = useActuators((list) => list.find((a) => a.code === patrolActuatorCode) ?? null).data;
   const canWrite = useCanWrite();

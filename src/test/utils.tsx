@@ -6,10 +6,7 @@ import { ShellProvider } from "@/components/shell/shell-context";
 import { saveSession } from "@/lib/auth/session";
 import type { Alert, DashboardOverview, Page, SensorReading, User } from "@/lib/api/types";
 
-/*
- * Bantuan test halaman. next/link & next/navigation di-mock di tiap berkas test (vi.mock harus
- * berada di berkas test itu sendiri agar di-hoist).
- */
+// next/link & next/navigation di-mock di tiap berkas test: vi.mock harus di berkas itu agar di-hoist.
 
 export const t = (s: number) => new Date(Date.UTC(2026, 8, 19, 7, 0, s)).toISOString();
 

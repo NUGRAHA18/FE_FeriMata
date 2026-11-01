@@ -26,16 +26,8 @@ function nextRun(list: IrrigationSchedule[]): string | null {
   return next ? formatTime(next) : null;
 }
 
-/**
- * "Mode otomatis" di kartu Kontrol alat = jadwal siram harian yang dijalankan BACKEND (GET/PATCH
- * /api/irrigation/schedules). Menyala bila minimal satu jadwal aktif. Mematikan → semua jadwal aktif
- * dinonaktifkan; menyalakan → semua jadwal diaktifkan. Selalu lewat dialog konfirmasi yang menyebut
- * jam-jamnya. Backend tidak punya saklar global yang bisa diubah dari aplikasi
- * (IRRIGATION_SCHEDULE_ENABLED hanya variabel server), jadi saklar ini bekerja per jadwal.
- *
- * Dosing NPK & pengadukan otomatis BUKAN bagian backend ini: dijalankan layanan AI terpisah lewat API
- * perintah, dan belum ada API untuk menyalakan/mematikannya — karena itu hanya diberi catatan.
- */
+/** Saklar = semua jadwal siram backend (IRRIGATION_SCHEDULE_ENABLED hanya variabel server, tak ada saklar
+ *  global). Dosing NPK & pengadukan dijalankan layanan AI terpisah tanpa API on/off, jadi hanya dicatat. */
 export function AutoModeTile({ className }: { className?: string }) {
   const q = useIrrigationSchedules();
   const patch = usePatchIrrigation();

@@ -1,9 +1,7 @@
 import { getPushConfig, subscribePush, unsubscribePush } from "@/lib/api/endpoints";
 
-/*
- * Notifikasi push (Web Push + VAPID) untuk peringatan darurat. Langganan milik browser di perangkat
- * ini; backend menyimpan endpoint-nya per akun. Izin notifikasi HANYA diminta dari klik pengguna.
- */
+/* Web Push (VAPID) untuk peringatan darurat; backend menyimpan endpoint langganan per akun.
+ * Izin notifikasi HANYA diminta dari klik pengguna. */
 
 /** Kenapa push tidak bisa dipakai di perangkat ini, atau "ok". Urutan pemeriksaan = urutan saran ke pengguna. */
 export type PushSupport = "insecure" | "ios-install" | "unsupported" | "ok";
@@ -108,18 +106,14 @@ export async function disablePush(): Promise<void> {
   if (sub) await drop(sub);
 }
 
-/**
- * Saat keluar: cabut langganan di server SEBELUM token dibuang, dan di browser, supaya HP yang dipakai
- * bergantian tidak menerima peringatan akun lama. Dibatasi 3 detik agar tombol Keluar tidak macet.
- */
+/** Saat keluar: cabut langganan di server SEBELUM token dibuang, lalu di browser, agar HP bergantian tidak
+ * menerima peringatan akun lama. Dibatasi 3 detik agar tombol Keluar tidak macet. */
 export async function disablePushOnLogout(): Promise<void> {
   await Promise.race([disablePush().catch(() => undefined), new Promise((r) => setTimeout(r, 3000))]);
 }
 
-/**
- * Kunci VAPID server diganti → langganan lama tidak bisa dikirimi lagi. Bila izin sudah diberikan,
- * langganan diperbarui diam-diam (tanpa dialog izin). Tidak melakukan apa pun bila belum berlangganan.
- */
+/** Kunci VAPID server berganti: bila izin sudah ada, perbarui langganan diam-diam (tanpa dialog izin).
+ * Tidak melakukan apa pun bila belum berlangganan. */
 export async function syncPushKey(): Promise<void> {
   if (pushSupport() !== "ok" || Notification.permission !== "granted") return;
   const sub = await currentSubscription();
