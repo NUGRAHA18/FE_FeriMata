@@ -58,7 +58,13 @@ export function lastRunView(result: string | null, reasonCode: string | null | u
         detail: fallback ? `AI tidak bisa dipakai: ${reason}.` : null,
       };
     }
+    case "WAITING":
+      // Siram didahului pemupukan; pompa siram menyala setelah pupuk selesai diaduk.
+      return { tone: "info", text: "Menunggu pemupukan selesai", detail: "Pupuk sedang dituang dan diaduk. Pompa siram menyala sendiri setelahnya." };
     case "SKIPPED":
+      if (reasonCode === "FERTILIZATION_IN_PROGRESS") {
+        return { tone: "neutral", text: "Dilewati: pemupukan sedang berjalan", detail: "Jam siram ini tiba saat pupuk masih dituang. Penyiraman sesudah pupuk tetap dijalankan." };
+      }
       if (reasonCode === AI_NO_WATER_NEEDED) {
         return { tone: "ok", text: "Tidak perlu siram", detail: "AI menilai tanah masih cukup basah atau fase tanaman sedang tidak perlu disiram." };
       }

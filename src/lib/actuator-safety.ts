@@ -97,6 +97,11 @@ const failureCodeText: Record<string, string> = {
   NO_RESPONSE: "Alat tidak menjawab dalam 2 menit. Perintah mungkin tidak dijalankan; periksa keadaan alat.",
 };
 
+/** Penjelasan kode gagal dari alat (INTERLOCK_FLOAT, BUSY, …), atau null bila tidak dikenal. */
+export function deviceFailureExplanation(code: string | null | undefined): string | null {
+  return (code && failureCodeText[code]) || null;
+}
+
 /** Perintah ditutup backend karena alat tidak menjawab — hasilnya tidak diketahui, bukan ditolak. */
 export function isNoResponse(cmd: { status: string; failureCode?: string | null }): boolean {
   return cmd.status === "FAILED" && cmd.failureCode === "NO_RESPONSE";

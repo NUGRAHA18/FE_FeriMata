@@ -47,6 +47,13 @@ export const qk = {
   pushConfig: ["push", "config"] as const,
   irrigationSchedules: ["irrigation", "schedules"] as const,
 
+  fertilizationSchedule: ["fertilization", "schedule"] as const,
+  fertilizationRunsRoot: ["fertilization", "runs"] as const,
+  fertilizationRuns: (page: number, size: number) => ["fertilization", "runs", { page, size }] as const,
+
+  aiStatus: ["ai", "status"] as const,
+  aiHistory: (kind: string, limit: number) => ["ai", "history", kind, limit] as const,
+
   detectionsRoot: ["ai", "detections"] as const,
   detections: (f: DetectionFilter, page: number, size: number) => ["ai", "detections", f, { page, size }] as const,
   detection: (id: number) => ["ai", "detection", id] as const,

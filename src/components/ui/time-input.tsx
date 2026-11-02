@@ -62,7 +62,7 @@ export function durationWords(seconds: number): string {
 
 type BigInputProps = { label: ReactNode; hint?: ReactNode; error?: string | null; suffix?: ReactNode; children?: ReactNode } & Omit<ComponentProps<"input">, "children">;
 
-function BigInput({ label, hint, error, suffix, children, ...props }: BigInputProps) {
+export function BigInput({ label, hint, error, suffix, children, ...props }: BigInputProps) {
   const id = useId();
   const msgId = `${id}-msg`;
   return (
@@ -93,7 +93,7 @@ function BigInput({ label, hint, error, suffix, children, ...props }: BigInputPr
   );
 }
 
-function QuickChoices({ label, options, selected, onPick }: { label: string; options: { value: string; text: string }[]; selected: string | null; onPick: (v: string) => void }) {
+export function QuickChoices({ label, options, selected, onPick }: { label: string; options: { value: string; text: string }[]; selected: string | null; onPick: (v: string) => void }) {
   if (!options.length) return null;
   return (
     // Kolom sama lebar (bukan flex-wrap) supaya di HP 360 px pilihan tidak terpecah 3 + 1.

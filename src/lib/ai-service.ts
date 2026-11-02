@@ -1,0 +1,83 @@
+import type { AiHistoryRow, AiServiceStatus } from "@/lib/api/types";
+import { aiTimestamp, num } from "@/lib/fertilization";
+
+/* Layanan AI tim AI (diteruskan backend). Hasil deteksi & riwayat diteruskan apa adanya, jadi dibaca defensif. */
+
+export const MAX_PHOTOS = 10;
+export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+
+export type AiStatusView = { tone: "ok" | "warn" | "neutral"; text: string };
+
+export function aiStatusView(s: AiServiceStatus | undefined, failed = false): AiStatusView {
+  if (!s) return failed ? { tone: "neutral", text: "Status AI tidak diketahui" } : { tone: "neutral", text: "Memeriksa AI…" };
+  if (!s.configured) return { tone: "warn", text: "AI belum disambungkan" };
+  if (!s.reachable) return { tone: "warn", text: "AI tidak menjawab" };
+  return { tone: "ok", text: "AI tersambung" };
+}
+
+/** Foto yang akan diunggah → pesan salah pertama, atau null bila boleh dikirim. */
+export function validatePhotos(files: { name: string; size: number; type: string }[]): string | null {
+  if (files.length > MAX_PHOTOS) return `Paling banyak ${MAX_PHOTOS} foto sekali periksa.`;
+  const big = files.find((f) => f.size > MAX_PHOTO_BYTES);
+  if (big) return `Foto ${big.name} terlalu besar. Paling besar 10 MB per foto.`;
+  const notImage = files.find((f) => f.type && !f.type.startsWith("image/"));
+  if (notImage) return `${notImage.name} bukan foto. Pilih berkas JPG atau PNG.`;
+  return null;
+}
+
+/** Kekurangan nutrisi: { kelas: persen 0–100 } → baris berurutan terbesar dulu. Nilai non-angka dibuang. */
+export function deficiencyRows(result: unknown): [string, number][] {
+  if (!result || typeof result !== "object" || Array.isArray(result)) return [];
+  return Object.entries(result as Record<string, unknown>)
+    .filter((e): e is [string, number] => typeof e[1] === "number" && Number.isFinite(e[1]))
+    .sort((a, b) => b[1] - a[1]);
+}
+
+/** Penyakit: daftar label yang ditemukan (unik). */
+export function diseaseLabels(result: unknown): string[] {
+  if (!Array.isArray(result)) return [];
+  return [...new Set(result.filter((x): x is string => typeof x === "string" && x.trim() !== ""))];
+}
+
+export type IrrigationDecision = { at: string | null; seconds: number | null; hst: number | null; input: Record<string, unknown> | null };
+export type FertilizationDecision = { at: string | null; n: number | null; p: number | null; k: number | null; input: Record<string, unknown> | null };
+
+const obj = (v: unknown) => (v && typeof v === "object" && !Array.isArray(v) ? (v as Record<string, unknown>) : null);
+
+export function irrigationDecision(row: AiHistoryRow): IrrigationDecision {
+  return { at: aiTimestamp(row.run_at), seconds: num(row.watering_duration), hst: num(row.hst), input: obj(row.data_sensor) };
+}
+
+/** Nama kolom AI: nitrogen_duration, phosfor_duration, kalium_duration. */
+export function fertilizationDecision(row: AiHistoryRow): FertilizationDecision {
+  return {
+    at: aiTimestamp(row.run_at),
+    n: num(row.nitrogen_duration),
+    p: num(row.phosfor_duration ?? row.phosphorus_duration),
+    k: num(row.kalium_duration ?? row.potassium_duration),
+    input: obj(row.data_input),
+  };
+}
+
+/** Kunci masukan AI (snake_case) → label petani. Kunci tak dikenal ditampilkan apa adanya. */
+export const aiInputLabels: Record<string, string> = {
+  ec_water: "EC air",
+  ph_water: "pH air",
+  temp_water: "Suhu air",
+  temp_air: "Suhu udara",
+  rh: "Kelembapan udara",
+  soil_moisture: "Kelembapan tanah",
+  temp_soil: "Suhu tanah",
+  ph: "pH tanah",
+  n: "N tanah",
+  p: "P tanah",
+  k: "K tanah",
+  n_soil: "N tanah",
+  p_soil: "P tanah",
+  k_soil: "K tanah",
+  ec_soil: "EC tanah",
+  n_deficiency_estimation: "Dugaan kurang N (foto)",
+  p_deficiency_estimation: "Dugaan kurang P (foto)",
+  k_deficiency_estimation: "Dugaan kurang K (foto)",
+  days_after_planting: "Umur tanaman (HST)",
+};

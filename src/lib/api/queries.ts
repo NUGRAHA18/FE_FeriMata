@@ -317,6 +317,60 @@ export const usePatchIrrigation = () =>
   useIrrigationMutation(({ id, body }: { id: number; body: Partial<api.IrrigationInput> }) => api.patchIrrigationSchedule(id, body));
 export const useDeleteIrrigation = () => useIrrigationMutation((id: number) => api.deleteIrrigationSchedule(id));
 
+// ── Pemupukan otomatis ───────────────────────────────────────────────────────
+
+/** Belum ada event realtime untuk pemupukan: diambil ulang tiap 10 detik selama berjalan, selain itu tiap menit. */
+export function useFertilizationSchedule() {
+  return useQuery({
+    queryKey: qk.fertilizationSchedule,
+    queryFn: ({ signal }) => api.getFertilizationSchedule(signal),
+    refetchInterval: (q) => (q.state.data?.activeRun ? 10_000 : 60_000),
+  });
+}
+
+export function useFertilizationRuns(page: number, size = 10) {
+  return useQuery({
+    queryKey: qk.fertilizationRuns(page, size),
+    queryFn: ({ signal }) => api.getFertilizationRuns(page, size, signal),
+    placeholderData: keepPreviousData,
+    refetchInterval: (q) => (q.state.data?.content.some((r) => r.status === "IN_PROGRESS") ? 10_000 : 60_000),
+  });
+}
+
+function useFertilizationMutation<V>(fn: (v: V) => Promise<api.FertilizationScheduleResult>) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: fn,
+    onSuccess: (s) => {
+      qc.setQueryData(qk.fertilizationSchedule, s);
+      void qc.invalidateQueries({ queryKey: qk.fertilizationRunsRoot });
+    },
+  });
+}
+
+export const useSetFertilizationInterval = () => useFertilizationMutation((days: number) => api.putFertilizationInterval(days));
+export const useStopFertilization = () => useFertilizationMutation(() => api.deleteFertilizationSchedule());
+
+// ── Layanan AI ───────────────────────────────────────────────────────────────
+
+export function useAiStatus() {
+  return useQuery({ queryKey: qk.aiStatus, queryFn: ({ signal }) => api.getAiStatus(signal), refetchInterval: 60_000, staleTime: 30_000 });
+}
+
+export function useAiHistory(kind: api.AiHistoryKind, limit = 30, enabled = true) {
+  return useQuery({
+    queryKey: qk.aiHistory(kind, limit),
+    queryFn: ({ signal }) => api.getAiHistory(kind, limit, signal),
+    enabled,
+    staleTime: 60_000,
+    retry: 1,
+  });
+}
+
+export function useRunAiDetection() {
+  return useMutation({ mutationFn: ({ kind, images }: { kind: api.AiDetectKind; images: File[] }) => api.runAiDetection(kind, images) });
+}
+
 // ── Alert ────────────────────────────────────────────────────────────────────
 
 export function useAlerts(f: api.AlertFilters) {

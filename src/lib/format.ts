@@ -1,5 +1,6 @@
 import { siteConfig } from "@/config/site";
 import { AI_NO_WATER_NEEDED, irrigationReasonText, isSafetyCode } from "@/lib/irrigation-reasons";
+import { fertilizationReasonText } from "@/lib/fertilization-reasons";
 
 // Formatter tampilan (waktu dalam WIB; input backend ISO-8601 UTC). Pengguna utama petani:
 // label memakai kata sehari-hari, bukan istilah teknis (liveness, interlock, broker).
@@ -174,6 +175,8 @@ const alertTypeLabels: Record<string, string> = {
   ACTUATOR_COMMAND_FAILED: "Perintah gagal dijalankan",
   IRRIGATION_SKIPPED: "Penyiraman terjadwal dibatalkan",
   IRRIGATION_AI_FALLBACK: "Siram memakai durasi cadangan",
+  FERTILIZATION_SKIPPED: "Pemupukan hari ini belum berjalan",
+  FERTILIZATION_PARTIAL: "Pemupukan hanya sebagian",
   TELEMETRY_REJECTED: "Data sensor ditolak",
   POWER_BACKUP: "Listrik PLN padam, memakai baterai",
   POWER_RESTORED: "Listrik PLN kembali normal",
@@ -343,11 +346,20 @@ export function alertBody(message: string, ctx: AlertBodyContext): string {
     const at = str(m.time) ? ` jam ${str(m.time)}` : "";
     // Keputusan AI, bukan masalah: tanah masih cukup basah.
     if (code === AI_NO_WATER_NEEDED) return `Penyiraman${at} tidak dijalankan: AI menilai tanah masih cukup basah. Ini normal.`;
+    if (code === "FERTILIZATION_IN_PROGRESS") return `Penyiraman${at} dilewati karena pemupukan sedang berjalan. Penyiraman sesudah pupuk tetap dijalankan.`;
     const reason = irrigationReasonText(code, str(m.conflictingActuatorCode));
     // Tanpa metadata (entri overview) hasilnya ditebak dari kode: kode aturan keselamatan = dibatalkan.
     const failed = m.result ? m.result === "FAILED" : !!ctx.failureCode && !isSafetyCode(ctx.failureCode);
     const what = failed ? "gagal" : "dibatalkan demi keamanan";
     return `Penyiraman${at} ${what}${reason ? `: ${reason}` : ""}. Jadwal berikutnya tetap berjalan.`;
+  }
+  if (ctx.type === "FERTILIZATION_SKIPPED" || ctx.type === "FERTILIZATION_PARTIAL") {
+    const code = str(ctx.metadata?.reasonCode) ?? ctx.failureCode;
+    const reason = fertilizationReasonText(code);
+    if (ctx.type === "FERTILIZATION_PARTIAL") {
+      return `Sebagian pompa pupuk sudah menuang lalu berhenti${reason ? `: ${reason}` : ""}. Tidak diulang supaya pupuk tidak berlebihan; jadwal berikutnya tetap berjalan.`;
+    }
+    return `Pupuk yang dijadwalkan hari ini belum dituang${reason ? `: ${reason}` : ""}. Dicoba lagi pada jam siram berikutnya.`;
   }
   if (ctx.failureCode === "NO_RESPONSE") {
     return `${ctx.deviceCode ?? "Alat"} tidak menjawab perintah${ctx.actuatorCode ? ` untuk ${ctx.actuatorCode}` : ""}. Perintah mungkin tidak dijalankan; periksa keadaan alat.`;

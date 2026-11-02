@@ -3,8 +3,13 @@ import { apiRequest, fetchApiText } from "./client";
 import {
   actuatorCommandSchema,
   actuatorSchema,
+  aiDetectionRunSchema,
   aiDetectionSchema,
+  aiHistoryRowSchema,
+  aiServiceStatusSchema,
   alertSchema,
+  fertilizationRunSchema,
+  fertilizationScheduleSchema,
   irrigationScheduleSchema,
   calibrationSampleSchema,
   dispensedVolumeSchema,
@@ -146,6 +151,19 @@ export const patchIrrigationSchedule = (id: number, body: Partial<IrrigationInpu
   apiRequest(`/irrigation/schedules/${id}`, { method: "PATCH", body, schema: irrigationScheduleSchema });
 export const deleteIrrigationSchedule = (id: number) => apiRequest(`/irrigation/schedules/${id}`, { method: "DELETE" });
 
+// Pemupukan otomatis. Jarak hari disimpan di layanan AI (502 AI_SERVICE_ERROR bila AI tak terjangkau).
+export type FertilizationScheduleResult = z.infer<typeof fertilizationScheduleSchema>;
+export const getFertilizationSchedule = (signal?: AbortSignal) =>
+  apiRequest("/fertilization/schedule", { schema: fertilizationScheduleSchema, signal });
+/** OPERATOR. 1–60 hari. */
+export const putFertilizationInterval = (intervalDays: number) =>
+  apiRequest("/fertilization/schedule", { method: "PUT", body: { intervalDays }, schema: fertilizationScheduleSchema });
+/** OPERATOR. Menghentikan pemupukan otomatis (jadwal di AI dihapus). */
+export const deleteFertilizationSchedule = () =>
+  apiRequest("/fertilization/schedule", { method: "DELETE", schema: fertilizationScheduleSchema });
+export const getFertilizationRuns = (page = 0, size = 20, signal?: AbortSignal) =>
+  apiRequest("/fertilization/runs", { query: { page, size }, schema: pageSchema(fertilizationRunSchema), signal });
+
 // Alert
 export type AlertFilters = {
   acknowledged?: boolean;
@@ -183,6 +201,22 @@ export function detectionQuery(f: DetectionFilter) {
 export const getDetections = (f: DetectionFilter, page = 0, size = 20, signal?: AbortSignal) =>
   apiRequest("/ai/detections", { query: { ...detectionQuery(f), page, size }, schema: pageSchema(aiDetectionSchema), signal });
 export const getDetection = (id: number, signal?: AbortSignal) => apiRequest(`/ai/detections/${id}`, { schema: aiDetectionSchema, signal });
+
+// Layanan AI yang diteruskan backend.
+export const getAiStatus = (signal?: AbortSignal) => apiRequest("/ai/status", { schema: aiServiceStatusSchema, signal });
+export type AiHistoryKind = "irrigation" | "fertilization";
+export const getAiHistory = (kind: AiHistoryKind, limit = 30, signal?: AbortSignal) =>
+  apiRequest(`/ai/history/${kind}`, { query: { limit }, schema: z.array(aiHistoryRowSchema), signal });
+export type AiDetectKind = "deficiency" | "disease";
+/** OPERATOR. Tanpa foto → backend memakai foto patroli terbaru. Maks. 10 foto, 10 MB per foto. */
+export const runAiDetection = (kind: AiDetectKind, images: File[] = []) => {
+  let body: FormData | undefined;
+  if (images.length) {
+    body = new FormData();
+    for (const f of images) body.append("images", f, f.name);
+  }
+  return apiRequest(`/ai/detect/${kind}`, { method: "POST", body, schema: aiDetectionRunSchema });
+};
 
 // Umur tanaman: HST & fase dihitung backend dari satu tanggal semai = hari ke-0 (404 = belum diisi).
 export const getCycleToday = async (signal?: AbortSignal) => {
