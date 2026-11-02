@@ -133,6 +133,11 @@ describe("alertHeadline & alertBody", () => {
     expect(alertBody("x", { type: "IRRIGATION_AI_FALLBACK", metadata: { reasonCode: "AI_UNAVAILABLE", time: "06:00" } })).toBe(
       "Siram jam 06:00 memakai durasi cadangan karena AI tidak bisa dipakai: layanan AI tidak menjawab.",
     );
+    // Tanpa foto patroli terbaru BE tidak memanggil AI; jangan jatuh ke "layanan AI tidak menjawab".
+    expect(alertBody("x", { type: "IRRIGATION_AI_FALLBACK", metadata: { reasonCode: "AI_NO_PHOTO" } })).toMatch(/belum ada foto kamera 24 jam terakhir/);
+    const fert = alertBody("x", { type: "FERTILIZATION_SKIPPED", metadata: { reasonCode: "AI_NO_PHOTO", status: "SKIPPED" } });
+    expect(fert).toMatch(/belum ada foto daun dari kamera 3 hari terakhir/);
+    expect(fert).not.toMatch(/tidak menjawab/);
   });
 });
 

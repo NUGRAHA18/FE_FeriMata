@@ -96,6 +96,9 @@ describe("runView", () => {
     expect(f.tone).toBe("danger");
     expect(f.text).toBe("Gagal memupuk: air drum pupuk rendah");
     expect(f.detail).toMatch(/^Air di drum pupuk rendah.*Dicoba lagi/);
+    const np = runView(run({ status: "SKIPPED", reasonCode: "AI_NO_PHOTO" }));
+    expect(np.text).toBe("Belum dipupuk: belum ada foto daun dari kamera 3 hari terakhir");
+    expect(np.detail).toMatch(/kereta kamera.*Dicoba lagi pada jam siram berikutnya\.$/);
     expect(runView(run({ status: "FAILED", reasonCode: "SOMETHING_NEW" })).text).toBe("Gagal memupuk: alasan lain (lihat Info teknis)");
   });
 
