@@ -15,6 +15,8 @@ const reasonText: Record<string, string> = {
   AI_NOT_CONFIGURED: "AI belum diatur",
   AI_INPUTS_NOT_READY: "data sensor tanah belum ada atau sudah lama",
   AI_UNAVAILABLE: "layanan AI tidak menjawab",
+  // AI butuh foto patroli ≤ 24 jam; tanpa itu BE tidak memanggil AI (BE ≥ 2 Nov 2026).
+  AI_NO_PHOTO: "belum ada foto kamera 24 jam terakhir",
   // Pemupukan otomatis (BE ≥ 2 Nov 2026).
   FERTILIZING: "menunggu pemupukan selesai",
   FERTILIZATION_IN_PROGRESS: "pemupukan sedang berjalan",

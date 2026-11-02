@@ -6,6 +6,8 @@ const reasonText: Record<string, string> = {
   AI_UNAVAILABLE: "layanan AI tidak menjawab",
   AI_NOT_CONFIGURED: "AI belum diatur",
   AI_INPUTS_NOT_READY: "data sensor tanah belum ada atau sudah lama",
+  // AI butuh foto daun ≤ 72 jam; tanpa itu BE tidak memanggil AI.
+  AI_NO_PHOTO: "belum ada foto daun dari kamera 3 hari terakhir",
   PUMP_UNAVAILABLE: "pompa pupuk atau pengaduk tidak ditemukan atau dimatikan",
   AI_NO_DOSE_NEEDED: "AI menilai tanah tidak perlu pupuk",
   AI_CAPPED: "takaran dari AI dipotong ke batas pompa",

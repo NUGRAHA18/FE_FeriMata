@@ -17,6 +17,7 @@ export const INTERVAL_MAX = 60;
 
 /** Penjelasan panjang (apa yang harus diperiksa), atau null. */
 export function fertilizationReasonDetail(code: string | null | undefined): string | null {
+  if (code === "AI_NO_PHOTO") return "AI butuh foto daun terbaru. Pastikan kereta kamera berpatroli dan mengirim foto.";
   return interlockExplanation(code) ?? deviceFailureExplanation(code);
 }
 

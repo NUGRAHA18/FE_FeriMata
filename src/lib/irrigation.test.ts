@@ -38,6 +38,7 @@ describe("lastRunView", () => {
       detail: "AI tidak bisa dipakai: layanan AI tidak menjawab.",
     });
     expect(lastRunView("STARTED", "AI_INPUTS_NOT_READY", { seconds: 300, source: "FALLBACK" })?.detail).toBe("AI tidak bisa dipakai: data sensor tanah belum ada atau sudah lama.");
+    expect(lastRunView("STARTED", "AI_NO_PHOTO", { seconds: 300, source: "FALLBACK" })?.detail).toBe("AI tidak bisa dipakai: belum ada foto kamera 24 jam terakhir.");
   });
 
   it("AI menilai tidak perlu siram: hasil normal, bukan pembatalan", () => {
