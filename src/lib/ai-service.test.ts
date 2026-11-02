@@ -2,13 +2,18 @@ import { describe, expect, it } from "vitest";
 import { aiStatusView, deficiencyRows, diseaseLabels, fertilizationDecision, irrigationDecision, MAX_PHOTO_BYTES, validatePhotos } from "./ai-service";
 
 describe("status layanan AI", () => {
-  it("belum diatur / tidak menjawab / tersambung", () => {
-    const base = { message: null, latencyMs: null, checkedAt: "2026-11-02T03:00:00Z" };
-    expect(aiStatusView(undefined).tone).toBe("neutral");
-    expect(aiStatusView(undefined, true).text).toBe("Status AI tidak diketahui");
-    expect(aiStatusView({ ...base, configured: false, reachable: false }).text).toBe("AI belum disambungkan");
-    expect(aiStatusView({ ...base, configured: true, reachable: false }).text).toBe("AI tidak menjawab");
-    expect(aiStatusView({ ...base, configured: true, reachable: true, latencyMs: 40 })).toEqual({ tone: "ok", text: "AI tersambung" });
+  it("belum diatur (netral) / mati (merah) / berjalan (hijau)", () => {
+    const base = { message: "Running Melon AI System API", latencyMs: null, checkedAt: "2026-11-02T03:00:00Z" };
+    expect(aiStatusView(undefined).short).toBe("Memeriksa AI…");
+    expect(aiStatusView(undefined, true)).toMatchObject({ tone: "neutral", short: "Status AI tidak diketahui" });
+    expect(aiStatusView({ ...base, configured: false, reachable: false })).toMatchObject({ tone: "neutral", text: "Layanan AI belum diatur" });
+    const down = aiStatusView({ ...base, configured: true, reachable: false });
+    expect(down).toMatchObject({ tone: "danger", text: "Layanan AI mati", short: "AI mati" });
+    expect(down.detail).toMatch(/durasi cadangan.*pemupukan otomatis ditunda/);
+    const up = aiStatusView({ ...base, configured: true, reachable: true, latencyMs: 22 });
+    expect(up).toMatchObject({ tone: "ok", text: "Layanan AI berjalan", detail: "Durasi siram dan takaran pupuk dihitung AI." });
+    // Teks mentah AI (Inggris) tidak pernah masuk teks petani.
+    expect(JSON.stringify(up)).not.toMatch(/Running/);
   });
 });
 

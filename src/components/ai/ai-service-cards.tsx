@@ -7,7 +7,8 @@ import { Button, IconButton } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Segmented } from "@/components/ui/segmented";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
-import { Chip } from "@/components/ui/status";
+import { Chip, softTone, StatusDot } from "@/components/ui/status";
+import { cn } from "@/lib/cn";
 import { Tabs } from "@/components/ui/tabs";
 import { TechInfo } from "@/components/ui/tech-info";
 import { errorMessage } from "@/lib/api/client";
@@ -27,19 +28,60 @@ import {
 } from "@/lib/ai-service";
 import { formatDateTime, formatDuration, formatNumber } from "@/lib/format";
 
-/** Lencana kecil status layanan AI, dengan detail teknis di title. */
-export function AiStatusChip() {
+/** Lencana kecil status layanan AI (kepala halaman). Teks mentah AI tidak ditampilkan di sini. */
+export function AiStatusChip({ className }: { className?: string }) {
   const q = useAiStatus();
   const v = aiStatusView(q.data, q.isError);
-  const title = q.data
-    ? [q.data.message, q.data.latencyMs != null ? `${q.data.latencyMs} ms` : null].filter(Boolean).join(" · ")
-    : q.error
-      ? errorMessage(q.error)
-      : undefined;
   return (
-    <Chip tone={v.tone === "ok" ? "ok" : v.tone === "warn" ? "warn" : "neutral"} icon={BrainCircuit} title={title} role="status">
-      {v.text}
+    <Chip tone={v.tone} icon={BrainCircuit} title={v.detail ?? undefined} role="status" className={className}>
+      {v.short}
     </Chip>
+  );
+}
+
+/** Baris status layanan AI dengan akibatnya bagi siram & pupuk; `message`, latensi, dan waktu cek di Info teknis. */
+export function AiServiceStatusCard({ className }: { className?: string }) {
+  const q = useAiStatus();
+  const v = aiStatusView(q.data, q.isError);
+  const d = q.data;
+  return (
+    <section className={cn("rounded-card bg-card p-4 shadow-card ring-1 ring-line sm:p-5", className)} aria-live="polite">
+      <div className="flex items-start gap-3">
+        <span className={cn("mt-0.5 grid size-9 shrink-0 place-items-center rounded-inner", softTone[v.tone])}>
+          <BrainCircuit aria-hidden className="size-5" strokeWidth={1.8} />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="flex items-center gap-2 font-semibold text-ink">
+            <StatusDot tone={v.tone} pulse={v.tone === "danger"} />
+            {v.text}
+          </p>
+          {v.detail && <p className="mt-0.5 text-sm text-ink-2">{v.detail}</p>}
+        </div>
+      </div>
+      {(d || q.error) && (
+        <TechInfo className="mt-3">
+          <dl className="mt-2 grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 text-xs">
+            {d ? (
+              <>
+                <dt className="text-muted">configured / reachable</dt>
+                <dd className="font-mono break-all">{String(d.configured)} / {String(d.reachable)}</dd>
+                <dt className="text-muted">message</dt>
+                <dd className="font-mono break-all">{d.message ?? "—"}</dd>
+                <dt className="text-muted">latencyMs</dt>
+                <dd className="tabular">{d.latencyMs ?? "—"}</dd>
+                <dt className="text-muted">checkedAt</dt>
+                <dd className="tabular">{formatDateTime(d.checkedAt)}</dd>
+              </>
+            ) : (
+              <>
+                <dt className="text-muted">error</dt>
+                <dd className="break-all">{errorMessage(q.error)}</dd>
+              </>
+            )}
+          </dl>
+        </TechInfo>
+      )}
+    </section>
   );
 }
 
@@ -108,6 +150,8 @@ function DetectionResult({ run }: { run: AiDetectionRun }) {
 export function DetectNowCard() {
   const canWrite = useCanWrite();
   const run = useRunAiDetection();
+  // Belum diatur ≠ mati: jangan biarkan petani menekan tombol yang pasti berujung 502 "tidak menjawab".
+  const notConfigured = useAiStatus().data?.configured === false;
   const input = useRef<HTMLInputElement>(null);
   const [kind, setKind] = useState<AiDetectKind>("deficiency");
   const [files, setFiles] = useState<File[]>([]);
@@ -158,7 +202,8 @@ export function DetectNowCard() {
             </p>
           )}
         </div>
-        <Button variant="accent" size="lg" icon={ScanSearch} loading={run.isPending} onClick={() => run.mutate({ kind, images: files })} className="w-full sm:w-auto sm:self-end">
+        {notConfigured && <p className="rounded-inner bg-card-2 px-3.5 py-2.5 text-sm text-ink-2 ring-1 ring-line">Layanan AI belum diatur, jadi pemeriksaan belum bisa dijalankan. Hubungi admin.</p>}
+        <Button variant="accent" size="lg" icon={ScanSearch} loading={run.isPending} disabled={notConfigured} onClick={() => run.mutate({ kind, images: files })} className="w-full sm:w-auto sm:self-end">
           {files.length ? `Periksa ${files.length} foto` : "Periksa foto patroli terbaru"}
         </Button>
         {run.isPending && <p className="text-sm text-muted">AI sedang memeriksa, bisa sampai satu menit…</p>}
@@ -224,7 +269,10 @@ function HistoryItem({ kind, row }: { kind: AiHistoryKind; row: AiHistoryRow }) 
 /** Catatan keputusan AI (lama siram, takaran pupuk) dari layanan AI sendiri — termasuk yang tidak dijalankan backend. */
 export function AiHistoryCard() {
   const [kind, setKind] = useState<AiHistoryKind>("irrigation");
-  const q = useAiHistory(kind, 20);
+  const status = useAiStatus();
+  const notConfigured = status.data?.configured === false;
+  // Tunggu status dulu agar AI yang belum diatur tidak sempat memicu 502.
+  const q = useAiHistory(kind, 20, !status.isPending && !notConfigured);
   return (
     <Card>
       <CardHeader title="Keputusan AI terakhir" icon={BrainCircuit} />
@@ -239,7 +287,9 @@ export function AiHistoryCard() {
         className="mb-3"
       />
       <p className="mb-3 text-xs text-muted">Catatan dari layanan AI. Keputusan bisa tercatat walau pompa tidak jadi menyala (misalnya ditolak demi keamanan).</p>
-      {q.isPending ? (
+      {notConfigured ? (
+        <EmptyState title="Layanan AI belum diatur" hint="Catatan keputusan AI muncul di sini setelah layanan AI disambungkan." />
+      ) : q.isPending || status.isPending ? (
         <Skeleton className="h-24 w-full rounded-inner" />
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
