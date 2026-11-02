@@ -1,5 +1,6 @@
 "use client";
 
+import { AiServiceStatusCard } from "@/components/ai/ai-service-cards";
 import { IrrigationScheduleCard } from "@/components/actuators/irrigation-schedule";
 import { FertilizationCard } from "@/components/fertilization/fertilization-card";
 import { FertilizationRunsCard } from "@/components/fertilization/fertilization-runs";
@@ -12,6 +13,8 @@ export default function IrrigationPage() {
     <>
       <PageHeader title="Siram & pupuk" subtitle="Pompa siram menyala sendiri setiap hari; pada hari pupuk, pupuk dituang dulu." />
       <div className="mx-auto flex w-full max-w-3xl flex-col gap-4">
+        {/* Lama siram & takaran pupuk bergantung pada AI; tampilkan statusnya paling atas. */}
+        <AiServiceStatusCard />
         <IrrigationScheduleCard />
         <FertilizationCard />
         <FertilizationRunsCard />

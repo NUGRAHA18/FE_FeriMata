@@ -6,13 +6,28 @@ import { aiTimestamp, num } from "@/lib/fertilization";
 export const MAX_PHOTOS = 10;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
-export type AiStatusView = { tone: "ok" | "warn" | "neutral"; text: string };
+/** `short` untuk lencana; `text` + `detail` untuk kartu. Pesan mentah AI (`message`) hanya di Info teknis. */
+export type AiStatusView = { tone: "ok" | "danger" | "neutral"; text: string; short: string; detail: string | null };
 
 export function aiStatusView(s: AiServiceStatus | undefined, failed = false): AiStatusView {
-  if (!s) return failed ? { tone: "neutral", text: "Status AI tidak diketahui" } : { tone: "neutral", text: "Memeriksa AI…" };
-  if (!s.configured) return { tone: "warn", text: "AI belum disambungkan" };
-  if (!s.reachable) return { tone: "warn", text: "AI tidak menjawab" };
-  return { tone: "ok", text: "AI tersambung" };
+  if (!s) {
+    return failed
+      ? { tone: "neutral", text: "Status layanan AI tidak diketahui", short: "Status AI tidak diketahui", detail: "Server tidak bisa ditanya sekarang." }
+      : { tone: "neutral", text: "Memeriksa layanan AI…", short: "Memeriksa AI…", detail: null };
+  }
+  // Belum diatur = pilihan pemasangan (alamat AI kosong di server), bukan kerusakan → netral.
+  if (!s.configured) {
+    return { tone: "neutral", text: "Layanan AI belum diatur", short: "AI belum diatur", detail: "Siram memakai durasi cadangan; pupuk otomatis tidak berjalan." };
+  }
+  if (!s.reachable) {
+    return {
+      tone: "danger",
+      text: "Layanan AI mati",
+      short: "AI mati",
+      detail: "Siram memakai durasi cadangan, pemupukan otomatis ditunda sampai AI menyala lagi.",
+    };
+  }
+  return { tone: "ok", text: "Layanan AI berjalan", short: "AI berjalan", detail: "Durasi siram dan takaran pupuk dihitung AI." };
 }
 
 /** Foto yang akan diunggah → pesan salah pertama, atau null bila boleh dikirim. */

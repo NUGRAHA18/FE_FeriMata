@@ -1,6 +1,7 @@
 "use client";
 
 import { ActivityCard } from "@/components/dashboard/activity-card";
+import { AiStatusChip } from "@/components/ai/ai-service-cards";
 import { CultivationCard } from "@/components/dashboard/cultivation-card";
 import { CameraCard } from "@/components/dashboard/camera-card";
 import { ConditionsCard } from "@/components/dashboard/conditions-card";
@@ -39,6 +40,7 @@ function DashboardHeader() {
         <div className="flex items-center gap-2">
           <ConnectionIndicator state={connection} />
           <AlertPill count={alertCount} />
+          <AiStatusChip />
         </div>
       </div>
     </header>

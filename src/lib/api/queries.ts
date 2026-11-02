@@ -353,8 +353,15 @@ export const useStopFertilization = () => useFertilizationMutation(() => api.del
 
 // ── Layanan AI ───────────────────────────────────────────────────────────────
 
+/** BE menyimpan hasil cek 15 dtk; cek ulang tiap 30 dtk dan saat jendela kembali fokus. */
 export function useAiStatus() {
-  return useQuery({ queryKey: qk.aiStatus, queryFn: ({ signal }) => api.getAiStatus(signal), refetchInterval: 60_000, staleTime: 30_000 });
+  return useQuery({
+    queryKey: qk.aiStatus,
+    queryFn: ({ signal }) => api.getAiStatus(signal),
+    refetchInterval: 30_000,
+    refetchOnWindowFocus: true,
+    staleTime: 15_000,
+  });
 }
 
 export function useAiHistory(kind: api.AiHistoryKind, limit = 30, enabled = true) {
