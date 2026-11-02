@@ -56,8 +56,10 @@ describe("fakta yang tidak boleh salah", () => {
     expect(all).toContain("tidak pernah ditolak");
   });
 
-  it("tidak menjanjikan jadwal pupuk/campur pupuk otomatis (milik layanan tim AI)", () => {
-    expect(all).not.toMatch(/jadwal pupuk|campur pupuk otomatis/);
+  it("pupuk otomatis: takaran dari AI, dituang sebelum jam siram (BE ≥ 2 Nov 2026)", () => {
+    expect(all).toMatch(/takaran n, p, dan k ditentukan ai/);
+    expect(all).toMatch(/sebelum jam siram pertama/);
+    expect(all).not.toMatch(/campur pupuk otomatis/);
   });
 
   it("langkah terakhir petunjuk singkat menautkan ke Panduan", () => {

@@ -60,7 +60,9 @@ const fallbackMessages: Record<number, string> = {
   403: "Akses ditolak.",
   404: "Data tidak ditemukan.",
   409: "Permintaan bertentangan dengan kondisi saat ini.",
+  413: "Foto terlalu besar. Paling besar 10 MB per foto.",
   500: "Terjadi kesalahan di server.",
+  502: "Layanan AI tidak menjawab. Coba lagi beberapa saat lagi.",
   503: "Layanan sedang tidak tersedia.",
 };
 
@@ -75,7 +77,9 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
 
   const send = async () => {
     const headers: Record<string, string> = { Accept: "application/json" };
-    if (body !== undefined) headers["Content-Type"] = "application/json";
+    // FormData (unggah foto): browser yang mengisi Content-Type multipart beserta boundary-nya.
+    const isForm = typeof FormData !== "undefined" && body instanceof FormData;
+    if (body !== undefined && !isForm) headers["Content-Type"] = "application/json";
     if (auth) {
       const token = getToken();
       if (token) headers.Authorization = `Bearer ${token}`;
@@ -84,7 +88,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
       return await fetch(buildUrl(path, query), {
         method,
         headers,
-        body: body === undefined ? undefined : JSON.stringify(body),
+        body: body === undefined ? undefined : isForm ? (body as FormData) : JSON.stringify(body),
         signal,
         cache: "no-store",
       });
@@ -166,6 +170,10 @@ export async function fetchApiText(path: string, query?: Query, signal?: AbortSi
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
     if (error.code === "MESSAGING_ERROR") return "Koneksi ke alat terputus; perintah dicatat sebagai gagal.";
+    // Pesan backend untuk 502 AI berbahasa Inggris (detail teknis) → kalimat tetap.
+    if (error.code === "AI_SERVICE_ERROR") return fallbackMessages[502];
+    // Backend lama belum punya rute ini (bukan "data tidak ada").
+    if (error.status === 404 && /^endpoint not found$/i.test(error.message)) return "Fitur ini belum ada di server. Backend perlu diperbarui.";
     return error.message;
   }
   if (error instanceof Error) return error.message;

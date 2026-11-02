@@ -404,7 +404,8 @@ export const irrigationScheduleSchema = z.object({
   /** Null bila jadwal dimatikan. */
   nextRunAt: instant.nullable(),
   lastRunAt: instant.nullable(),
-  /** STARTED · SKIPPED (ditolak aturan keselamatan) · FAILED · MISSED (sistem mati). String agar nilai baru tidak ditolak. */
+  /** STARTED · WAITING (menunggu pemupukan selesai) · SKIPPED (ditolak aturan keselamatan) · FAILED · MISSED (sistem mati).
+   *  String agar nilai baru tidak ditolak. */
   lastResult: z.string().nullable(),
   /** Teks teknis bahasa Inggris — hanya untuk "Info teknis". */
   lastMessage: z.string().nullable(),
@@ -418,6 +419,85 @@ export const irrigationScheduleSchema = z.object({
   lastCommandUid: z.string().nullable(),
 });
 export type IrrigationSchedule = z.infer<typeof irrigationScheduleSchema>;
+
+// ── Pemupukan otomatis (BE ≥ 2 Nov 2026) ─────────────────────────────────────
+// Pada hari jatuh tempo, sebelum sesi siram PERTAMA: pengaduk → pompa N → P → K → aduk → siram.
+// Jarak hari & dosis N/P/K dari layanan AI; backend hanya menjalankan.
+
+const decimal = z.number().nullable();
+
+export const fertilizationRunSchema = z.object({
+  id: z.number(),
+  /** Tanggal kebun (WIB), "2026-11-02". */
+  runDate: z.string(),
+  irrigationScheduleId: z.number().nullable(),
+  /** IN_PROGRESS · DONE · PARTIAL · SKIPPED · FAILED. String agar nilai baru tidak ditolak. */
+  status: z.string(),
+  /** Langkah berikutnya selama IN_PROGRESS: PHOSPHORUS · POTASSIUM · MIXING · IRRIGATE. */
+  step: z.string().nullable(),
+  /** Diterjemahkan untuk petani; `message` hanya untuk Info teknis. */
+  reasonCode: z.string().nullable(),
+  message: z.string().nullable(),
+  intervalDays: z.number().nullable(),
+  aiNitrogenSeconds: decimal,
+  aiPhosphorusSeconds: decimal,
+  aiPotassiumSeconds: decimal,
+  /** Detik yang dikirim ke pompa (nilai AI dipotong ke batas pompa). */
+  nitrogenSeconds: z.number().nullable(),
+  phosphorusSeconds: z.number().nullable(),
+  potassiumSeconds: z.number().nullable(),
+  stirrerSeconds: z.number().nullable(),
+  stirrerCommandUid: z.string().nullable(),
+  nitrogenCommandUid: z.string().nullable(),
+  phosphorusCommandUid: z.string().nullable(),
+  potassiumCommandUid: z.string().nullable(),
+  startedAt: instant.nullable(),
+  finishedAt: instant.nullable(),
+  createdAt: instant.nullable(),
+});
+export type FertilizationRun = z.infer<typeof fertilizationRunSchema>;
+
+/** GET/PUT/DELETE /fertilization/schedule. GET tidak pernah gagal karena AI (aiReachable=false + aiError). */
+export const fertilizationScheduleSchema = z.object({
+  /** false = siram tidak pernah didahului pemupukan (dimatikan di server). */
+  enabled: z.boolean(),
+  aiConfigured: z.boolean(),
+  /** false → intervalDays tidak diketahui; aiError berisi alasan teknis. */
+  aiReachable: z.boolean(),
+  aiError: z.string().nullable(),
+  aiScheduleId: z.number().nullable(),
+  /** "Pupuk setiap N hari"; null = belum ada jadwal pemupukan. */
+  intervalDays: z.number().nullable(),
+  lastFertilizedDate: z.string().nullable(),
+  lastFertilizedAt: instant.nullable(),
+  /** Dipupuk sebelum sesi siram pertama pada/setelah tanggal ini; null bila tidak ada jadwal. */
+  nextDueDate: z.string().nullable(),
+  activeRun: fertilizationRunSchema.nullable(),
+});
+export type FertilizationSchedule = z.infer<typeof fertilizationScheduleSchema>;
+
+// ── Layanan AI (diteruskan backend) ──────────────────────────────────────────
+/** GET /ai/status — tidak pernah gagal; lihat `reachable`. */
+export const aiServiceStatusSchema = z.object({
+  configured: z.boolean(),
+  reachable: z.boolean(),
+  message: z.string().nullable(),
+  latencyMs: z.number().nullable(),
+  checkedAt: instant,
+});
+export type AiServiceStatus = z.infer<typeof aiServiceStatusSchema>;
+
+/** Baris riwayat AI apa adanya (snake_case milik AI: run_at, watering_duration, nitrogen_duration, …). */
+export const aiHistoryRowSchema = json;
+export type AiHistoryRow = z.infer<typeof aiHistoryRowSchema>;
+
+/** POST /ai/detect/{kind}: kekurangan nutrisi = persen per kelas; penyakit = daftar label. */
+export const aiDetectionRunSchema = z.object({
+  kind: z.string(),
+  photos: z.number(),
+  result: z.unknown(),
+});
+export type AiDetectionRun = z.infer<typeof aiDetectionRunSchema>;
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 export const activityEntrySchema = z.object({

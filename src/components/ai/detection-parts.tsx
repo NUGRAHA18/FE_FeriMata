@@ -92,6 +92,11 @@ const scoreLabels: Record<string, string> = {
   Leaf_K_stress: "Kurang Kalium (K)",
 };
 
+/** Nama kelas model kekurangan nutrisi → label petani; kelas lain apa adanya. */
+export function scoreLabel(key: string): string {
+  return scoreLabels[key] ?? key;
+}
+
 export function numericScores(scores: Record<string, unknown> | null): [string, number][] {
   if (!scores) return [];
   return Object.entries(scores).filter((e): e is [string, number] => typeof e[1] === "number" && Number.isFinite(e[1]));

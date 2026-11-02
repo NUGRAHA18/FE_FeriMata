@@ -15,6 +15,9 @@ const reasonText: Record<string, string> = {
   AI_NOT_CONFIGURED: "AI belum diatur",
   AI_INPUTS_NOT_READY: "data sensor tanah belum ada atau sudah lama",
   AI_UNAVAILABLE: "layanan AI tidak menjawab",
+  // Pemupukan otomatis (BE ≥ 2 Nov 2026).
+  FERTILIZING: "menunggu pemupukan selesai",
+  FERTILIZATION_IN_PROGRESS: "pemupukan sedang berjalan",
 };
 
 const SAFETY_CODES = new Set(["BACKUP_POWER", "FLOAT_LOW", "EXCLUSIVE_OPERATION", "BLOCKED_WHILE_ACTIVE", "DEVICE_NOT_ONLINE"]);

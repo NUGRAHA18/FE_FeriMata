@@ -2,6 +2,7 @@
 
 import { ScanEye, X } from "lucide-react";
 import { useState } from "react";
+import { AiHistoryCard, AiStatusChip, DetectNowCard } from "@/components/ai/ai-service-cards";
 import { DetectionImage, ScoreBars } from "@/components/ai/detection-parts";
 import { useTrolleyStation } from "@/components/dashboard/conditions-card";
 import { GreenhouseMap } from "@/components/dashboard/greenhouse-map";
@@ -43,7 +44,7 @@ export default function AiPage() {
 
   return (
     <>
-      <PageHeader title="Kamera" subtitle="Foto tanaman dari kereta kamera dan hasil pemeriksaan kekurangan nutrisi." />
+      <PageHeader title="Kamera" subtitle="Foto tanaman dari kereta kamera dan hasil pemeriksaan kekurangan nutrisi." actions={<AiStatusChip />} />
       <div className="grid gap-4 lg:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
         <div className="flex flex-col gap-4">
           <Card>
@@ -137,6 +138,10 @@ export default function AiPage() {
             </div>
           )}
         </Card>
+      </div>
+      <div className="mt-4 grid gap-4 lg:grid-cols-2">
+        <DetectNowCard />
+        <AiHistoryCard />
       </div>
     </>
   );
