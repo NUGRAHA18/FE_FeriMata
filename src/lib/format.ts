@@ -421,14 +421,7 @@ export function alertMessageLabel(message: string): string {
 /** Nama perangkat bawaan backend → nama yang dikenali petani. */
 const deviceNameLabels: Record<string, string> = {
   "development edge device": "Komputer Simulasi (Dev)",
-  "greenhouse edge device": "Komputer Utama Greenhouse",
-  // Katalog Rev A (nama teknis dari BE); sementara sampai BE mengganti nama lewat migrasi.
-  "jetson orin nano (otak sistem)": "Komputer utama",
-  "pzem-016 (pln & arus panel)": "Meteran listrik panel",
-  "relay modbus panel (alamat 20)": "Panel saklar pompa & kamera",
-  "sensor greenhouse (alamat 1, 3, 4)": "Sensor udara & tanah greenhouse",
-  "kotak tangki fertigasi": "Kotak kendali drum pupuk",
-};
+  "greenhouse edge device": "Komputer Utama Greenhouse",};
 
 export function deviceNameLabel(name: string | null | undefined): string | null {
   if (!name) return null;
