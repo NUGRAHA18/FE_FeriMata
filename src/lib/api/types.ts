@@ -279,7 +279,7 @@ export const actuatorCommandSchema = z.object({
   sentAt: instant.nullable(),
   executedAt: instant.nullable(),
   errorMessage: z.string().nullable(),
-  // Kode alasan dari ACK gagal alat (BE-7), mis. INTERLOCK_POWER. Opsional untuk backend lama.
+  // Kode alasan dari ACK gagal perangkat (BE-7), mis. INTERLOCK_POWER. Opsional untuk backend lama.
   failureCode: z.string().nullable().optional(),
 });
 export type ActuatorCommand = z.infer<typeof actuatorCommandSchema>;
@@ -407,7 +407,7 @@ export const irrigationScheduleSchema = z.object({
   /** STARTED · WAITING (menunggu pemupukan selesai) · SKIPPED (ditolak aturan keselamatan) · FAILED · MISSED (sistem mati).
    *  String agar nilai baru tidak ditolak. */
   lastResult: z.string().nullable(),
-  /** Teks teknis bahasa Inggris — hanya untuk "Info teknis". */
+  /** Teks teknis bahasa Inggris — hanya untuk "Detail sistem". */
   lastMessage: z.string().nullable(),
   /** Kode alasan: interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, error API, atau keputusan AI (AI_NO_WATER_NEEDED,
    *  AI_CAPPED, AI_NOT_CONFIGURED, AI_INPUTS_NOT_READY, AI_UNAVAILABLE). */
@@ -435,7 +435,7 @@ export const fertilizationRunSchema = z.object({
   status: z.string(),
   /** Langkah berikutnya selama IN_PROGRESS: PHOSPHORUS · POTASSIUM · MIXING · IRRIGATE. */
   step: z.string().nullable(),
-  /** Diterjemahkan untuk petani; `message` hanya untuk Info teknis. */
+  /** Diterjemahkan untuk petani; `message` hanya untuk Detail sistem. */
   reasonCode: z.string().nullable(),
   message: z.string().nullable(),
   intervalDays: z.number().nullable(),

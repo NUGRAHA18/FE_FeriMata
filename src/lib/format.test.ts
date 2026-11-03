@@ -74,7 +74,7 @@ describe("label domain", () => {
     expect(powerSourceLabel(null)).toBe("Tidak diketahui");
   });
   it("tipe alert dikenal diterjemahkan, lainnya mentah", () => {
-    expect(alertTypeLabel("DEVICE_OFFLINE")).toBe("Alat terputus");
+    expect(alertTypeLabel("DEVICE_OFFLINE")).toBe("Perangkat terputus");
     expect(alertTypeLabel("SOMETHING_NEW")).toBe("SOMETHING_NEW");
   });
   it("kode stasiun trolley", () => {
@@ -87,19 +87,19 @@ describe("label domain", () => {
 describe("alertMessageLabel / alertTitleLabel / deviceNameLabel", () => {
   it("menerjemahkan pesan backend yang dikenal", () => {
     expect(alertMessageLabel("No message received from RIO-TANK-01 for more than 120 seconds")).toBe(
-      "RIO-TANK-01 tidak memberi kabar selama lebih dari 2 menit. Periksa listrik dan kabel alat ini.",
+      "RIO-TANK-01 tidak memberi kabar selama lebih dari 2 menit. Periksa listrik dan kabel perangkat ini.",
     );
     expect(alertMessageLabel("Device RIO-TANK-01 started reporting again")).toBe("RIO-TANK-01 kembali memberi kabar.");
     expect(alertMessageLabel("Device JETSON reports power source MAINS again")).toBe("JETSON kembali memakai listrik PLN.");
     expect(alertMessageLabel("Device RIO-1 reported that command ON failed: Device reported failure")).toBe(
-      "RIO-1 gagal menyalakan. Periksa alatnya, lalu coba lagi.",
+      "RIO-1 gagal menyalakan. Periksa perangkatnya, lalu coba lagi.",
     );
   });
   it("membiarkan pesan yang tidak dikenal", () => {
     expect(alertMessageLabel("Tangki hampir kosong")).toBe("Tangki hampir kosong");
   });
   it("menerjemahkan judul dan nama perangkat bawaan", () => {
-    expect(alertTitleLabel("Device offline")).toBe("Alat terputus");
+    expect(alertTitleLabel("Device offline")).toBe("Perangkat terputus");
     expect(deviceNameLabel("Development edge device")).toBe("Komputer Simulasi (Dev)");
     expect(deviceNameLabel("Pompa Utama")).toBe("Pompa Utama");
     expect(deviceNameLabel(null)).toBeNull();
@@ -108,16 +108,16 @@ describe("alertMessageLabel / alertTitleLabel / deviceNameLabel", () => {
 
 describe("alertHeadline & alertBody", () => {
   it("memakai failureCode dari data, bukan teks pesan", () => {
-    expect(alertHeadline("ACTUATOR_COMMAND_FAILED", "Actuator did not respond", "NO_RESPONSE")).toBe("Alat tidak menjawab perintah");
-    expect(alertHeadline(null, "Actuator did not respond", "NO_RESPONSE")).toBe("Alat tidak menjawab perintah");
+    expect(alertHeadline("ACTUATOR_COMMAND_FAILED", "Actuator did not respond", "NO_RESPONSE")).toBe("Perangkat tidak menjawab perintah");
+    expect(alertHeadline(null, "Actuator did not respond", "NO_RESPONSE")).toBe("Perangkat tidak menjawab perintah");
     expect(alertBody("Device PANEL-01 did not acknowledge command ON for DIST-PUMP", { failureCode: "NO_RESPONSE", deviceCode: "PANEL-01", actuatorCode: "DIST-PUMP" })).toBe(
-      "PANEL-01 tidak menjawab perintah untuk DIST-PUMP. Perintah mungkin tidak dijalankan; periksa keadaan alat.",
+      "PANEL-01 tidak menjawab perintah untuk DIST-PUMP. Perintah mungkin tidak dijalankan; periksa keadaan perangkat.",
     );
   });
 
   it("tanpa kode: label tipe, lalu terjemahan judul lama, lalu judul apa adanya", () => {
     expect(alertHeadline("ACTUATOR_COMMAND_FAILED", "Something")).toBe("Perintah gagal dijalankan");
-    expect(alertHeadline(null, "Device offline")).toBe("Alat terputus");
+    expect(alertHeadline(null, "Device offline")).toBe("Perangkat terputus");
     expect(alertHeadline("SMOKE_WARN", "SMOKE_WARN_1793032988")).toBe("SMOKE_WARN_1793032988");
     expect(alertFailureCode({ failureCode: "NO_RESPONSE", commandUid: "x" })).toBe("NO_RESPONSE");
     expect(alertFailureCode(null)).toBeNull();

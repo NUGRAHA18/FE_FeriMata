@@ -157,7 +157,7 @@ export const livenessLabel: Record<string, string> = {
 
 export const commandStatusLabel: Record<string, string> = {
   PENDING: "Menunggu",
-  SENT: "Terkirim, menunggu jawaban alat",
+  SENT: "Terkirim, menunggu jawaban perangkat",
   EXECUTED: "Dijalankan",
   FAILED: "Gagal",
   CANCELLED: "Dibatalkan",
@@ -170,25 +170,25 @@ export const severityLabel: Record<string, string> = {
 };
 
 const alertTypeLabels: Record<string, string> = {
-  DEVICE_OFFLINE: "Alat terputus",
-  DEVICE_RECOVERED: "Alat terhubung kembali",
+  DEVICE_OFFLINE: "Perangkat terputus",
+  DEVICE_RECOVERED: "Perangkat terhubung kembali",
   ACTUATOR_COMMAND_FAILED: "Perintah gagal dijalankan",
   IRRIGATION_SKIPPED: "Penyiraman terjadwal dibatalkan",
   IRRIGATION_AI_FALLBACK: "Siram memakai durasi cadangan",
   FERTILIZATION_SKIPPED: "Pemupukan hari ini belum berjalan",
   FERTILIZATION_PARTIAL: "Pemupukan hanya sebagian",
-  TELEMETRY_REJECTED: "Data sensor ditolak",
+  TELEMETRY_REJECTED: "Data sensor tidak diterima sistem",
   POWER_BACKUP: "Listrik PLN padam, memakai baterai",
   POWER_RESTORED: "Listrik PLN kembali normal",
-  DEVICE_REPORTED: "Laporan dari alat",
+  DEVICE_REPORTED: "Laporan dari perangkat",
   SSR_SHORT: "Saklar pompa rusak (korslet)",
   PUMP_DRY_RUN: "Pompa menyala tanpa air",
   DOSING_NOT_CONVERGING: "Campuran pupuk tidak mencapai target",
   TROLLEY_LIMIT_HIT: "Kereta kamera menyentuh ujung rel",
-  MODBUS_TIMEOUT: "Alat tidak menjawab",
+  MODBUS_TIMEOUT: "Perangkat tidak menjawab",
   // Dari edge agent (kontrak MQTT §4.4).
   RELAY_MISMATCH: "Saklar tidak berpindah sesuai perintah",
-  OUTPUT_TIMEOUT: "Alat dimatikan otomatis karena terlalu lama menyala",
+  OUTPUT_TIMEOUT: "Perangkat dimatikan otomatis karena terlalu lama menyala",
   BUS_DOWN: "Semua modul tidak menjawab",
   FLOAT_LOW: "Air di drum pupuk rendah",
   TROLLEY_NO_REED: "Kereta kamera tidak bergerak",
@@ -202,7 +202,7 @@ const alertTypeLabels: Record<string, string> = {
   DISK_LOW: "Penyimpanan foto hampir penuh",
   DISK_FULL: "Penyimpanan foto penuh",
   SOC_HOT: "Komputer utama terlalu panas",
-  EC_PH_INVALID: "Bacaan EC/pH drum tidak masuk akal",
+  EC_PH_INVALID: "Angka EC/pH drum tidak wajar",
 };
 
 export function alertTypeLabel(type: string): string {
@@ -213,7 +213,7 @@ export const sourceLabel: Record<string, string> = {
   OPERATOR: "Operator",
   AUTOMATION: "Otomatis",
   SYSTEM: "Sistem",
-  DEVICE: "Alat",
+  DEVICE: "Perangkat",
 };
 
 const detectionTypeLabels: Record<string, string> = {
@@ -259,7 +259,7 @@ export function deviceTypeLabel(type: string | null | undefined): string | null 
   return deviceTypeLabels[type] ?? type;
 }
 
-const roleLabels: Record<string, string> = { ADMIN: "Admin", OPERATOR: "Operator", VIEWER: "Pelihat" };
+const roleLabels: Record<string, string> = { ADMIN: "Admin", OPERATOR: "Operator", VIEWER: "Pemantau" };
 
 export function roleLabel(role: string | null | undefined): string {
   if (!role) return "—";
@@ -294,13 +294,17 @@ function durationWords(seconds: number): string {
 
 /** Judul peringatan backend (bahasa Inggris) → bahasa sehari-hari. Dipakai bila `type` tidak tersedia. */
 const alertTitleLabels: Record<string, string> = {
-  "Device offline": "Alat terputus",
-  "Device back online": "Alat terhubung kembali",
+  "Device offline": "Perangkat terputus",
+  "Device back online": "Perangkat terhubung kembali",
   "Running on backup power": "Listrik PLN padam, memakai baterai",
   "Normal power restored": "Listrik PLN kembali normal",
-  "Actuator command not delivered": "Perintah tidak terkirim ke alat",
-  "Actuator command failed on the device": "Perintah gagal dijalankan alat",
+  "Actuator command not delivered": "Perintah tidak terkirim ke perangkat",
+  "Actuator command failed on the device": "Perintah gagal dijalankan perangkat",
   "Scheduled irrigation skipped": "Penyiraman terjadwal dibatalkan",
+  "Actuator did not respond": "Perangkat tidak menjawab perintah",
+  "Irrigation used the fallback duration": "Siram memakai durasi cadangan",
+  "Fertilization did not run": "Pemupukan hari ini belum berjalan",
+  "Fertilization only partly done": "Pemupukan hanya sebagian",
 };
 
 export function alertTitleLabel(title: string): string {
@@ -316,7 +320,7 @@ export function alertFailureCode(metadata: Record<string, unknown> | null | unde
 
 /** Urutan: kode di data, label tipe, terjemahan judul lama, judul mentah. Tidak menebak dari teks pesan. */
 export function alertHeadline(type: string | null, title: string, failureCode?: string | null): string {
-  if (failureCode === "NO_RESPONSE") return "Alat tidak menjawab perintah";
+  if (failureCode === "NO_RESPONSE") return "Perangkat tidak menjawab perintah";
   if (type === "IRRIGATION_SKIPPED" && failureCode === AI_NO_WATER_NEEDED) return "Tidak perlu siram (keputusan AI)";
   const byType = type ? alertTypeLabel(type) : null;
   if (byType && byType !== type) return byType;
@@ -362,7 +366,7 @@ export function alertBody(message: string, ctx: AlertBodyContext): string {
     return `Pupuk yang dijadwalkan hari ini belum dituang${reason ? `: ${reason}` : ""}. Dicoba lagi pada jam siram berikutnya.`;
   }
   if (ctx.failureCode === "NO_RESPONSE") {
-    return `${ctx.deviceCode ?? "Alat"} tidak menjawab perintah${ctx.actuatorCode ? ` untuk ${ctx.actuatorCode}` : ""}. Perintah mungkin tidak dijalankan; periksa keadaan alat.`;
+    return `${ctx.deviceCode ?? "Perangkat"} tidak menjawab perintah${ctx.actuatorCode ? ` untuk ${ctx.actuatorCode}` : ""}. Perintah mungkin tidak dijalankan; periksa keadaan perangkat.`;
   }
   return alertMessageLabel(message);
 }
@@ -376,7 +380,7 @@ const commandWords: Record<string, string> = {
   GOTO_STATION: "memindahkan",
 };
 
-/** "KODE: teks" dari alat → teks saja (kodenya untuk panel teknis, bukan untuk petani). */
+/** "KODE: teks" dari perangkat → teks saja (kodenya untuk panel teknis, bukan untuk petani). */
 function deviceReason(raw: string): string {
   const m = /^[A-Z][A-Z0-9_]{2,63}:\s*([\s\S]+)$/.exec(raw.trim());
   return m ? m[1] : raw;
@@ -386,23 +390,23 @@ function deviceReason(raw: string): string {
 const alertMessageRules: [RegExp, (m: RegExpExecArray) => string][] = [
   [
     /^No message received from (\S+) for more than (\d+) seconds$/,
-    (m) => `${m[1]} tidak memberi kabar selama lebih dari ${durationWords(Number(m[2]))}. Periksa listrik dan kabel alat ini.`,
+    (m) => `${m[1]} tidak memberi kabar selama lebih dari ${durationWords(Number(m[2]))}. Periksa listrik dan kabel perangkat ini.`,
   ],
   [/^Device (\S+) started reporting again$/, (m) => `${m[1]} kembali memberi kabar.`],
   [
     /^Device (\S+) reports power source (\S+)\. Commands .*refused\.$/,
-    (m) => `${m[1]} memakai listrik dari ${powerSourceLabel(m[2])}. Pompa dan alat besar dikunci sampai listrik PLN kembali.`,
+    (m) => `${m[1]} memakai listrik dari ${powerSourceLabel(m[2])}. Pompa dan perangkat besar dikunci sampai listrik PLN kembali.`,
   ],
   [/^Device (\S+) reports power source (\S+) again$/, (m) => `${m[1]} kembali memakai listrik ${powerSourceLabel(m[2])}.`],
   [
     /^Command (\S+) for actuator (\S+) could not be delivered: .*$/,
-    (m) => `Perintah ${commandWords[m[1].toUpperCase()] ?? m[1]} ${m[2]} tidak sampai ke alat. Periksa koneksi alat, lalu coba lagi.`,
+    (m) => `Perintah ${commandWords[m[1].toUpperCase()] ?? m[1]} ${m[2]} tidak sampai ke perangkat. Periksa koneksi perangkat, lalu coba lagi.`,
   ],
   [
     /^Device (\S+) reported that command (\S+) failed: (.*)$/,
     (m) =>
       `${m[1]} gagal ${commandWords[m[2].toUpperCase()] ?? `menjalankan ${m[2]}`}.` +
-      (m[3] === "Device reported failure" ? " Periksa alatnya, lalu coba lagi." : ` Alasan dari alat: ${deviceReason(m[3])}`),
+      (m[3] === "Device reported failure" ? " Periksa perangkatnya, lalu coba lagi." : ` Alasan dari perangkat: ${deviceReason(m[3])}`),
   ],
 ];
 
@@ -418,6 +422,12 @@ export function alertMessageLabel(message: string): string {
 const deviceNameLabels: Record<string, string> = {
   "development edge device": "Komputer Simulasi (Dev)",
   "greenhouse edge device": "Komputer Utama Greenhouse",
+  // Katalog Rev A (nama teknis dari BE); sementara sampai BE mengganti nama lewat migrasi.
+  "jetson orin nano (otak sistem)": "Komputer utama",
+  "pzem-016 (pln & arus panel)": "Meteran listrik panel",
+  "relay modbus panel (alamat 20)": "Panel saklar pompa & kamera",
+  "sensor greenhouse (alamat 1, 3, 4)": "Sensor udara & tanah greenhouse",
+  "kotak tangki fertigasi": "Kotak kendali drum pupuk",
 };
 
 export function deviceNameLabel(name: string | null | undefined): string | null {

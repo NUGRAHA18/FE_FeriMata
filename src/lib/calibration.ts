@@ -8,7 +8,7 @@ import { formatNumber } from "@/lib/format";
 const num = (v: unknown) => (typeof v === "number" ? v : null);
 
 const reasonMessages: Record<string, (d: Record<string, unknown>) => string> = {
-  NOT_CALIBRATABLE_PUMP: () => "Alat ini bukan pompa pupuk yang debitnya bisa dikalibrasi.",
+  NOT_CALIBRATABLE_PUMP: () => "Perangkat ini bukan pompa pupuk yang debitnya bisa dikalibrasi.",
   TOO_FEW_TRIALS: (d) => (num(d.minTrials) != null ? `Perlu paling sedikit ${num(d.minTrials)} kali ulangan.` : "Ulangan uji debit belum cukup."),
   TRIALS_OR_FLOW_REQUIRED: () => "Isi hasil ulangan uji debit, atau isi debitnya langsung.",
   INVALID_RANGE: () => "Rentang yang diisi tidak valid. Periksa lagi angka atau waktu awal dan akhirnya.",
@@ -25,7 +25,7 @@ const reasonMessages: Record<string, (d: Record<string, unknown>) => string> = {
 const ruleMessages: [RegExp, string][] = [
   [/has no reading in the .* before that time/i, "Tidak ada angka dari sensor dalam 15 menit sebelum waktu itu. Isi angka sensor secara manual."],
   [/At least (\d+) trials are required/i, "Perlu paling sedikit $1 kali ulangan."],
-  [/is not a calibrated pump/i, "Alat ini bukan pompa pupuk yang debitnya bisa dikalibrasi."],
+  [/is not a calibrated pump/i, "Perangkat ini bukan pompa pupuk yang debitnya bisa dikalibrasi."],
   [/out-of-range coefficient/i, "Hasil hitungan tidak wajar. Periksa lagi sampel lab yang dimasukkan."],
   [/(not enough|at least \d+) samples?/i, "Sampel lab belum cukup untuk menghitung kalibrasi."],
 ];

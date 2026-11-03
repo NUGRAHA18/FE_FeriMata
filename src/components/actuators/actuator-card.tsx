@@ -36,7 +36,7 @@ export function ReportedState({
         {reportedStateLabel(a.currentState, isSequenceActuator(a))}
       </p>
       <p className="mt-0.5 text-xs text-muted">
-        {a.stateUpdatedAt ? <RelativeTime iso={a.stateUpdatedAt} prefix="dilaporkan alat " /> : "alat belum melaporkan status"}
+        {a.stateUpdatedAt ? <RelativeTime iso={a.stateUpdatedAt} prefix="dilaporkan perangkat " /> : "perangkat belum melaporkan status"}
       </p>
     </div>
   );
@@ -55,8 +55,8 @@ export function switchSpecs(a: Parameters<typeof commandSpecsFor>[0]): { start: 
   return starts.length === 1 && stops.length === 1 && starts[0].params !== "station" ? { start: starts[0], stop: stops[0] } : null;
 }
 
-/** Switch aktuator: posisi = status yang DILAPORKAN alat; menekan hanya membuka konfirmasi perintah.
- * Mematikan selalu boleh, menyalakan tidak bila alat dinonaktifkan. Null untuk Pelihat/bukan dua keadaan. */
+/** Switch aktuator: posisi = status yang DILAPORKAN perangkat; menekan hanya membuka konfirmasi perintah.
+ * Mematikan selalu boleh, menyalakan tidak bila perangkat dinonaktifkan. Null untuk Pemantau/bukan dua keadaan. */
 export function ActuatorSwitch({ actuator: a, name, onCommand }: { actuator: Actuator; name?: string; onCommand: (command: string) => void }) {
   const canWrite = useCanWrite();
   const sw = switchSpecs(a);
@@ -95,7 +95,7 @@ function useCommandFlow(a: Actuator) {
         title={`Aktifkan lagi ${a.name}?`}
         confirmLabel="Aktifkan"
       >
-        Setelah ini alat bisa dinyalakan lagi. Belum ada perintah yang dikirim.
+        Setelah ini perangkat bisa dinyalakan lagi. Belum ada perintah yang dikirim.
       </ConfirmDialog>
     </>
   );
@@ -131,7 +131,7 @@ function CommandButtons({ actuator: a, onCommand, onEnable }: { actuator: Actuat
 }
 
 /** Kendali halaman detail: switch untuk dua keadaan, tombol untuk lainnya, semua lewat konfirmasi.
- * Pelihat hanya melihat status. */
+ * Pemantau hanya melihat status. */
 export function ActuatorControls({ actuator: a, className }: { actuator: Actuator; className?: string }) {
   const canWrite = useCanWrite();
   const flow = useCommandFlow(a);
@@ -144,7 +144,7 @@ export function ActuatorControls({ actuator: a, className }: { actuator: Actuato
         <div className="flex items-center justify-between gap-3 rounded-[16px] bg-card-2 px-4 py-3 ring-1 ring-line">
           <div className="min-w-0">
             <p className="text-sm font-semibold text-ink">{on ? sw.stop.label : sw.start.label}</p>
-            <p className="text-xs text-muted">Ketuk switch, lalu konfirmasi.</p>
+            <p className="text-xs text-muted">Ketuk saklar, lalu pastikan perintahnya.</p>
           </div>
           {!a.enabled && !on ? (
             <Button variant="soft" icon={RotateCcw} onClick={flow.requestEnable}>
@@ -162,7 +162,7 @@ export function ActuatorControls({ actuator: a, className }: { actuator: Actuato
   );
 }
 
-/** Ubin aktuator halaman Kontrol (gaya kartu Kontrol alat di Beranda): ikon, nama, switch, status.
+/** Ubin aktuator halaman Kontrol (gaya kartu Kontrol perangkat di Beranda): ikon, nama, switch, status.
  * Aktuator bukan dua keadaan menampilkan tombol perintah di bawahnya. */
 export function ActuatorCard({ actuator: a }: { actuator: Actuator }) {
   const canWrite = useCanWrite();

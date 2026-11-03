@@ -12,7 +12,7 @@ import { cn } from "@/lib/cn";
 /** Terhubung · Terputus · Belum pernah terhubung (tidak diketahui). */
 export const livenessTone: Record<string, Tone> = { ONLINE: "ok", OFFLINE: "danger", UNKNOWN: "neutral" };
 
-/** Chip masalah alat: terputus, belum pernah terhubung, memakai baterai. */
+/** Chip masalah perangkat: terputus, belum pernah terhubung, memakai baterai. */
 export function DeviceIssueChips({ s }: { s: Pick<DeviceStatus, "status" | "onBackupPower" | "powerSource" | "lastSeenAt"> }) {
   return (
     <>
@@ -46,7 +46,7 @@ type DeviceRowProps = {
   className?: string;
 };
 
-/** Item alat: ikon tipe, nama, jenis, dan status satu baris (titik + teks + kabar terakhir). */
+/** Item perangkat: ikon tipe, nama, jenis, dan status satu baris (titik + teks + kabar terakhir). */
 export function DeviceRow({ status: s, name: rawName, type, href, className }: DeviceRowProps) {
   const name = deviceNameLabel(rawName) ?? s.deviceCode;
   // Terputus atau memakai baterai: bingkai kartu sedikit kemerahan, selain itu netral.

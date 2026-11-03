@@ -59,7 +59,7 @@ export default function DashboardPage() {
       {overviewError && overview.data === undefined && (
         <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
       )}
-      {/* items-start agar kartu Alat tidak memanjang kosong. xl: baris 1 kondisi/kontrol/umur | Alat,
+      {/* items-start agar kartu Perangkat tidak memanjang kosong. xl: baris 1 kondisi/kontrol/umur | Perangkat,
           baris 2 angka sensor dua kolom; kamera & aktivitas di kanan. Di bawah xl: dua kolom. */}
       <div className="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-[minmax(0,1.6fr)_minmax(0,0.95fr)_minmax(0,0.95fr)] xl:grid-rows-[auto_1fr]">
         <div className="flex min-w-0 flex-col gap-4 md:col-span-2 xl:col-span-1 xl:col-start-1 xl:row-start-1">
@@ -67,7 +67,7 @@ export default function DashboardPage() {
           <ControlCard />
           <CultivationCard />
         </div>
-        {/* Kolom 2/3/4 (ponsel/tablet/lg). Status alat + 7 sensor tanah mengisi baris penuh, tangki pupuk
+        {/* Kolom 2/3/4 (ponsel/tablet/lg). Status perangkat + 7 sensor tanah mengisi baris penuh, tangki pupuk
             baris sendiri: tanpa sel kosong dan tanpa kartu ikut memanjang. */}
         <section aria-labelledby="judul-sensor" className="min-w-0 md:col-span-2 xl:col-start-1 xl:row-start-2">
           <SectionHeader id="judul-sensor" title="Angka sensor" href="/sensors" linkLabel="Semua sensor" />

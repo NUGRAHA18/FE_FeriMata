@@ -39,7 +39,7 @@ export function AiStatusChip({ className }: { className?: string }) {
   );
 }
 
-/** Baris status layanan AI dengan akibatnya bagi siram & pupuk; `message`, latensi, dan waktu cek di Info teknis. */
+/** Baris status layanan AI dengan akibatnya bagi siram & pupuk; `message`, latensi, dan waktu cek di Detail sistem. */
 export function AiServiceStatusCard({ className }: { className?: string }) {
   const q = useAiStatus();
   const v = aiStatusView(q.data, q.isError);

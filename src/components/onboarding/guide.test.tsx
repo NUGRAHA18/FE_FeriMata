@@ -34,14 +34,14 @@ describe("FirstVisitGuide", () => {
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
-  it("pelihat (VIEWER) tidak mendapat langkah tentang menyalakan alat", async () => {
+  it("pemantau (VIEWER) tidak mendapat langkah tentang menyalakan perangkat", async () => {
     signIn("VIEWER");
     const { user } = renderWithProviders(<FirstVisitGuide />);
     const viewerSteps = guideSteps.filter((s) => !s.writeOnly);
     expect(screen.getByText(`Petunjuk 1 dari ${viewerSteps.length}`)).toBeInTheDocument();
     for (let i = 1; i < viewerSteps.length; i++) {
       await user.click(screen.getByRole("button", { name: "Lanjut" }));
-      expect(screen.queryByRole("dialog", { name: /menyalakan alat/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("dialog", { name: /menyalakan perangkat/i })).not.toBeInTheDocument();
     }
   });
 });

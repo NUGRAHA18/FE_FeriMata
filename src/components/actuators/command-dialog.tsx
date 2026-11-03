@@ -100,7 +100,7 @@ export function CommandDialog({ actuator, command, open, onClose, onSent }: Comm
     <Dialog open={open} onClose={close} dismissible={!send.isPending} title={title}>
       {tracked ? (
         <div className="flex flex-col gap-3">
-          <p className="text-sm text-ink-2">Perintah sudah dikirim ke alat. Tunggu sampai alat menjawab; status di bawah berubah sendiri.</p>
+          <p className="text-sm text-ink-2">Perintah sudah dikirim ke perangkat. Tunggu sampai perangkat menjawab; status di bawah berubah sendiri.</p>
           <CommandTracker tracked={tracked} />
           <Button variant="soft" onClick={close} className="self-end">
             Tutup
@@ -124,8 +124,8 @@ export function CommandDialog({ actuator, command, open, onClose, onSent }: Comm
               error={errors.duration}
               hint={
                 max != null
-                  ? `Isi 1 sampai ${max} detik (paling lama ${formatDuration(max)}). Alat mati sendiri setelah waktunya habis.`
-                  : "Alat akan mati sendiri setelah waktunya habis. Boleh dikosongkan bila alat ini tidak mewajibkan durasi."
+                  ? `Isi 1 sampai ${max} detik (paling lama ${formatDuration(max)}). Perangkat mati sendiri setelah waktunya habis.`
+                  : "Perangkat akan mati sendiri setelah waktunya habis. Boleh dikosongkan bila perangkat ini tidak mewajibkan durasi."
               }
             />
           )}

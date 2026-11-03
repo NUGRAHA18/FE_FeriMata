@@ -47,7 +47,7 @@ describe("isian perintah", () => {
   });
 });
 
-describe("alasan gagal dari alat (BE-7)", () => {
+describe("alasan gagal dari perangkat (BE-7)", () => {
   it("memakai failureCode backend", () => {
     const f = describeCommandFailure({ failureCode: "INTERLOCK_POWER", errorMessage: "INTERLOCK_POWER: listrik PLN padam" });
     expect(f).toMatchObject({ code: "INTERLOCK_POWER", detail: "listrik PLN padam" });
@@ -56,7 +56,7 @@ describe("alasan gagal dari alat (BE-7)", () => {
   it("backend lama tanpa failureCode: kode diambil dari awalan pesan", () => {
     expect(describeCommandFailure({ errorMessage: "BUSY: patroli sedang berjalan" })?.code).toBe("BUSY");
   });
-  it("kode tak dikenal → teks dari alat", () => {
+  it("kode tak dikenal → teks dari perangkat", () => {
     expect(describeCommandFailure({ failureCode: "PUMP_JAM", errorMessage: "PUMP_JAM: pompa macet" })).toEqual({ code: "PUMP_JAM", message: "pompa macet", detail: null });
   });
   it("tanpa pesan → null", () => {

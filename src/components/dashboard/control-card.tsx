@@ -8,6 +8,7 @@ import { CommandTracker, type TrackedCommand } from "@/components/actuators/comm
 import { ActuatorSwitch, isOnState } from "@/components/actuators/actuator-card";
 import { ActuatorPicto } from "@/components/icons/pictos";
 import { AutoModeTile } from "./auto-mode-tile";
+import { FertilizationAutoTile } from "./fertilization-auto-tile";
 import { Card, CardHeader } from "@/components/ui/card";
 import { ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { StatusDot } from "@/components/ui/status";
@@ -45,7 +46,7 @@ function TileBody({ icon, name, title, state, tone, right }: { icon: ReactNode; 
   );
 }
 
-/** Satu aktuator dengan switch (dialog konfirmasi dibuka kartu induk). Pelihat hanya melihat status. */
+/** Satu aktuator dengan switch (dialog konfirmasi dibuka kartu induk). Pemantau hanya melihat status. */
 function SwitchTile({ actuator: a, label, onCommand }: { actuator: Actuator; label?: string; onCommand: (a: Actuator, command: string) => void }) {
   const name = label ?? a.name;
   return (
@@ -82,7 +83,16 @@ function GroupTile({ list, label }: { list: Actuator[]; label: string }) {
   );
 }
 
-/** Kartu "Kontrol alat" Beranda: alat terpenting (dashboardActuators) + tautan ke semua alat. */
+function SectionLabel({ title, hint }: { title: string; hint: string }) {
+  return (
+    <div>
+      <p className="text-xs font-semibold tracking-wide text-ink-2 uppercase">{title}</p>
+      <p className="text-xs text-muted">{hint}</p>
+    </div>
+  );
+}
+
+/** Kartu "Kontrol perangkat" Beranda: perangkat terpenting (dashboardActuators) + tautan ke semua perangkat. */
 export function ControlCard({ className }: { className?: string }) {
   const q = useActuators();
   const canWrite = useCanWrite();
@@ -102,7 +112,7 @@ export function ControlCard({ className }: { className?: string }) {
 
   return (
     <Card mobileBare className={cn("min-w-0", className)}>
-      <CardHeader mobileSection title={canWrite ? "Kontrol alat" : "Status alat"} icon={ToggleRight} href="/actuators" hrefLabel="Lihat semua alat yang bisa dikendalikan" />
+      <CardHeader mobileSection title={canWrite ? "Kontrol perangkat" : "Status perangkat"} icon={ToggleRight} href="/actuators" hrefLabel="Lihat semua perangkat yang bisa dikendalikan" />
       {q.isPending ? (
         <div className="grid grid-cols-2 gap-2.5">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -112,11 +122,23 @@ export function ControlCard({ className }: { className?: string }) {
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : tiles.length === 0 ? (
-        <p className="text-sm text-ink-2">Belum ada alat yang bisa dikendalikan di katalog.</p>
+        <p className="text-sm text-ink-2">Belum ada perangkat yang bisa dikendalikan di katalog.</p>
       ) : (
         <ul className="grid grid-cols-2 gap-2.5">
+          <li className="col-span-2">
+            <SectionLabel title="Berjalan otomatis" hint="Menyala sendiri sesuai jadwal." />
+          </li>
           <li className="col-span-2 flex min-w-0">
             <AutoModeTile />
+          </li>
+          <li className="col-span-2 flex min-w-0">
+            <FertilizationAutoTile />
+          </li>
+          <li className="col-span-2 mt-2">
+            <SectionLabel
+              title="Aksi manual"
+              hint={canWrite ? "Nyalakan atau matikan sekarang, tanpa menunggu jadwal. Aturan keselamatan tetap berlaku." : "Keadaan perangkat saat ini."}
+            />
           </li>
           {tiles.map(({ def, list }) => (
             <li key={def.codes.join()} className="flex min-w-0">

@@ -75,7 +75,7 @@ function ActiveRun({ run }: { run: FertilizationRun }) {
 }
 
 /** Form "pupuk setiap N hari". Disimpan di layanan AI, jadi bisa gagal 502 bila AI tak menjawab. */
-function IntervalForm({ initial, onDone }: { initial: number | null; onDone: () => void }) {
+export function IntervalForm({ initial, onDone }: { initial: number | null; onDone: () => void }) {
   const set = useSetFertilizationInterval();
   const [text, setText] = useState(initial != null ? String(initial) : "7");
   const [error, setError] = useState<string | null>(null);
@@ -149,7 +149,7 @@ function ScheduleBody({ s, lastRun }: { s: FertilizationSchedule; lastRun: Ferti
 
   return (
     <>
-      {state.kind === "disabled" && <Notice tone="neutral">Pupuk otomatis dimatikan di pengaturan server. Jam siram tetap berjalan tanpa pupuk.</Notice>}
+      {state.kind === "disabled" && <Notice tone="neutral">Pupuk otomatis dimatikan di pengaturan sistem. Jam siram tetap berjalan tanpa pupuk.</Notice>}
       {state.kind === "ai-not-configured" && <Notice tone="warn">Layanan AI belum disambungkan ke sistem, jadi jadwal dan takaran pupuk belum bisa dipakai. Hubungi admin.</Notice>}
       {state.kind === "ai-unreachable" && (
         <Notice tone="warn">Layanan AI tidak menjawab, jadi jadwal pupuk tidak bisa dibaca sekarang. Bila sampai hari pupuk AI tetap tidak menjawab, pupuk tidak dituang dan dicoba lagi pada jam siram berikutnya.</Notice>

@@ -16,7 +16,7 @@ describe("calibrationErrorMessage", () => {
     expect(calibrationErrorMessage(coded("TOO_FEW_TRIALS", { minTrials: 3 }))).toBe("Perlu paling sedikit 3 kali ulangan.");
     expect(calibrationErrorMessage(coded("TOO_FEW_SAMPLES", { required: 5, available: 2 }))).toBe("Sampel lab belum cukup: baru 2, perlu paling sedikit 5.");
     expect(calibrationErrorMessage(coded("NO_RECENT_READING", { field: "soil.a.temperature" }))).toMatch(/^Tidak ada angka dari sensor \(soil\.a\.temperature\)/);
-    expect(calibrationErrorMessage(coded("NOT_CALIBRATABLE_PUMP"))).toBe("Alat ini bukan pompa pupuk yang debitnya bisa dikalibrasi.");
+    expect(calibrationErrorMessage(coded("NOT_CALIBRATABLE_PUMP"))).toBe("Perangkat ini bukan pompa pupuk yang debitnya bisa dikalibrasi.");
     // Kode yang belum dikenal → cadangan regex / pesan apa adanya.
     expect(calibrationErrorMessage(coded("SOMETHING_NEW"))).toBe("anything");
   });

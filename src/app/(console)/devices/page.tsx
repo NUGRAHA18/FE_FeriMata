@@ -24,7 +24,7 @@ export default function DevicesPage() {
 
   return (
     <>
-      <PageHeader title="Alat" subtitle="Alat mana yang terhubung, dan dari mana listriknya." />
+      <PageHeader title="Perangkat" subtitle="Perangkat mana yang terhubung, dan dari mana listriknya." />
       {overview.isPending ? (
         <Skeleton className="h-96 rounded-card" />
       ) : overview.error ? (
@@ -33,7 +33,7 @@ export default function DevicesPage() {
         d && (
           <div className="flex flex-col gap-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <Stat label="Semua alat" value={d.total} />
+              <Stat label="Semua perangkat" value={d.total} />
               <Stat label="Terhubung" value={d.online} />
               <Stat label="Terputus" value={d.offline} tone={d.offline ? "text-danger" : undefined} />
               <Stat label="Belum pernah terhubung" value={d.unknown} tone={d.unknown ? "text-warn-ink" : undefined} />
@@ -48,7 +48,7 @@ export default function DevicesPage() {
                   ))}
                 </ul>
               ) : (
-                <EmptyState icon={<Cpu aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada alat terdaftar" />
+                <EmptyState icon={<Cpu aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada perangkat terdaftar" />
               )}
             </Card>
           </div>

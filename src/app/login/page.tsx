@@ -15,8 +15,8 @@ import { consumeEndReason, safeNext, saveSession, type EndReason } from "@/lib/a
 import { useSession } from "@/lib/auth/use-session";
 
 const reasonText: Record<EndReason, string | null> = {
-  expired: "Sesi Anda sudah habis. Silakan Login kembali.",
-  unauthorized: "Sesi Anda tidak berlaku lagi. Silakan Login Kembali.",
+  expired: "Sesi Anda sudah habis. Silakan masuk lagi.",
+  unauthorized: "Sesi Anda tidak berlaku lagi. Silakan masuk lagi.",
   logout: null,
 };
 
@@ -84,7 +84,7 @@ function LoginForm() {
       <Button type="submit" variant="accent" size="lg" icon={LogIn} loading={pending} disabled={!username.trim() || !password} className="mt-1 w-full">
         Masuk
       </Button>
-      <p className="text-center text-xs text-muted">Sesi Login selama 7 hari.</p>
+      <p className="text-center text-xs text-muted">Anda tetap masuk selama 7 hari di HP/komputer ini.</p>
     </form>
   );
 }

@@ -6,13 +6,13 @@ import { aiTimestamp, num } from "@/lib/fertilization";
 export const MAX_PHOTOS = 10;
 export const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
 
-/** `short` untuk lencana; `text` + `detail` untuk kartu. Pesan mentah AI (`message`) hanya di Info teknis. */
+/** `short` untuk lencana; `text` + `detail` untuk kartu. Pesan mentah AI (`message`) hanya di Detail sistem. */
 export type AiStatusView = { tone: "ok" | "danger" | "neutral"; text: string; short: string; detail: string | null };
 
 export function aiStatusView(s: AiServiceStatus | undefined, failed = false): AiStatusView {
   if (!s) {
     return failed
-      ? { tone: "neutral", text: "Status layanan AI tidak diketahui", short: "Status AI tidak diketahui", detail: "Server tidak bisa ditanya sekarang." }
+      ? { tone: "neutral", text: "Status layanan AI tidak diketahui", short: "Status AI tidak diketahui", detail: "Sistem belum bisa dihubungi sekarang." }
       : { tone: "neutral", text: "Memeriksa layanan AI…", short: "Memeriksa AI…", detail: null };
   }
   // Belum diatur = pilihan pemasangan (alamat AI kosong di server), bukan kerusakan → netral.

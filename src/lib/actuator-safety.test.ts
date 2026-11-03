@@ -16,7 +16,7 @@ describe("describeCommandError — interlock", () => {
     expect(v.message).toMatch(/^Tidak bisa berjalan bersamaan/);
   });
   it("DEVICE_NOT_ONLINE", () => {
-    expect(describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "x", { interlock: "DEVICE_NOT_ONLINE" })).message).toBe("Alat sedang terputus, perintah tidak bisa dikirim.");
+    expect(describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "x", { interlock: "DEVICE_NOT_ONLINE" })).message).toBe("Perangkat sedang terputus, perintah tidak bisa dikirim.");
   });
   it("interlock tak dikenal → pesan mentah backend", () => {
     const v = describeCommandError(apiErr(409, "SAFETY_INTERLOCK", "Tank level low", { interlock: "TANK_LOW" }));
@@ -52,10 +52,10 @@ describe("validateDuration", () => {
 });
 
 describe("perintah tanpa jawaban (NO_RESPONSE)", () => {
-  it("dikenali dari failureCode, bukan teks; labelnya 'Alat tidak menjawab'", () => {
+  it("dikenali dari failureCode, bukan teks; labelnya 'Perangkat tidak menjawab'", () => {
     const cmd = { status: "FAILED", failureCode: "NO_RESPONSE", errorMessage: "teks apa pun" };
     expect(isNoResponse(cmd)).toBe(true);
-    expect(commandStatusText(cmd, { FAILED: "Gagal" })).toBe("Alat tidak menjawab");
+    expect(commandStatusText(cmd, { FAILED: "Gagal" })).toBe("Perangkat tidak menjawab");
     expect(describeCommandFailure(cmd)?.message).toMatch(/tidak menjawab dalam 2 menit/);
     expect(isNoResponse({ status: "EXECUTED", failureCode: null })).toBe(false);
     expect(commandStatusText({ status: "FAILED", failureCode: "BUSY" }, { FAILED: "Gagal" })).toBe("Gagal");

@@ -11,7 +11,7 @@ describe("toPoints (riwayat agregat)", () => {
     expect(out[0].band).toEqual([17, 19]);
   });
 
-  it("menyisipkan titik null di celah (alat mati) supaya garis putus", () => {
+  it("menyisipkan titik null di celah (perangkat mati) supaya garis putus", () => {
     const out = toPoints({ intervalSeconds: 3600, points: [pt(0, 18), pt(1, 19), pt(5, 22)] });
     expect(out).toHaveLength(4);
     expect(out[2]).toMatchObject({ t: Date.parse(at(2)), avg: null, band: null });

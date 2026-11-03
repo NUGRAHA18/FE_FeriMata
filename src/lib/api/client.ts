@@ -54,16 +54,20 @@ export function buildUrl(path: string, query?: Query): string {
   return url.toString();
 }
 
+// 502 juga bisa datang dari proxy saat backend mati, jadi teks umumnya tidak menyebut AI;
+// galat AI dikenali dari kode AI_SERVICE_ERROR.
+const AI_SERVICE_MESSAGE = "Layanan AI tidak menjawab. Coba lagi beberapa saat lagi.";
+
 const fallbackMessages: Record<number, string> = {
-  400: "Permintaan tidak valid.",
+  400: "Permintaan tidak bisa diproses. Periksa isian, lalu coba lagi.",
   401: "Sesi berakhir. Silakan masuk kembali.",
-  403: "Akses ditolak.",
+  403: "Akun Anda tidak punya izin untuk tindakan ini.",
   404: "Data tidak ditemukan.",
-  409: "Permintaan bertentangan dengan kondisi saat ini.",
+  409: "Belum bisa dilakukan dalam keadaan sekarang. Muat ulang halaman, lalu coba lagi.",
   413: "Foto terlalu besar. Paling besar 10 MB per foto.",
-  500: "Terjadi kesalahan di server.",
-  502: "Layanan AI tidak menjawab. Coba lagi beberapa saat lagi.",
-  503: "Layanan sedang tidak tersedia.",
+  500: "Sistem sedang bermasalah. Coba lagi beberapa saat lagi.",
+  502: "Sistem belum menjawab. Coba lagi beberapa saat lagi.",
+  503: "Sistem sedang tidak bisa dipakai. Coba lagi beberapa saat lagi.",
 };
 
 export async function apiRequest<S extends z.ZodType | undefined = undefined>(
@@ -97,7 +101,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
       throw new ApiRequestError({
         status: 0,
         code: "NETWORK_ERROR",
-        message: "Tidak bisa terhubung ke server. Periksa koneksi internet atau jaringan greenhouse.",
+        message: "Tidak bisa terhubung ke sistem. Periksa internet HP atau jaringan greenhouse.",
         path,
       });
     }
@@ -139,7 +143,7 @@ export async function apiRequest<S extends z.ZodType | undefined = undefined>(
     throw new ApiRequestError({
       status: res.status,
       code: "INVALID_RESPONSE",
-      message: "Jawaban server tidak dikenali. Coba muat ulang halaman.",
+      message: "Data dari sistem tidak dikenali. Coba muat ulang halaman.",
       path,
     });
   }
@@ -169,13 +173,13 @@ export async function fetchApiText(path: string, query?: Query, signal?: AbortSi
 
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiRequestError) {
-    if (error.code === "MESSAGING_ERROR") return "Koneksi ke alat terputus; perintah dicatat sebagai gagal.";
+    if (error.code === "MESSAGING_ERROR") return "Koneksi ke perangkat terputus; perintah dicatat sebagai gagal.";
     // Pesan backend untuk 502 AI berbahasa Inggris (detail teknis) → kalimat tetap.
-    if (error.code === "AI_SERVICE_ERROR") return fallbackMessages[502];
+    if (error.code === "AI_SERVICE_ERROR") return AI_SERVICE_MESSAGE;
     // Backend lama belum punya rute ini (bukan "data tidak ada").
-    if (error.status === 404 && /^endpoint not found$/i.test(error.message)) return "Fitur ini belum ada di server. Backend perlu diperbarui.";
+    if (error.status === 404 && /^endpoint not found$/i.test(error.message)) return "Fitur ini belum tersedia di sistem. Hubungi admin untuk memperbarui sistem.";
     return error.message;
   }
   if (error instanceof Error) return error.message;
-  return "Terjadi kesalahan yang tidak diketahui.";
+  return "Terjadi kesalahan yang penyebabnya belum diketahui. Coba lagi.";
 }

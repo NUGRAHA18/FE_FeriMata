@@ -21,7 +21,7 @@ export function CommandTracker({ tracked, className }: { tracked: TrackedCommand
   const late = waiting && elapsed > ACK_WARNING_MS;
   const duration = typeof cmd.parameters?.durationSeconds === "number" ? cmd.parameters.durationSeconds : null;
   const failure = cmd.status === "FAILED" ? describeCommandFailure(cmd) : null;
-  // Tidak dijawab ≠ ditolak: hasilnya tidak diketahui, jadi kuning (periksa alat), bukan merah.
+  // Tidak dijawab ≠ ditolak: hasilnya tidak diketahui, jadi kuning (periksa perangkat), bukan merah.
   const noResponse = isNoResponse(cmd);
 
   const tone =
@@ -42,7 +42,7 @@ export function CommandTracker({ tracked, className }: { tracked: TrackedCommand
           {commandSummary(cmd.commandType, cmd.parameters)}
           {duration != null && ` ${formatDuration(duration)}`} — {commandStatusText(cmd, commandStatusLabel)}
         </p>
-        {late && <p className="mt-0.5 text-xs">Alat belum menjawab setelah {formatDuration(Math.round(elapsed / 1000))}. Periksa alat sebelum menganggap berhasil.</p>}
+        {late && <p className="mt-0.5 text-xs">Perangkat belum menjawab setelah {formatDuration(Math.round(elapsed / 1000))}. Periksa perangkat sebelum menganggap berhasil.</p>}
         {failure && (
           <p className="mt-0.5 text-xs" title={failure.detail ?? undefined}>
             {failure.message}

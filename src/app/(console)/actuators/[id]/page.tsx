@@ -55,7 +55,7 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
       <div className="flex items-center justify-between gap-4 rounded-inner bg-card-2 px-3.5 py-3 ring-1 ring-line">
         <div>
           <p className="text-sm font-medium text-ink">Boleh dinyalakan</p>
-          <p className="text-xs text-muted">Bila dimatikan, alat ini tidak bisa dinyalakan dari aplikasi. Tombol Matikan tetap bisa dipakai.</p>
+          <p className="text-xs text-muted">Bila dimatikan, perangkat ini tidak bisa dinyalakan dari aplikasi. Tombol Matikan tetap bisa dipakai.</p>
         </div>
         <Switch checked={a.enabled} label="Boleh dinyalakan" onChange={(v) => setConfirmEnabled(v)} disabled={patch.isPending} />
       </div>
@@ -90,8 +90,8 @@ function Settings({ actuator: a }: { actuator: Actuator }) {
         confirmLabel={confirmEnabled ? "Izinkan" : "Larang"}
       >
         {confirmEnabled
-          ? "Alat ini akan bisa dinyalakan lagi dari aplikasi."
-          : "Alat ini tidak akan bisa dinyalakan dari aplikasi dan tidak tampil lagi di daftar Kontrol. Kalau sekarang sedang menyala, matikan dulu dengan tombol Matikan. Aktifkan lagi dari Pengaturan → Sensor & alat yang dimatikan."}
+          ? "Perangkat ini akan bisa dinyalakan lagi dari aplikasi."
+          : "Perangkat ini tidak akan bisa dinyalakan dari aplikasi dan tidak tampil lagi di daftar Kontrol. Kalau sekarang sedang menyala, matikan dulu dengan tombol Matikan. Aktifkan lagi dari Pengaturan → Sensor & perangkat yang dimatikan."}
       </ConfirmDialog>
     </Card>
   );
@@ -127,7 +127,7 @@ export default function ActuatorDetailPage() {
                   rows={[
                     ["Kode", <span key="c" className="font-mono">{a.code}</span>],
                     ["Tipe", a.type ?? "—"],
-                    ["Alat", a.deviceCode],
+                    ["Perangkat", a.deviceCode],
                     ["Status mentah", <span key="s" className="font-mono">{a.currentState ?? "null"}</span>],
                     ["Status diperbarui", formatDateTime(a.stateUpdatedAt)],
                   ]}

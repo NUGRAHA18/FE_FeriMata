@@ -44,7 +44,7 @@ export function DevicesCard({ className }: { className?: string }) {
 
   return (
     <Card mobileBare className={cn("@container flex min-w-0 flex-col", className)}>
-      <CardHeader mobileSection title="Alat" icon={Cpu} href="/devices" hrefLabel="Buka daftar alat" />
+      <CardHeader mobileSection title="Perangkat" icon={Cpu} href="/devices" hrefLabel="Buka daftar perangkat" />
       {overview.error ? (
         <ErrorState message={errorMessage(overview.error)} onRetry={() => overview.refetch()} />
       ) : !d ? (
@@ -64,12 +64,12 @@ export function DevicesCard({ className }: { className?: string }) {
           {/* Kartu sempit (tablet, kolom tengah): 2×2 supaya label tidak bertabrakan; lebar: 4 sejajar. */}
           {/* Ponsel (tanpa kartu pembungkus): ringkasan jadi satu strip putih sendiri. */}
           <div className="mb-3 grid grid-cols-2 items-end gap-x-4 gap-y-3 px-1 @[22rem]:grid-cols-4 md:mb-4 max-md:rounded-inner max-md:bg-card max-md:p-3.5 max-md:shadow-card max-md:ring-1 max-md:ring-line">
-            <Summary label="Alat" value={d.total} />
+            <Summary label="Perangkat" value={d.total} />
             <Summary label="Terhubung" value={d.online} />
             <Summary label="Sensor" value={d.sensors} />
             <Summary label="Bisa dikendalikan" value={d.actuators} />
           </div>
-          {/* Tanpa area gulir di dalam kartu: alat bermasalah dulu, maksimal DEVICE_PREVIEW, sisanya di halaman Alat. */}
+          {/* Tanpa area gulir di dalam kartu: perangkat bermasalah dulu, maksimal DEVICE_PREVIEW, sisanya di halaman Perangkat. */}
           <ul className="flex flex-col gap-2">
             {byProblem(d.items)
               .slice(0, DEVICE_PREVIEW)
@@ -84,7 +84,7 @@ export function DevicesCard({ className }: { className?: string }) {
               href="/devices"
               className="mt-3 inline-flex min-h-10 items-center justify-center gap-1.5 rounded-control text-sm font-semibold text-accent-ink transition hover:bg-accent-soft"
             >
-              Lihat semua alat ({d.items.length}) <ChevronRight aria-hidden className="size-4" />
+              Lihat semua perangkat ({d.items.length}) <ChevronRight aria-hidden className="size-4" />
             </Link>
           )}
         </>

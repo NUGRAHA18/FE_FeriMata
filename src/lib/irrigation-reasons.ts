@@ -4,11 +4,14 @@
 const reasonText: Record<string, string> = {
   BACKUP_POWER: "listrik PLN padam, memakai baterai",
   FLOAT_LOW: "air drum rendah",
-  EXCLUSIVE_OPERATION: "alat lain sedang berjalan",
-  BLOCKED_WHILE_ACTIVE: "alat lain sedang bergerak",
+  EXCLUSIVE_OPERATION: "perangkat lain sedang berjalan",
+  BLOCKED_WHILE_ACTIVE: "perangkat lain sedang bergerak",
   DEVICE_NOT_ONLINE: "panel pompa sedang terputus",
   PUMP_UNAVAILABLE: "pompa siram tidak ditemukan atau dimatikan",
   BACKEND_DOWN: "sistem mati saat jamnya",
+  // FAILED (ErrorCode BE): MESSAGING_ERROR = gagal ke broker, pompa pasti tidak menyala.
+  MESSAGING_ERROR: "perintah tidak sampai ke pompa siram",
+  INVALID_COMMAND: "perintah ditolak sistem (pompa dimatikan atau lama siram melebihi batas)",
   // Keputusan AI (fuzzy) saat jam siram tiba.
   AI_NO_WATER_NEEDED: "AI menilai tanah masih cukup basah",
   AI_CAPPED: "lama dari AI dipotong ke batas pompa",
@@ -30,10 +33,10 @@ export const AI_NO_WATER_NEEDED = "AI_NO_WATER_NEEDED";
 /** Kode aturan keselamatan (interlock): penyiraman dibatalkan, bukan gagal. */
 export const isSafetyCode = (code: string) => SAFETY_CODES.has(code);
 
-/** Huruf kecil, disambung setelah "Dibatalkan demi keamanan: "; kode tak dikenal → "gagal mengirim perintah".
+/** Huruf kecil, disambung setelah "Dibatalkan demi keamanan: "; kode tak dikenal → "alasan lain" (kodenya ada di Detail sistem; penyebab tidak ditebak).
  *  `conflictingActuatorCode` hanya ada di metadata peringatan EXCLUSIVE_OPERATION. */
 export function irrigationReasonText(code: string | null | undefined, conflictingActuatorCode?: string | null): string | null {
   if (!code) return null;
   if (code === "EXCLUSIVE_OPERATION" && conflictingActuatorCode) return `${conflictingActuatorCode} sedang berjalan`;
-  return reasonText[code] ?? "gagal mengirim perintah";
+  return reasonText[code] ?? "alasan lain (lihat Detail sistem)";
 }

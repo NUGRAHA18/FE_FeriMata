@@ -63,7 +63,7 @@ export function HistoryPanel({ sensorId, unit, label }: { sensorId: number; unit
           </div>
           <figcaption className="mt-2 text-xs text-muted">
             Garis = rata-rata tiap {intervalLabel(q.data.interval)}, pita = angka terendah–tertinggi. Dari {q.data.total.toLocaleString("id-ID")} pembacaan. Garis
-            yang terputus berarti alat tidak mengirim data. Angka mentah, belum dikoreksi kalibrasi.
+            yang terputus berarti perangkat tidak mengirim data. Angka mentah, belum dikoreksi kalibrasi.
           </figcaption>
         </figure>
       ) : (

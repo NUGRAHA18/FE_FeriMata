@@ -24,7 +24,8 @@ describe("lastRunView", () => {
     expect(skipped.detail).toMatch(/^Listrik PLN padam dan sistem memakai baterai/);
     expect(lastRunView("SKIPPED", "FLOAT_LOW")?.text).toBe("Dibatalkan demi keamanan: air drum rendah");
     expect(lastRunView("FAILED", "PUMP_UNAVAILABLE")?.text).toBe("Gagal: pompa siram tidak ditemukan atau dimatikan");
-    expect(lastRunView("FAILED", "MESSAGE_PUBLISH_FAILED")?.text).toBe("Gagal: gagal mengirim perintah");
+    expect(lastRunView("FAILED", "MESSAGING_ERROR")?.text).toBe("Gagal: perintah tidak sampai ke pompa siram");
+    expect(lastRunView("FAILED", "DATABASE_ERROR")?.text).toBe("Gagal: alasan lain (lihat Detail sistem)");
     expect(lastRunView("MISSED", "BACKEND_DOWN")?.text).toBe("Terlewat (sistem mati)");
     expect(lastRunView(null, null)).toBeNull();
   });

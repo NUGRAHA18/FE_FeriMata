@@ -21,7 +21,7 @@ export function CommandHistory({ actuatorId }: { actuatorId: number }) {
 
   if (q.isPending) return <Skeleton className="h-48 w-full rounded-inner" />;
   if (q.error) return <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />;
-  if (!q.data.content.length) return <EmptyState title="Belum ada perintah" hint="Riwayat perintah aktuator ini akan muncul di sini." />;
+  if (!q.data.content.length) return <EmptyState title="Belum ada perintah" hint="Perintah untuk perangkat ini akan tercatat di sini." />;
 
   return (
     <div className="flex flex-col gap-3">

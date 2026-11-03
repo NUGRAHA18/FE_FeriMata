@@ -99,13 +99,13 @@ describe("runView", () => {
     const np = runView(run({ status: "SKIPPED", reasonCode: "AI_NO_PHOTO" }));
     expect(np.text).toBe("Belum dipupuk: belum ada foto daun dari kamera 3 hari terakhir");
     expect(np.detail).toMatch(/kereta kamera.*Dicoba lagi pada jam siram berikutnya\.$/);
-    expect(runView(run({ status: "FAILED", reasonCode: "SOMETHING_NEW" })).text).toBe("Gagal memupuk: alasan lain (lihat Info teknis)");
+    expect(runView(run({ status: "FAILED", reasonCode: "SOMETHING_NEW" })).text).toBe("Gagal memupuk: alasan lain (lihat Detail sistem)");
   });
 
   it("sebagian: tidak diulang supaya tidak dobel", () => {
     const p = runView(run({ status: "PARTIAL", reasonCode: "NO_ACK" }));
     expect(p.tone).toBe("warn");
-    expect(p.text).toBe("Dipupuk sebagian: alat tidak menjawab perintah");
+    expect(p.text).toBe("Dipupuk sebagian: perangkat tidak menjawab perintah");
     expect(p.detail).toMatch(/Tidak diulang/);
   });
 
@@ -175,7 +175,7 @@ describe("peringatan pemupukan", () => {
     expect(alertBody("English", { type: "FERTILIZATION_SKIPPED", metadata: { reasonCode: "AI_UNAVAILABLE" } })).toBe(
       "Pupuk yang dijadwalkan hari ini belum dituang: layanan AI tidak menjawab. Dicoba lagi pada jam siram berikutnya.",
     );
-    expect(alertBody("English", { type: "FERTILIZATION_PARTIAL", metadata: { reasonCode: "DEVICE_REFUSED" } })).toMatch(/^Sebagian pompa pupuk sudah menuang lalu berhenti: alat menolak perintah\./);
+    expect(alertBody("English", { type: "FERTILIZATION_PARTIAL", metadata: { reasonCode: "DEVICE_REFUSED" } })).toMatch(/^Sebagian pompa pupuk sudah menuang lalu berhenti: perangkat menolak perintah\./);
     expect(alertBody("English", { type: "IRRIGATION_SKIPPED", metadata: { reasonCode: "FERTILIZATION_IN_PROGRESS", time: "06:00" } })).toMatch(/^Penyiraman jam 06:00 dilewati karena pemupukan sedang berjalan/);
   });
 });

@@ -51,7 +51,7 @@ describe("fakta yang tidak boleh salah", () => {
   const all = normalize(JSON.stringify(guideSections));
 
   it("dua tahap perintah dan tombol Matikan tidak pernah ditolak", () => {
-    expect(all).toContain(normalize("Terkirim, menunggu jawaban alat"));
+    expect(all).toContain(normalize("Terkirim, menunggu jawaban perangkat"));
     expect(all).toContain("dijalankan");
     expect(all).toContain("tidak pernah ditolak");
   });

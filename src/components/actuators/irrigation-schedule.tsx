@@ -23,7 +23,7 @@ import { cn } from "@/lib/cn";
 const lastTone: Record<Tone, string> = { ok: "text-accent-ink", warn: "text-warn-ink", danger: "text-danger-ink", info: "text-info-ink", neutral: "text-ink-2" };
 
 /* Backend menjalankan jadwal lewat jalur perintah biasa, jadi aturan keselamatan (PLN padam, drum
- * habis, …) tetap berlaku. Operator/admin mengatur; Pelihat hanya melihat. */
+ * habis, …) tetap berlaku. Operator/admin mengatur; Pemantau hanya melihat. */
 
 /** Lama siram terpanjang: maxRunSeconds pompa siram (null bila belum diketahui → batas dicek backend). */
 function usePumpMaxSeconds(): number | null {
@@ -100,7 +100,7 @@ function ScheduleRow({ s, onEdit, onDelete }: { s: IrrigationSchedule; onEdit: (
           {!s.enabled && <Badge tone="neutral">Mati</Badge>}
         </p>
         {s.notes && <p className="mt-1 truncate text-xs text-ink-2">{s.notes}</p>}
-        <p className="mt-1.5 text-xs text-muted">{s.enabled ? (next ? `Berikutnya: ${next}` : "Penjadwalan sedang mati di server") : "Tidak akan berjalan sampai dinyalakan lagi"}</p>
+        <p className="mt-1.5 text-xs text-muted">{s.enabled ? (next ? `Berikutnya: ${next}` : "Siram otomatis sedang dimatikan di sistem") : "Tidak akan berjalan sampai dinyalakan lagi"}</p>
         {last && (
           <p className="mt-1 flex items-start gap-1.5 text-xs">
             <StatusDot tone={last.tone} className="mt-1" />

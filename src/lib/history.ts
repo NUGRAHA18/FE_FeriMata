@@ -15,7 +15,7 @@ export const RANGES = {
 } as const;
 export type RangeKey = keyof typeof RANGES;
 
-/** Satu titik grafik. Titik celah (alat tidak mengirim data) bernilai null agar garisnya putus. */
+/** Satu titik grafik. Titik celah (perangkat tidak mengirim data) bernilai null agar garisnya putus. */
 export type Point = { t: number; avg: number | null; band: [number, number] | null; min: number | null; max: number | null; count: number };
 export type HistoryResult = { points: Point[]; total: number; interval: string; intervalSeconds: number };
 

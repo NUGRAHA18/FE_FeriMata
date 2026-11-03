@@ -94,8 +94,8 @@ describe("Kartu Jadwal siram", () => {
     });
   });
 
-  it("Pelihat hanya melihat: tanpa tambah, ubah, hapus, dan saklar", async () => {
-    signIn("VIEWER", "pelihat");
+  it("Pemantau hanya melihat: tanpa tambah, ubah, hapus, dan saklar", async () => {
+    signIn("VIEWER", "pemantau");
     renderWithProviders(<IrrigationScheduleCard />);
     expect(await screen.findByText("06:00")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Tambah jam|Ubah jadwal|Hapus jadwal/ })).not.toBeInTheDocument();

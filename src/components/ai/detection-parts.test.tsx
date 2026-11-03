@@ -41,7 +41,7 @@ describe("foto patroli /captures (BE-2)", () => {
         <DetectionImage detection={detection("/captures/x.png")} />
       </QueryClientProvider>,
     );
-    await waitFor(() => expect(screen.getByText(/tidak dapat dimuat/i)).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/belum bisa dimuat/i)).toBeInTheDocument());
     expect(screen.getByText("ST-03")).toBeInTheDocument();
   });
 });

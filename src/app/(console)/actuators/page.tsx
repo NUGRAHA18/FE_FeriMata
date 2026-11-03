@@ -40,8 +40,8 @@ export default function ActuatorsPage() {
   return (
     <>
       <PageHeader
-        title={canWrite ? "Kontrol" : "Status alat"}
-        subtitle={canWrite ? "Nyalakan atau matikan alat." : "Status alat (hanya melihat)."}
+        title={canWrite ? "Kontrol" : "Status perangkat"}
+        subtitle={canWrite ? "Nyalakan atau matikan perangkat." : "Status perangkat (hanya melihat)."}
       />
       {q.isPending ? (
         <div className="grid gap-4 lg:grid-cols-2">
@@ -58,7 +58,7 @@ export default function ActuatorsPage() {
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
       ) : !q.data.length ? (
-        <EmptyState icon={<ToggleRight aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada alat yang bisa dikendalikan" />
+        <EmptyState icon={<ToggleRight aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada perangkat yang bisa dikendalikan" />
       ) : (
         <div className="flex flex-col gap-4">
           {groupByDevice(q.data).map(([code, list]) => {

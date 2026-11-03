@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { tankKeys } from "@/config/dashboard-layout";
 import { useOverview, useReadingByMetric } from "@/lib/api/queries";
-import { formatReading, formatUnit, powerSourceLabel } from "@/lib/format";
+import { formatNumber, formatReading, formatUnit, powerSourceLabel } from "@/lib/format";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
@@ -44,15 +44,15 @@ function selectSystem(o: {
   };
 }
 
-/** Jumlah alat terhubung + sumber listrik: hijau bila semua terhubung & PLN, kuning bila ada yang
+/** Jumlah perangkat terhubung + sumber listrik: hijau bila semua terhubung & PLN, kuning bila ada yang
  *  terputus, merah bila memakai baterai. */
 export function SystemStatusCard({ compact, className }: { compact?: boolean; className?: string }) {
   const s = useOverview(selectSystem).data;
   const tone = !s ? "accent" : s.backup ? "danger" : s.issues > 0 ? "warn" : "accent";
-  const status = !s ? "memuat…" : s.backup ? "Memakai baterai" : s.issues > 0 ? `${s.issues} alat terputus` : "Semua terhubung";
+  const status = !s ? "memuat…" : s.backup ? "Memakai baterai" : s.issues > 0 ? `${s.issues} perangkat terputus` : "Semua terhubung";
   return (
     <MetricCard
-      label="Alat terhubung"
+      label="Perangkat terhubung"
       icon={s?.backup ? PicBattery : PicDevices}
       value={s ? `${s.online}` : null}
       unit={s ? `dari ${s.total}` : null}
@@ -76,7 +76,7 @@ export function ecTargetStatus(
   const unit = ec.unit?.toLowerCase();
   const ms = unit === "us/cm" || unit === "µs/cm" ? ec.value / 1000 : unit === "ms/cm" ? ec.value : null;
   if (ms == null) return null;
-  // Label pendek agar muat di kartu dua kolom; angka target ada di kartu "Umur tanaman".
+  // Label pendek agar muat di kartu dua kolom; angka target tampil di bawah nilai EC.
   if (ms < target.min) return { tone: "warn", label: "Terlalu encer" };
   if (ms > target.max) return { tone: "danger", label: "Terlalu pekat" };
   return { tone: "ok", label: "Sesuai target" };
@@ -107,11 +107,11 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
   const ecUnit = formatUnit(ec?.unit);
   const valueCls = cn("metric-value truncate", compact ? "text-[clamp(1.375rem,17cqi,1.75rem)]" : "text-[clamp(1.5rem,19cqi,2.25rem)]");
   return (
-    <section aria-label="Tangki pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5", className)}>
+    <section aria-label="Drum pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5", className)}>
       <span className={cn(pictoTile, compact ? "size-10" : "size-12")}>
         <PicTank className={compact ? "size-7" : "size-8"} />
       </span>
-      <p className={cn("mt-3 font-semibold text-ink-2", compact ? "text-sm" : "text-sm sm:text-[15px]")}>Tangki pupuk</p>
+      <p className={cn("mt-3 font-semibold text-ink-2", compact ? "text-sm" : "text-sm sm:text-[15px]")}>Drum pupuk</p>
       <dl className={cn("tabular mt-2 grid grid-cols-1 gap-2.5 @[12rem]:grid-cols-2 @[26rem]:grid-cols-3", stale && latest && "opacity-60")}>
         <div className="min-w-0">
           <dt className="text-xs text-ink-2">Kepekatan (EC)</dt>
@@ -119,6 +119,11 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
             <span className={valueCls}>{formatReading(ec) ?? "—"}</span>
             {ec && ecUnit && <span className="text-xs font-medium text-ink-2">{ecUnit}</span>}
           </dd>
+          {target?.min != null && target.max != null && (
+            <p className="mt-0.5 text-[11px] text-muted">
+              target {formatNumber(target.min, 2)}–{formatNumber(target.max, 2)} mS/cm
+            </p>
+          )}
         </div>
         <div className="min-w-0">
           <dt className="text-xs text-ink-2">Keasaman (pH)</dt>
@@ -142,7 +147,7 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
             </Badge>
           )}
           {level && (
-            <span title={level.tone === "danger" ? "Air rendah atau kabel float putus — pompa air utama, pompa pupuk dan pengaduk tidak bisa dinyalakan." : undefined}>
+            <span title={level.tone === "danger" ? "Air rendah atau kabel pelampung putus — pompa air utama, pompa pupuk dan pengaduk tidak bisa dinyalakan." : undefined}>
               <Badge tone={level.tone} className="text-xs">
                 {level.label}
               </Badge>

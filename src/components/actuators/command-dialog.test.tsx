@@ -59,7 +59,7 @@ describe("CommandDialog", () => {
     expect(url).toMatch(/\/api\/actuators\/5\/commands$/);
     expect(JSON.parse(init.body as string)).toEqual({ command: "ON", parameters: { durationSeconds: 10 } });
 
-    expect(await screen.findByText(/menunggu jawaban alat/i)).toBeInTheDocument();
+    expect(await screen.findByText(/menunggu jawaban perangkat/i)).toBeInTheDocument();
     expect(onSent).toHaveBeenCalledWith(expect.objectContaining({ uid: "uid-abc" }));
 
     qc.setQueryData(qk.command("uid-abc"), { ...sent, status: "EXECUTED", executedAt: "2026-09-19T07:00:03Z" });
@@ -88,11 +88,11 @@ describe("CommandDialog", () => {
     expect(JSON.parse(init.body as string)).toEqual({ command: "GOTO_STATION", parameters: { station: 4 } });
   });
 
-  it("patroli: alasan gagal dari alat diterjemahkan dari failureCode", async () => {
+  it("patroli: alasan gagal dari perangkat diterjemahkan dari failureCode", async () => {
     vi.stubGlobal("fetch", vi.fn(() => json(202, { ...sent, commandType: "START", parameters: null })));
     const { user, qc } = renderDialog({ ...actuator, code: "TROLLEY-PATROL", type: "TROLLEY_PATROL", supportedCommands: ["START", "STOP"] }, "START");
     await user.click(screen.getByRole("button", { name: /mulai patroli/i }));
-    expect(await screen.findByText(/menunggu jawaban alat/i)).toBeInTheDocument();
+    expect(await screen.findByText(/menunggu jawaban perangkat/i)).toBeInTheDocument();
     qc.setQueryData(qk.command("uid-abc"), { ...sent, commandType: "START", parameters: null, status: "FAILED", errorMessage: "BUSY: trolley sedang dipakai", failureCode: "BUSY" });
     expect(await screen.findByText(/sedang menjalankan tugas lain/i)).toBeInTheDocument();
   });
