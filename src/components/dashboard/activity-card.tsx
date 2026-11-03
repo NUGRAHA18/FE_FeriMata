@@ -41,7 +41,7 @@ const isCode = (t: string) => /^[A-Z][A-Z0-9]*(_[A-Z0-9]+)+$/.test(t.trim());
 
 const iconText: Record<FeedItem["icon"], string> = {
   EXECUTED: "Berhasil",
-  PENDING: "Menunggu jawaban alat",
+  PENDING: "Menunggu jawaban perangkat",
   FAILED: "Gagal",
   CANCELLED: "Dibatalkan",
   WARNING: "Perlu perhatian",
@@ -182,13 +182,13 @@ export function ActivityCard({ className }: { className?: string }) {
                 <span className="tabular">
                   {d.on} dari {d.total}
                 </span>{" "}
-                alat sedang menyala
+                perangkat sedang menyala
               </span>
             </div>
             <div
               className="mt-2 h-2.5 overflow-hidden rounded-full bg-sunken"
               role="progressbar"
-              aria-label="Alat yang sedang menyala"
+              aria-label="Perangkat yang sedang menyala"
               aria-valuemin={0}
               aria-valuemax={d.total}
               aria-valuenow={d.on}
@@ -197,7 +197,7 @@ export function ActivityCard({ className }: { className?: string }) {
             </div>
           </div>
           {feed.length === 0 ? (
-            <EmptyState className="mt-3" title="Belum ada kejadian" hint="Perintah ke alat dan peringatan akan muncul di sini." />
+            <EmptyState className="mt-3" title="Belum ada kejadian" hint="Perintah ke perangkat dan peringatan akan muncul di sini." />
           ) : (
             // Sengaja tanpa area gulir di kartu (hindari scrollbar ganda); sisanya lewat tombol.
             <ol className="mt-3 flex flex-col gap-2 md:mt-4">

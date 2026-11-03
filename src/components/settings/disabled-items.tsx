@@ -69,7 +69,7 @@ export function DisabledItemsCard() {
 
   return (
     <Card className="lg:col-span-2">
-      <CardHeader title="Sensor & alat yang dimatikan" icon={EyeOff} />
+      <CardHeader title="Sensor & perangkat yang dimatikan" icon={EyeOff} />
       <p className="mb-3 text-sm text-ink-2">
         Tidak tampil di halaman lain. Buka salah satu untuk memeriksanya; nyalakan lagi lewat saklar <strong>Sensor aktif</strong> atau{" "}
         <strong>Boleh dinyalakan</strong> di halamannya.
@@ -85,7 +85,7 @@ export function DisabledItemsCard() {
           }}
         />
       ) : !items.length ? (
-        <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-ink-2 ring-1 ring-line">Semua sensor dan alat sedang aktif.</p>
+        <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-ink-2 ring-1 ring-line">Semua sensor dan perangkat sedang aktif.</p>
       ) : (
         <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
           {items.map((i) => (

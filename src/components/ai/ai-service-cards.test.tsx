@@ -14,7 +14,7 @@ function serve(body: unknown) {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("status layanan AI", () => {
-  it("berjalan: hijau, akibatnya untuk petani; teks mentah AI hanya di Info teknis", async () => {
+  it("berjalan: hijau, akibatnya untuk petani; teks mentah AI hanya di Detail sistem", async () => {
     signIn("VIEWER", "viewer");
     const fetchMock = serve(status({}));
     renderWithProviders(<AiServiceStatusCard />);

@@ -22,26 +22,26 @@ describe("Halaman Panduan", () => {
     window.history.replaceState(null, "", "/panduan#kontrol");
     const { user } = renderWithProviders(<GuidePage />);
     expect(kontrolButton()).toHaveAttribute("aria-expanded", "true");
-    expect(screen.getByText("Terkirim, menunggu jawaban alat")).toBeInTheDocument();
+    expect(screen.getByText("Terkirim, menunggu jawaban perangkat")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: /^Sensor$/ }));
     expect(screen.getByRole("button", { name: /^Sensor$/ })).toHaveAttribute("aria-expanded", "true");
     expect(kontrolButton()).toHaveAttribute("aria-expanded", "false");
     expect(window.location.hash).toBe("#sensor");
   });
 
-  it("Operator tidak melihat catatan khusus Pelihat", () => {
+  it("Operator tidak melihat catatan khusus Pemantau", () => {
     signIn("OPERATOR");
     window.history.replaceState(null, "", "/panduan#kontrol");
     renderWithProviders(<GuidePage />);
-    expect(screen.queryByText(/Hanya operator atau admin yang bisa menyalakan alat/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Hanya operator atau admin yang bisa menyalakan perangkat/)).not.toBeInTheDocument();
   });
 
-  it("Pelihat tetap mendapat penjelasan Kontrol, dengan catatan hanya operator yang bisa menyalakan", () => {
-    signIn("VIEWER", "pelihat");
+  it("Pemantau tetap mendapat penjelasan Kontrol, dengan catatan hanya operator yang bisa menyalakan", () => {
+    signIn("VIEWER", "pemantau");
     window.history.replaceState(null, "", "/panduan#kontrol");
     renderWithProviders(<GuidePage />);
-    expect(screen.getByText(/Hanya operator atau admin yang bisa menyalakan alat/)).toBeInTheDocument();
-    expect(screen.getByText("Tunggu sampai tulisannya berubah dari \"Terkirim, menunggu jawaban alat\" menjadi \"Dijalankan\".")).toBeInTheDocument();
+    expect(screen.getByText(/Hanya operator atau admin yang bisa menyalakan perangkat/)).toBeInTheDocument();
+    expect(screen.getByText("Tunggu sampai tulisannya berubah dari \"Terkirim, menunggu jawaban perangkat\" menjadi \"Dijalankan\".")).toBeInTheDocument();
   });
 
   it("pencarian menyaring bagian dan membuka semua yang cocok", async () => {

@@ -30,7 +30,7 @@ export function Banner({ tone, icon, children, action }: { tone: Tone; icon: Rea
 
 const iconCls = "size-5";
 
-/** Banner dari overview: koneksi ke alat putus, memakai baterai, mode percobaan. Bahasa sehari-hari. */
+/** Banner dari overview: koneksi ke perangkat putus, memakai baterai, mode percobaan. Bahasa sehari-hari. */
 export function SystemBanners() {
   const flags = useOverview((o) => ({
     dev: o.system.mode === "DEVELOPMENT",
@@ -48,7 +48,7 @@ export function SystemBanners() {
       )}
       {flags.messagingDown && (
         <Banner tone="warn" icon={<RadioTower aria-hidden className={iconCls} strokeWidth={1.8} />}>
-          <strong className="font-semibold">Koneksi ke alat terputus.</strong> Perintah nyalakan/matikan belum bisa dikirim sekarang.
+          <strong className="font-semibold">Koneksi ke perangkat terputus.</strong> Perintah nyalakan/matikan belum bisa dikirim sekarang.
         </Banner>
       )}
       {flags.dev && (
@@ -72,14 +72,14 @@ export function OfflineBanner() {
   const lastAt = Math.max(q.dataUpdatedAt, lastReceived);
   return (
     <Banner tone="warn" icon={<WifiOff aria-hidden className={iconCls} strokeWidth={1.8} />}>
-      <strong className="font-semibold">{online ? "Data belum bisa diperbarui dari server." : "Tidak ada sambungan internet."}</strong>{" "}
+      <strong className="font-semibold">{online ? "Data terbaru belum bisa dimuat." : "Tidak ada sambungan internet."}</strong>{" "}
       {hasData && lastAt > 0 ? (
         <>
           Angka yang tampil adalah data terakhir, {formatDateTime(lastAt)} (<RelativeTime iso={new Date(lastAt).toISOString()} />
-          ). Perintah ke alat belum bisa dikirim.
+          ). Perintah ke perangkat belum bisa dikirim.
         </>
       ) : (
-        "Belum ada data tersimpan di perangkat ini."
+        "Belum ada data tersimpan di HP/komputer ini."
       )}
     </Banner>
   );

@@ -45,7 +45,7 @@ export default function DeviceDetailPage() {
 
   return (
     <>
-      <PageHeader backHref="/devices" title={deviceNameLabel(d?.name) ?? "Alat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
+      <PageHeader backHref="/devices" title={deviceNameLabel(d?.name) ?? "Perangkat"} subtitle={d ? (deviceTypeLabel(d.type) ?? d.deviceCode) : undefined} />
       {device.isPending ? (
         <Skeleton className="h-80 rounded-card" />
       ) : device.error ? (
@@ -87,7 +87,7 @@ export default function DeviceDetailPage() {
                 <KeyValue
                   className="mt-2"
                   rows={[
-                    ["Kode alat", <span key="c" className="font-mono">{d.deviceCode}</span>],
+                    ["Kode perangkat", <span key="c" className="font-mono">{d.deviceCode}</span>],
                     ["Tipe", d.type ?? "—"],
                     ["Terdaftar", formatDateTime(d.createdAt)],
                   ]}
@@ -107,7 +107,7 @@ export default function DeviceDetailPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="Alat ini tidak punya sensor" />
+                <EmptyState title="Perangkat ini tidak punya sensor" />
               )}
             </Card>
             <Card>
@@ -130,7 +130,7 @@ export default function DeviceDetailPage() {
                   ))}
                 </div>
               ) : (
-                <EmptyState title="Tidak ada yang bisa dikendalikan di alat ini" />
+                <EmptyState title="Tidak ada yang bisa dikendalikan di perangkat ini" />
               )}
             </Card>
           </div>

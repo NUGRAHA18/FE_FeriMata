@@ -20,8 +20,8 @@ import { useSession } from "@/lib/auth/use-session";
 import { roleLabel } from "@/lib/format";
 
 const roles: { value: string; label: string; hint: string }[] = [
-  { value: "VIEWER", label: "Pelihat", hint: "Hanya melihat angka dan foto, tidak bisa menyalakan alat." },
-  { value: "OPERATOR", label: "Operator", hint: "Menyalakan/mematikan alat, mencatat tanaman, menangani peringatan." },
+  { value: "VIEWER", label: "Pemantau", hint: "Hanya melihat angka dan foto, tidak bisa menyalakan perangkat." },
+  { value: "OPERATOR", label: "Operator", hint: "Menyalakan/mematikan perangkat, mencatat tanaman, menangani peringatan." },
   { value: "ADMIN", label: "Admin", hint: "Semua yang operator bisa, plus mengelola pengguna." },
 ];
 
@@ -78,7 +78,7 @@ function ResetPasswordDialog({ user, onClose }: { user: User; onClose: () => voi
   return (
     <Dialog open onClose={onClose} dismissible={!reset.isPending} title={`Atur ulang kata sandi ${user.fullName ?? user.username}`}>
       <form onSubmit={submit} className="flex flex-col gap-4" noValidate>
-        <PasswordField label="Kata sandi sementara baru" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" autoFocus hint="Minimal 8 karakter. Semua perangkat pengguna ini akan keluar dan ia harus mengganti sandinya saat masuk." />
+        <PasswordField label="Kata sandi sementara baru" value={password} onChange={(e) => setPassword(e.target.value)} autoComplete="new-password" autoFocus hint="Minimal 8 karakter. Semua HP/komputer pengguna ini akan keluar dan ia harus mengganti sandinya saat masuk." />
         {reset.error && (
           <p role="alert" className="rounded-inner bg-danger-soft px-3.5 py-2.5 text-sm text-danger-ink">
             {errorMessage(reset.error)}
@@ -159,7 +159,7 @@ function UserRow({ user, self }: { user: User; self: boolean }) {
         title={`Nonaktifkan ${user.fullName ?? user.username}?`}
         confirmLabel="Nonaktifkan"
       >
-        Pengguna ini langsung keluar dari semua perangkat dan tidak bisa masuk lagi sampai diaktifkan kembali.
+        Pengguna ini langsung keluar dari semua HP/komputer dan tidak bisa masuk lagi sampai diaktifkan kembali.
       </ConfirmDialog>
       {resetting && <ResetPasswordDialog user={user} onClose={() => setResetting(false)} />}
     </Inset>

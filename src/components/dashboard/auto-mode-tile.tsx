@@ -26,8 +26,8 @@ function nextRun(list: IrrigationSchedule[]): string | null {
   return next ? formatTime(next) : null;
 }
 
-/** Saklar = semua jadwal siram backend (IRRIGATION_SCHEDULE_ENABLED hanya variabel server, tak ada saklar
- *  global). Dosing NPK & pengadukan dijalankan layanan AI terpisah tanpa API on/off, jadi hanya dicatat. */
+/** Saklar "Siram otomatis" = semua jadwal siram backend (IRRIGATION_SCHEDULE_ENABLED hanya variabel server, tak ada
+ *  saklar global). Pupuk otomatis punya ubin sendiri (FertilizationAutoTile). */
 export function AutoModeTile({ className }: { className?: string }) {
   const q = useIrrigationSchedules();
   const patch = usePatchIrrigation();
@@ -64,8 +64,8 @@ export function AutoModeTile({ className }: { className?: string }) {
       : !list.length
         ? "Belum ada jadwal siram"
         : on
-          ? `Siram terjadwal · ${active.length} dari ${list.length} jadwal aktif${nextRun(active) ? ` · berikutnya ${nextRun(active)}` : ""}`
-          : `Mati · ${list.length} jadwal siram tidak aktif`;
+          ? `Menyala · ${active.length} dari ${list.length} jam siram aktif${nextRun(active) ? ` · berikutnya ${nextRun(active)}` : ""}`
+          : `Mati · ${list.length} jam siram tidak aktif`;
 
   return (
     <div className={cn("flex w-full min-w-0 flex-col rounded-[16px] bg-card p-3 ring-1 ring-line", className)}>
@@ -74,7 +74,8 @@ export function AutoModeTile({ className }: { className?: string }) {
           <PicSchedule className="size-7" />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="text-sm leading-5 font-semibold text-ink">Mode otomatis</p>
+          <p className="text-sm leading-5 font-semibold text-ink">Siram otomatis</p>
+          <p className="text-xs text-ink-2">Pompa siram menyala sendiri pada jam siram; lama siram ditentukan AI.</p>
           {status ? (
             <p className={cn("mt-0.5 flex items-start gap-1.5 text-xs", on ? "font-medium text-accent-ink" : "text-muted")}>
               <StatusDot tone={on ? "ok" : "neutral"} pulse={on} className="mt-1 size-1.5" />
@@ -86,7 +87,7 @@ export function AutoModeTile({ className }: { className?: string }) {
         </div>
         {canWrite &&
           (list.length ? (
-            <Switch checked={on} label={on ? "Matikan mode otomatis" : "Nyalakan mode otomatis"} onChange={() => setConfirm(on ? "off" : "on")} />
+            <Switch checked={on} label={on ? "Matikan siram otomatis" : "Nyalakan siram otomatis"} onChange={() => setConfirm(on ? "off" : "on")} />
           ) : (
             !q.isPending &&
             !q.error && (
@@ -96,10 +97,9 @@ export function AutoModeTile({ className }: { className?: string }) {
             )
           ))}
       </div>
-      <div className="mt-2.5 flex flex-wrap items-center justify-between gap-x-3 gap-y-1 border-t border-dashed border-line pt-2.5 text-xs text-muted">
-        <span>Dosing NPK otomatis diatur layanan AI terpisah.</span>
+      <div className="mt-2.5 flex flex-wrap items-center justify-end gap-x-3 gap-y-1 border-t border-dashed border-line pt-2.5 text-xs text-muted">
         <Link href="/jadwal-siram" className="inline-flex items-center gap-0.5 font-semibold text-accent-ink hover:underline">
-          Jadwal siram <ChevronRight aria-hidden className="size-3.5" />
+          Atur jam siram <ChevronRight aria-hidden className="size-3.5" />
         </Link>
       </div>
 
@@ -109,17 +109,18 @@ export function AutoModeTile({ className }: { className?: string }) {
         onConfirm={apply}
         pending={pending}
         error={error}
-        title={confirm === "off" ? "Matikan mode otomatis?" : "Nyalakan mode otomatis?"}
+        title={confirm === "off" ? "Matikan siram otomatis?" : "Nyalakan siram otomatis?"}
         confirmLabel={confirm === "off" ? "Matikan" : "Nyalakan"}
       >
         {confirm === "off" ? (
           <p>
-            {active.length} jadwal siram ({timesOf(active)}) akan dinonaktifkan. Pompa siram tidak menyala sendiri sampai mode otomatis dinyalakan lagi. Dosing NPK dari
-            layanan AI tidak ikut berubah.
+            {active.length} jam siram ({timesOf(active)}) akan dimatikan. Pompa siram tidak menyala sendiri sampai siram otomatis dinyalakan lagi. Pupuk otomatis juga
+            berhenti, karena pupuk hanya dituang sebelum jam siram.
           </p>
         ) : (
           <p>
-            Semua jadwal siram ({timesOf(list)}) akan aktif. Backend menyalakan pompa siram pada jam-jam itu, dengan semua aturan keselamatan tetap berlaku.
+            Semua jam siram ({timesOf(list)}) akan dinyalakan. Pompa siram menyala sendiri pada jam-jam itu. Penyiraman tetap dibatalkan bila tidak aman, misalnya listrik
+            PLN padam atau air drum rendah.
           </p>
         )}
       </ConfirmDialog>

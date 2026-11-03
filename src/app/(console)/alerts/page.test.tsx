@@ -71,9 +71,9 @@ describe("Halaman Peringatan", () => {
     await waitFor(() => expect(calls).toContain("PATCH /api/alerts/2/acknowledge"));
   });
 
-  it("pelihat (VIEWER) tidak mendapat tombol tandai", async () => {
+  it("pemantau (VIEWER) tidak mendapat tombol tandai", async () => {
     backend();
-    signIn("VIEWER", "pelihat");
+    signIn("VIEWER", "pemantau");
     renderWithProviders(<AlertsPage />);
     await screen.findByText("Peringatan 1");
     expect(screen.queryByRole("button", { name: /tandai sudah ditangani/i })).not.toBeInTheDocument();

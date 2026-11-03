@@ -30,11 +30,11 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Kartu notifikasi di HP ini", () => {
-  it("server belum punya kunci VAPID → tanpa saklar (juga untuk Pelihat)", async () => {
-    signIn("VIEWER", "pelihat");
+  it("server belum punya kunci VAPID → tanpa saklar (juga untuk Pemantau)", async () => {
+    signIn("VIEWER", "pemantau");
     stubApi(config(false));
     renderWithProviders(<PushCard />);
-    expect(await screen.findByText("Notifikasi belum diaktifkan di server.")).toBeInTheDocument();
+    expect(await screen.findByText("Notifikasi belum diaktifkan di sistem. Hubungi admin.")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 
@@ -48,7 +48,7 @@ describe("Kartu notifikasi di HP ini", () => {
   });
 
   it("menyalakan dari klik, lalu kirim notifikasi uji", async () => {
-    signIn("VIEWER", "pelihat");
+    signIn("VIEWER", "pemantau");
     stubApi(config(true, 0));
     const { user } = renderWithProviders(<PushCard />);
     const toggle = await screen.findByRole("switch", { name: "Kirim notifikasi ke HP ini" });
@@ -58,7 +58,7 @@ describe("Kartu notifikasi di HP ini", () => {
     expect(push.enablePush).toHaveBeenCalledWith("AQID");
     expect(toggle).toHaveAttribute("aria-checked", "true");
     await user.click(screen.getByRole("button", { name: "Kirim notifikasi uji" }));
-    expect(await screen.findByText(/Terkirim ke 1 perangkat/)).toBeInTheDocument();
+    expect(await screen.findByText(/Terkirim ke 1 HP\/komputer/)).toBeInTheDocument();
   });
 
   it("izin ditolak → penjelasan cara membuka izin di browser", async () => {

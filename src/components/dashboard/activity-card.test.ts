@@ -5,10 +5,10 @@ import { fromOverviewEntry } from "./activity-card";
 const entry = (e: Partial<ActivityEntry>): ActivityEntry => ({ kind: "ACTUATOR_COMMAND", at: "2026-10-30T03:00:00Z", summary: "", detail: null, ...e });
 
 describe("fromOverviewEntry", () => {
-  it("perintah NO_RESPONSE dari overview: 'Alat tidak menjawab', ikon peringatan, bukan Gagal", () => {
+  it("perintah NO_RESPONSE dari overview: 'Perangkat tidak menjawab', ikon peringatan, bukan Gagal", () => {
     const f = fromOverviewEntry(entry({ status: "FAILED", commandType: "START", actuatorCode: "TROLLEY-PATROL", actor: "operator", failureCode: "NO_RESPONSE", refId: 9 }), 0);
     expect(f.icon).toBe("WARNING");
-    expect(f.detail).toMatch(/^Alat tidak menjawab · oleh operator · Alat tidak menjawab dalam 2 menit/);
+    expect(f.detail).toMatch(/^Perangkat tidak menjawab · oleh operator · Perangkat tidak menjawab dalam 2 menit/);
   });
 
   it("peringatan dengan failureCode NO_RESPONSE memakai kode, bukan teks Inggris", () => {
@@ -16,8 +16,8 @@ describe("fromOverviewEntry", () => {
       entry({ kind: "ALERT", summary: "Actuator did not respond", status: "WARNING", detail: "WARNING: Device PANEL-01 did not acknowledge command ON for DIST-PUMP", deviceCode: "PANEL-01", actuatorCode: "DIST-PUMP", failureCode: "NO_RESPONSE" }),
       0,
     );
-    expect(f.title).toBe("Alat tidak menjawab perintah");
-    expect(f.detail).toBe("Perlu perhatian · PANEL-01 tidak menjawab perintah untuk DIST-PUMP. Perintah mungkin tidak dijalankan; periksa keadaan alat.");
+    expect(f.title).toBe("Perangkat tidak menjawab perintah");
+    expect(f.detail).toBe("Perlu perhatian · PANEL-01 tidak menjawab perintah untuk DIST-PUMP. Perintah mungkin tidak dijalankan; periksa keadaan perangkat.");
   });
 
   it("peringatan jadwal siram dari overview memakai alertType + kode alasan", () => {

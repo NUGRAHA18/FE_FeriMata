@@ -15,7 +15,7 @@ export type CommandSpec = {
   /** Penjelasan singkat di dialog. */
   note: string | null;
   submitLabel: string;
-  /** Perintah berhenti: tombol merah, tidak pernah dinonaktifkan (juga saat alat dilarang dinyalakan). */
+  /** Perintah berhenti: tombol merah, tidak pernah dinonaktifkan (juga saat perangkat dilarang dinyalakan). */
   stop: boolean;
   params: CommandParams;
 };
@@ -28,7 +28,7 @@ const stopSpec = (note: string) =>
 
 const relaySpecs: CommandSpec[] = [
   spec({ command: "ON", label: "Nyalakan", title: (n) => `Nyalakan ${n}?`, note: null, submitLabel: "Nyalakan sekarang", params: "duration" }),
-  spec({ command: "OFF", label: "Matikan", title: (n) => `Matikan ${n}?`, note: "Alat akan dimatikan sekarang.", submitLabel: "Matikan sekarang", stop: true }),
+  spec({ command: "OFF", label: "Matikan", title: (n) => `Matikan ${n}?`, note: "Perangkat akan dimatikan sekarang.", submitLabel: "Matikan sekarang", stop: true }),
 ];
 
 const specsByType: Record<string, CommandSpec[]> = {

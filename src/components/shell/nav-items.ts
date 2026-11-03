@@ -6,7 +6,7 @@ export type NavItem = { href: string; label: string; icon: LucideIcon; /** Hanya
 export const primaryNav: NavItem[] = [
   { href: "/", label: "Beranda", icon: Home },
   { href: "/sensors", label: "Sensor", icon: Gauge },
-  // Jadwal siram: juga tombol bulat di tengah bottom nav mobile; terbuka untuk semua peran (Pelihat hanya melihat).
+  // Jadwal siram: juga tombol bulat di tengah bottom nav mobile; terbuka untuk semua peran (Pemantau hanya melihat).
   { href: "/jadwal-siram", label: "Siram", icon: CalendarClock },
   { href: "/actuators", label: "Kontrol", icon: ToggleRight, writeOnly: true },
   { href: "/ai", label: "Kamera", icon: Camera },

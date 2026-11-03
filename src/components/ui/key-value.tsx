@@ -25,6 +25,6 @@ export function KeyValue({ rows, className }: { rows: [ReactNode, ReactNode][]; 
 /** Metadata informatif dari backend (alamat Modbus, kanal, model) — tidak dipakai untuk keputusan. */
 export function MetadataTable({ metadata }: { metadata: Record<string, unknown> | null }) {
   const entries = Object.entries(metadata ?? {});
-  if (!entries.length) return <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-muted ring-1 ring-line">Tidak ada metadata.</p>;
+  if (!entries.length) return <p className="rounded-inner bg-card-2 px-3.5 py-3 text-sm text-muted ring-1 ring-line">Tidak ada detail tambahan.</p>;
   return <KeyValue rows={entries.map(([k, v]) => [<span key={k} className="font-mono text-xs">{k}</span>, <span key={`${k}-v`} className="font-mono text-xs">{display(v)}</span>])} />;
 }

@@ -25,7 +25,7 @@ const knownTypes = ["NUTRIENT_DEFICIENCY", "DISEASE"];
 function describe(f: DetectionFilter) {
   if (f.kind === "station") return `Foto di stasiun ${f.stationCode}`;
   if (f.kind === "type") return `Hasil: ${detectionTypeLabel(f.detectionType)}`;
-  if (f.kind === "device") return `Alat #${f.deviceId}`;
+  if (f.kind === "device") return `Perangkat #${f.deviceId}`;
   return "Semua foto";
 }
 

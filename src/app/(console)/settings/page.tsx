@@ -72,7 +72,7 @@ export default function SettingsPage() {
               </div>
             ))}
           </div>
-          <p className="mt-3 text-xs text-muted">Pilihan tema disimpan di perangkat ini. &quot;Ikuti sistem&quot; memakai Terang/Gelap sesuai pengaturan HP/komputer.</p>
+          <p className="mt-3 text-xs text-muted">Pilihan tema disimpan di HP/komputer ini. &quot;Ikuti sistem&quot; memakai Terang/Gelap sesuai pengaturan HP/komputer.</p>
         </Card>
         <Card>
           <CardHeader title="Petunjuk & tampilan sederhana" icon={BookOpen} />
@@ -85,7 +85,7 @@ export default function SettingsPage() {
               <p id="simple-mode-label" className="text-sm font-medium text-ink">
                 Mode sederhana
               </p>
-              <p className="mt-0.5 text-xs text-muted">Sembunyikan panel &quot;Info teknis&quot; (kode alat, metric key, alamat Modbus) di semua halaman.</p>
+              <p className="mt-0.5 text-xs text-muted">Sembunyikan panel &quot;Detail sistem&quot; (kode perangkat dan data teknis untuk teknisi) di semua halaman.</p>
             </div>
             <Switch checked={simpleMode} onChange={setSimpleMode} label="Mode sederhana" />
           </div>

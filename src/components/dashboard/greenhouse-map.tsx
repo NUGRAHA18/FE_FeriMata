@@ -136,7 +136,7 @@ export function GreenhouseMap({ trolleyStation, selectedStation, onStationSelect
         <circle cx={W - 20} cy={30} r={10} className="fill-info-soft stroke-info" strokeWidth={1.2} />
         <path d={`M ${W - 24} 32 q 4 -3 8 0`} className="stroke-info" strokeWidth={1.2} fill="none" />
         <text x={W - 20} y={52} fontSize={9} textAnchor="middle" className="fill-muted">
-          Tangki
+          Drum
         </text>
       </g>
     </svg>

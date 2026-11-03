@@ -6,7 +6,7 @@ import { formatDate, formatDuration } from "@/lib/format";
 import { AI_NO_WATER_NEEDED, irrigationReasonText } from "@/lib/irrigation-reasons";
 
 /* Jadwal siram harian; jam selalu WIB. Hasil dibaca dari kode (`lastResult` + `lastReasonCode`);
- * `lastMessage` berbahasa Inggris, hanya untuk Info teknis. */
+ * `lastMessage` berbahasa Inggris, hanya untuk Detail sistem. */
 
 /** "YYYY-MM-DD" dan "HH:mm" di WIB. */
 const wibDate = (v: string | number) => csvTime(v).slice(0, 10);

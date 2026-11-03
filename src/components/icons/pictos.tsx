@@ -150,7 +150,7 @@ export function PicTank({ className }: { className?: string }) {
   );
 }
 
-/** Alat terhubung: kotak alat dengan lampu + gelombang sinyal. */
+/** Perangkat terhubung: kotak perangkat dengan lampu + gelombang sinyal. */
 export function PicDevices({ className }: { className?: string }) {
   return (
     <Svg className={className}>
@@ -312,7 +312,7 @@ const devicePictos: Record<string, Picto> = {
   MODBUS_SENSOR_GROUP: PicGauge,
 };
 
-/** Piktogram per tipe alat dari katalog backend; tipe yang belum dikenal → papan pengendali. */
+/** Piktogram per tipe perangkat dari katalog backend; tipe yang belum dikenal → papan pengendali. */
 export function DevicePicto({ kind, className }: { kind: string | null | undefined; className?: string }) {
   const P = devicePictos[kind ?? ""] ?? PicChip;
   return <P className={className} />;

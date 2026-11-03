@@ -6,7 +6,6 @@ import { ArrowUpRight } from "lucide-react";
 import { useState } from "react";
 import { AlertItem } from "@/components/alerts/alert-item";
 import { DeviceRow } from "@/components/devices/device-row";
-import { CalibrationPanel } from "@/components/sensors/calibration-panel";
 import { HistoryPanel } from "@/components/sensors/history-panel";
 import { SensorEditForm } from "@/components/sensors/sensor-edit-form";
 import { PageHeader } from "@/components/shell/page-header";
@@ -25,12 +24,11 @@ import { useCanWrite } from "@/lib/auth/use-session";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
-type Tab = "history" | "calibration" | "detail" | "device" | "activity";
+type Tab = "history" | "detail" | "device" | "activity";
 const allTabs: { value: Tab; label: string; writeOnly?: boolean }[] = [
   { value: "history", label: "Riwayat" },
-  { value: "calibration", label: "Kalibrasi" },
   { value: "detail", label: "Pengaturan", writeOnly: true },
-  { value: "device", label: "Alat" },
+  { value: "device", label: "Perangkat" },
   { value: "activity", label: "Peringatan" },
 ];
 
@@ -76,7 +74,7 @@ function LatestValue({ sensor: s }: { sensor: Sensor }) {
 function DeviceTab({ sensor: s }: { sensor: Sensor }) {
   const status = useOverview((o) => o.devices.items.find((d) => d.id === s.deviceId)).data;
   const device = useDevices((list) => list.find((d) => d.id === s.deviceId)).data;
-  if (!status) return <EmptyState title={`Alat ${s.deviceCode}`} hint="Status alat belum tersedia." />;
+  if (!status) return <EmptyState title={`Perangkat ${s.deviceCode}`} hint="Status perangkat belum tersedia." />;
   return (
     <div className="flex flex-col gap-3">
       <DeviceRow status={status} name={device?.name} type={device?.type} href={`/devices/${s.deviceId}`} />
@@ -139,7 +137,6 @@ export default function SensorDetailPage() {
             <Card>
               <Tabs value={tab} onChange={setTab} tabs={tabs} label="Bagian detail sensor" className="mb-4" />
               {tab === "history" && <HistoryPanel sensorId={s.id} unit={formatUnit(s.unit)} label={s.name} />}
-              {tab === "calibration" && <CalibrationPanel sensor={s} unit={formatUnit(s.unit)} />}
               {tab === "detail" && (
                 <div className="flex flex-col gap-5">
                   <div>
@@ -154,7 +151,7 @@ export default function SensorDetailPage() {
                         ["Metric key", <span key="m" className="font-mono">{s.metricKey}</span>],
                         ["Satuan mentah", s.unit ?? "—"],
                         ["Tipe", s.type ?? "—"],
-                        ["Alat", s.deviceCode],
+                        ["Perangkat", s.deviceCode],
                         ["Diperbarui", formatDateTime(s.updatedAt)],
                       ]}
                     />

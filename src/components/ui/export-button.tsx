@@ -44,7 +44,7 @@ export function ExportButton({
       }
       downloadCsv(filename(), r.csv);
       const n = r.rows.toLocaleString("id-ID");
-      setStatus(r.truncated ? { tone: "warn", text: `${n} baris terbaru diunduh. ${truncatedHint ?? "Data lebih banyak dari batas ekspor."}` } : { tone: "ok", text: `${n} baris diunduh.` });
+      setStatus(r.truncated ? { tone: "warn", text: `${n} baris terbaru diunduh. ${truncatedHint ?? "Data lebih banyak dari batas unduhan."}` } : { tone: "ok", text: `${n} baris diunduh.` });
     } catch (e) {
       if (!c.signal.aborted) setStatus({ tone: "danger", text: errorMessage(e) });
     } finally {

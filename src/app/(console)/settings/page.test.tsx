@@ -16,19 +16,19 @@ beforeEach(() => {
 afterEach(() => vi.unstubAllGlobals());
 
 describe("Halaman Pengaturan", () => {
-  it("mode sederhana menyembunyikan panel Info teknis dan tersimpan di perangkat", async () => {
+  it("mode sederhana menyembunyikan panel Detail sistem dan tersimpan di perangkat", async () => {
     signIn();
     const { user, unmount } = renderWithProviders(<SettingsPage />);
-    expect(screen.getByText("Info teknis")).toBeInTheDocument();
+    expect(screen.getByText("Detail sistem")).toBeInTheDocument();
     const toggle = screen.getByRole("switch", { name: "Mode sederhana" });
     expect(toggle).toHaveAttribute("aria-checked", "false");
     await user.click(toggle);
     expect(toggle).toHaveAttribute("aria-checked", "true");
-    expect(screen.queryByText("Info teknis")).not.toBeInTheDocument();
+    expect(screen.queryByText("Detail sistem")).not.toBeInTheDocument();
     unmount();
 
     renderWithProviders(<SettingsPage />);
-    expect(screen.queryByText("Info teknis")).not.toBeInTheDocument();
+    expect(screen.queryByText("Detail sistem")).not.toBeInTheDocument();
   });
 
   it("tombol Buka petunjuk membuka petunjuk dari langkah pertama", async () => {

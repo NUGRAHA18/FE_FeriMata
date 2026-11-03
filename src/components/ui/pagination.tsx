@@ -9,7 +9,7 @@ type PaginationProps = { page: number; totalPages: number; totalElements?: numbe
 export function Pagination({ page, totalPages, totalElements, onChange, busy }: PaginationProps) {
   if (totalPages <= 1) return totalElements != null ? <p className="text-xs text-muted">{totalElements} data</p> : null;
   return (
-    <nav aria-label="Paginasi" className="flex items-center justify-between gap-3">
+    <nav aria-label="Pindah halaman" className="flex items-center justify-between gap-3">
       <p className="tabular text-xs text-muted" aria-live="polite">
         Halaman {page + 1} dari {totalPages}
         {totalElements != null && ` · ${totalElements} data`}

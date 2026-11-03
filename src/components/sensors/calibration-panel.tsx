@@ -32,7 +32,7 @@ import { formatDate, formatDateTime, formatNumber, parseDecimal } from "@/lib/fo
 import { serverCsv } from "@/lib/reports";
 
 /* Kalibrasi sensor (Protokol-Data §7): sampel lab dipasangkan dengan angka sensor saat itu, backend
- * menghitung model koreksi. Pelihat hanya membaca. */
+ * menghitung model koreksi. Pemantau hanya membaca. */
 
 const fmt = (n: number | null | undefined, unit = "") => (n == null ? "—" : `${formatNumber(n)}${unit ? ` ${unit}` : ""}`);
 

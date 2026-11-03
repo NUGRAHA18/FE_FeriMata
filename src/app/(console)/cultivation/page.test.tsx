@@ -128,8 +128,8 @@ describe("Halaman Tanaman", () => {
     });
   });
 
-  it("Pelihat tidak melihat tombol tambah dan hapus", async () => {
-    signIn("VIEWER", "pelihat");
+  it("Pemantau tidak melihat tombol tambah dan hapus", async () => {
+    signIn("VIEWER", "pemantau");
     renderWithProviders(<CultivationPage />);
     expect(await screen.findByText("Melon pojok 03")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Tambah tanaman|Hapus tanaman|Ubah tanggal semai/ })).not.toBeInTheDocument();

@@ -209,7 +209,7 @@ export default function GuidePage() {
         )}
 
         {searching && !sections.length && !terms.length ? (
-          <EmptyState title="Tidak ditemukan" hint="Coba kata lain, misalnya nama tombol atau nama alat." />
+          <EmptyState title="Tidak ditemukan" hint="Coba kata lain, misalnya nama tombol atau nama perangkat." />
         ) : (
           <div className="flex flex-col gap-3">
             {sections.map((s) => (

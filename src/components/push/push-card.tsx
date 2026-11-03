@@ -16,7 +16,7 @@ import { qk } from "@/lib/api/query-keys";
 import { severityLabel } from "@/lib/format";
 import { currentSubscription, disablePush, enablePush, pushSupport, sameServerKey, type PushSupport } from "@/lib/push";
 
-// Berlaku untuk semua peran (termasuk Pelihat). Status langganan dari browser; jumlah perangkat dari backend.
+// Berlaku untuk semua peran (termasuk Pemantau). Status langganan dari browser; jumlah perangkat dari backend.
 
 type State = "loading" | "on" | "off" | "blocked";
 
@@ -38,7 +38,7 @@ const supportText: Record<Exclude<PushSupport, "ok">, ReactNode> = {
 };
 
 function pushErrorMessage(e: unknown): string {
-  if (e instanceof ApiRequestError) return e.status === 409 ? "Server menolak langganan dari browser ini. Coba lagi nanti atau hubungi admin." : errorMessage(e);
+  if (e instanceof ApiRequestError) return e.status === 409 ? "Sistem menolak pendaftaran notifikasi dari browser ini. Coba lagi nanti atau hubungi admin." : errorMessage(e);
   return "Browser gagal menyalakan notifikasi. Periksa koneksi internet lalu coba lagi.";
 }
 
@@ -93,7 +93,7 @@ export function PushCard() {
   let content: ReactNode;
   if (config.isPending || support === null) content = <Skeleton className="h-16" />;
   else if (config.error) content = <ErrorState message={errorMessage(config.error)} onRetry={() => config.refetch()} />;
-  else if (!config.data.enabled || !publicKey) content = <Note>Notifikasi belum diaktifkan di server.</Note>;
+  else if (!config.data.enabled || !publicKey) content = <Note>Notifikasi belum diaktifkan di sistem. Hubungi admin.</Note>;
   else if (support !== "ok") content = <Note>{supportText[support]}</Note>;
   else if (state === "blocked")
     content = (
@@ -122,8 +122,8 @@ export function PushCard() {
             {test.data && (
               <p role="status" className={test.data.delivered ? "text-xs text-muted" : "text-xs text-warn-ink"}>
                 {test.data.delivered
-                  ? `Terkirim ke ${test.data.delivered} perangkat. Notifikasi akan muncul dalam beberapa detik.`
-                  : "Tidak ada perangkat yang menerima. Matikan lalu nyalakan lagi notifikasinya."}
+                  ? `Terkirim ke ${test.data.delivered} HP/komputer. Notifikasi akan muncul dalam beberapa detik.`
+                  : "Tidak ada HP/komputer yang menerima. Matikan lalu nyalakan lagi notifikasinya."}
               </p>
             )}
             {test.error && <p className="text-xs text-danger-ink">{errorMessage(test.error)}</p>}
@@ -144,7 +144,7 @@ export function PushCard() {
       {content}
       {config.data?.enabled && (
         <>
-          <p className="mt-3 text-xs text-muted">{n ? `Akun ini menerima notifikasi di ${n} perangkat.` : "Akun ini belum menerima notifikasi di perangkat mana pun."}</p>
+          <p className="mt-3 text-xs text-muted">{n ? `Akun ini menerima notifikasi di ${n} HP/komputer.` : "Akun ini belum menerima notifikasi di HP/komputer mana pun."}</p>
           <TechInfo className="mt-3">
             <KeyValue
               className="mt-2"

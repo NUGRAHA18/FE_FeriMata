@@ -8,7 +8,7 @@ export function useSession(): Session | null | undefined {
   return useSyncExternalStore(subscribeSession, getSession, () => undefined);
 }
 
-/** Peran yang boleh mengubah data (menyalakan alat, mencatat, menandai peringatan). */
+/** Peran yang boleh mengubah data (menyalakan perangkat, mencatat, menandai peringatan). */
 export const WRITE_ROLES: readonly string[] = ["ADMIN", "OPERATOR"];
 
 /** VIEWER hanya memantau: tombol aksi disembunyikan, bukan ditampilkan lalu ditolak server. */

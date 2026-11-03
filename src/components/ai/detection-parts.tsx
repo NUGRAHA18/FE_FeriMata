@@ -71,13 +71,13 @@ export function DetectionImage({ detection, className, children }: { detection: 
     <div className={cn("relative overflow-hidden rounded-inner bg-sunken", className)}>
       {showImage ? (
         // eslint-disable-next-line @next/next/no-img-element -- sumber eksternal/relatif, tanpa optimasi.
-        <img src={src} alt={`Tangkapan ${detection?.stationCode ?? "kamera"}`} className="size-full object-cover" onError={() => setFailed(src)} loading="lazy" />
+        <img src={src} alt={`Foto ${detection?.stationCode ?? "kamera"}`} className="size-full object-cover" onError={() => setFailed(src)} loading="lazy" />
       ) : (
         <div className="flex size-full flex-col items-center justify-center gap-2 bg-[radial-gradient(circle_at_30%_20%,var(--accent-soft),transparent_60%)] text-ink-2">
           <Camera aria-hidden className="size-8" strokeWidth={1.3} />
           <p className="font-mono text-sm font-medium">{detection?.stationCode ?? "—"}</p>
           <p className="max-w-[80%] text-center text-[11px] text-muted">
-            {!detection ? "Belum ada deteksi" : !resolved ? "Tidak ada gambar" : loading ? "Memuat foto…" : "Gambar tidak dapat dimuat dari server"}
+            {!detection ? "Belum ada pemeriksaan" : !resolved ? "Tidak ada foto" : loading ? "Memuat foto…" : "Foto belum bisa dimuat. Periksa koneksi, lalu muat ulang."}
           </p>
         </div>
       )}

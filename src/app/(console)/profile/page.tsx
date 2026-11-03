@@ -65,7 +65,7 @@ function ChangePasswordForm({ highlighted }: { highlighted: boolean }) {
             {localError ?? serverError}
           </p>
         )}
-        {done && <p className="rounded-inner bg-accent-soft px-3.5 py-2.5 text-sm text-accent">Kata sandi berhasil diganti. Perangkat lain harus masuk lagi.</p>}
+        {done && <p className="rounded-inner bg-accent-soft px-3.5 py-2.5 text-sm text-accent">Kata sandi berhasil diganti. HP atau komputer lain harus masuk lagi.</p>}
         <div className="flex justify-end">
           <Button type="submit" variant="accent" size="lg" icon={Save} loading={change.isPending} disabled={!current || !next || !confirm}>
             Simpan kata sandi
@@ -135,7 +135,7 @@ function ProfileContent() {
             ["Sisa waktu", session ? <RelativeTime key="r" iso={session.refreshExpiresAt} /> : "—"],
           ]}
         />
-        <p className="mt-2 text-xs text-muted">Sesi diperpanjang otomatis selama Anda memakai aplikasi. Keluar untuk mengakhirinya di perangkat ini.</p>
+        <p className="mt-2 text-xs text-muted">Sesi diperpanjang otomatis selama Anda memakai aplikasi. Keluar untuk mengakhirinya di HP/komputer ini.</p>
         <div className="mt-4 flex flex-wrap gap-2">
           <Button variant="danger" icon={LogOut} onClick={logout}>
             Keluar

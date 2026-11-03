@@ -12,26 +12,32 @@ const reasonText: Record<string, string> = {
   AI_NO_DOSE_NEEDED: "AI menilai tanah tidak perlu pupuk",
   AI_CAPPED: "takaran dari AI dipotong ke batas pompa",
   BACKEND_DOWN: "sistem mati saat jadwalnya",
-  NO_ACK: "alat tidak menjawab perintah",
-  NO_RESPONSE: "alat tidak menjawab perintah",
+  NO_ACK: "perangkat tidak menjawab perintah",
+  NO_RESPONSE: "perangkat tidak menjawab perintah",
   PREVIOUS_PUMP_STILL_ON: "pompa sebelumnya belum mati",
   COMMAND_NOT_FOUND: "catatan perintah ke pompa hilang",
-  DEVICE_REFUSED: "alat menolak perintah",
+  DEVICE_REFUSED: "perangkat menolak perintah",
   DEVICE_NOT_ONLINE: "panel pompa sedang terputus",
-  // Aturan keselamatan backend & kode gagal dari alat.
+  // Aturan keselamatan backend & kode gagal dari perangkat.
   BACKUP_POWER: "listrik PLN padam, memakai baterai",
   INTERLOCK_POWER: "listrik PLN padam atau belum terbaca",
   FLOAT_LOW: "air drum pupuk rendah",
   INTERLOCK_FLOAT: "air drum pupuk rendah",
-  EXCLUSIVE_OPERATION: "alat lain sedang berjalan",
-  INTERLOCK_EXCLUSIVE: "alat lain sedang berjalan",
-  BUSY: "alat sedang menjalankan tugas lain",
+  EXCLUSIVE_OPERATION: "perangkat lain sedang berjalan",
+  INTERLOCK_EXCLUSIVE: "perangkat lain sedang berjalan",
+  BUSY: "perangkat sedang menjalankan tugas lain",
   OUTPUT_FAULT: "saklar pompa bermasalah",
   RELAY_MISMATCH: "saklar pompa tidak berpindah",
   DEVICE_OFFLINE: "modul saklar tidak menjawab",
+  BLOCKED_WHILE_ACTIVE: "perangkat lain sedang berjalan",
+  // ErrorCode BE: MESSAGING_ERROR = gagal ke broker, pompa pasti tidak menyala.
+  MESSAGING_ERROR: "perintah tidak sampai ke pompa pupuk",
+  INVALID_COMMAND: "perintah ditolak sistem",
+  NOT_READY: "perangkat belum siap",
+  EXPIRED: "perintah terlambat sampai ke perangkat",
 };
 
 export function fertilizationReasonText(code: string | null | undefined): string | null {
   if (!code) return null;
-  return reasonText[code] ?? "alasan lain (lihat Info teknis)";
+  return reasonText[code] ?? "alasan lain (lihat Detail sistem)";
 }

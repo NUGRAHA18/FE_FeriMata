@@ -10,7 +10,7 @@ export { fertilizationReasonText };
 
 /* Pemupukan otomatis: pada hari jatuh tempo, sebelum sesi siram PERTAMA, backend menyalakan pengaduk lalu
  * pompa N → P → K bergantian, mengaduk, baru menyiram. Jarak hari & takaran dari AI. Hasil dibaca dari kode
- * (`status` + `reasonCode`); `message` berbahasa Inggris, hanya untuk Info teknis. */
+ * (`status` + `reasonCode`); `message` berbahasa Inggris, hanya untuk Detail sistem. */
 
 export const INTERVAL_MIN = 1;
 export const INTERVAL_MAX = 60;

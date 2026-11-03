@@ -24,7 +24,7 @@ const severityBubble: Record<string, string> = {
 
 function RelatedLinks({ a }: { a: Alert }) {
   const links: { href: string; label: string }[] = [];
-  if (a.relatedDeviceId != null) links.push({ href: `/devices/${a.relatedDeviceId}`, label: `Alat ${a.relatedDeviceCode ?? `#${a.relatedDeviceId}`}` });
+  if (a.relatedDeviceId != null) links.push({ href: `/devices/${a.relatedDeviceId}`, label: `Perangkat ${a.relatedDeviceCode ?? `#${a.relatedDeviceId}`}` });
   if (a.relatedSensorId != null) links.push({ href: `/sensors/${a.relatedSensorId}`, label: `Sensor ${a.relatedSensorCode ?? `#${a.relatedSensorId}`}` });
   if (a.relatedActuatorId != null) links.push({ href: `/actuators/${a.relatedActuatorId}`, label: `Kontrol ${a.relatedActuatorCode ?? `#${a.relatedActuatorId}`}` });
   if (!links.length) return null;
