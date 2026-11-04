@@ -19,14 +19,14 @@ describe("status layanan AI", () => {
     const fetchMock = serve(status({}));
     renderWithProviders(<AiServiceStatusCard />);
     expect(await screen.findByText("Layanan AI berjalan")).toBeInTheDocument();
-    expect(screen.getByText("Durasi siram dan takaran pupuk dihitung AI.")).toBeInTheDocument();
+    expect(screen.getByText("Takaran pupuk dihitung AI (kecuali Anda atur sendiri).")).toBeInTheDocument();
     const tech = screen.getByText("Running Melon AI System API");
     expect(tech.closest("details")).not.toBeNull();
     // Selalu lewat backend, tidak pernah ke port AI langsung.
     expect(String(fetchMock.mock.calls[0][0])).toMatch(/\/api\/ai\/status$/);
   });
 
-  it("mati: kalimat durasi cadangan dan pemupukan ditunda", async () => {
+  it("mati: siram tetap jalan, pemupukan ditunda", async () => {
     signIn();
     serve(status({ reachable: false, message: "Connection refused", latencyMs: null }));
     renderWithProviders(<AiServiceStatusCard />);

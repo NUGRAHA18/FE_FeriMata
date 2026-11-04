@@ -30,19 +30,12 @@ describe("lastRunView", () => {
     expect(lastRunView(null, null)).toBeNull();
   });
 
-  it("lama siram dari AI: lama sebenarnya, asalnya, dan alasan bila durasi cadangan dipakai", () => {
-    expect(lastRunView("STARTED", null, { seconds: 85, source: "AI" })).toEqual({ tone: "ok", text: "Disiram 1 mnt 25 dtk (ditentukan AI)", detail: null });
-    expect(lastRunView("STARTED", "AI_CAPPED", { seconds: 900, source: "AI" })?.text).toBe("Disiram 15 mnt (ditentukan AI, dipotong ke batas pompa)");
-    expect(lastRunView("STARTED", "AI_UNAVAILABLE", { seconds: 300, source: "FALLBACK" })).toEqual({
-      tone: "ok",
-      text: "Disiram 5 mnt (durasi cadangan)",
-      detail: "AI tidak bisa dipakai: layanan AI tidak menjawab.",
-    });
-    expect(lastRunView("STARTED", "AI_INPUTS_NOT_READY", { seconds: 300, source: "FALLBACK" })?.detail).toBe("AI tidak bisa dipakai: data sensor tanah belum ada atau sudah lama.");
-    expect(lastRunView("STARTED", "AI_NO_PHOTO", { seconds: 300, source: "FALLBACK" })?.detail).toBe("AI tidak bisa dipakai: belum ada foto kamera 24 jam terakhir.");
+  it("lama siram terakhir = detik yang dikirim ke pompa", () => {
+    expect(lastRunView("STARTED", null, 85)).toEqual({ tone: "ok", text: "Disiram 1 mnt 25 dtk", detail: null });
+    expect(lastRunView("STARTED", null)).toEqual({ tone: "ok", text: "Disiram", detail: null });
   });
 
-  it("AI menilai tidak perlu siram: hasil normal, bukan pembatalan", () => {
+  it("data lama: AI menilai tidak perlu siram tetap hasil normal, bukan pembatalan", () => {
     const v = lastRunView("SKIPPED", "AI_NO_WATER_NEEDED")!;
     expect(v.tone).toBe("ok");
     expect(v.text).toBe("Tidak perlu siram");

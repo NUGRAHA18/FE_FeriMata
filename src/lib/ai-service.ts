@@ -17,17 +17,17 @@ export function aiStatusView(s: AiServiceStatus | undefined, failed = false): Ai
   }
   // Belum diatur = pilihan pemasangan (alamat AI kosong di server), bukan kerusakan → netral.
   if (!s.configured) {
-    return { tone: "neutral", text: "Layanan AI belum diatur", short: "AI belum diatur", detail: "Siram memakai durasi cadangan; pupuk otomatis tidak berjalan." };
+    return { tone: "neutral", text: "Layanan AI belum diatur", short: "AI belum diatur", detail: "Siram tetap berjalan sesuai jadwal; pupuk otomatis tidak berjalan." };
   }
   if (!s.reachable) {
     return {
       tone: "danger",
       text: "Layanan AI mati",
       short: "AI mati",
-      detail: "Siram memakai durasi cadangan, pemupukan otomatis ditunda sampai AI menyala lagi.",
+      detail: "Siram tetap berjalan sesuai jadwal, pemupukan otomatis ditunda sampai AI menyala lagi.",
     };
   }
-  return { tone: "ok", text: "Layanan AI berjalan", short: "AI berjalan", detail: "Durasi siram dan takaran pupuk dihitung AI." };
+  return { tone: "ok", text: "Layanan AI berjalan", short: "AI berjalan", detail: "Takaran pupuk dihitung AI (kecuali Anda atur sendiri)." };
 }
 
 /** Foto yang akan diunggah → pesan salah pertama, atau null bila boleh dikirim. */

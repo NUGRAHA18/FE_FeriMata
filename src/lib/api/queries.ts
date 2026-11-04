@@ -263,6 +263,8 @@ export function useCreatePumpCalibration(actuatorId: number) {
     onSuccess: () => {
       void qc.invalidateQueries({ queryKey: qk.pumpCalibrations(actuatorId) });
       void qc.invalidateQueries({ queryKey: ["actuators", actuatorId, "dispensed"] });
+      // Batas ml takaran pupuk manual dihitung dari debit pompa.
+      void qc.invalidateQueries({ queryKey: qk.fertilizationDose });
     },
   });
 }
@@ -350,6 +352,18 @@ function useFertilizationMutation<V>(fn: (v: V) => Promise<api.FertilizationSche
 
 export const useSetFertilizationInterval = () => useFertilizationMutation((days: number) => api.putFertilizationInterval(days));
 export const useStopFertilization = () => useFertilizationMutation(() => api.deleteFertilizationSchedule());
+
+export function useFertilizationDose() {
+  return useQuery({ queryKey: qk.fertilizationDose, queryFn: ({ signal }) => api.getFertilizationDose(signal) });
+}
+
+export function useSetFertilizationDose() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (body: api.FertilizationDoseInput) => api.putFertilizationDose(body),
+    onSuccess: (d) => qc.setQueryData(qk.fertilizationDose, d),
+  });
+}
 
 // ── Layanan AI ───────────────────────────────────────────────────────────────
 

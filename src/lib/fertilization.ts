@@ -9,7 +9,7 @@ import { fertilizationReasonText } from "@/lib/fertilization-reasons";
 export { fertilizationReasonText };
 
 /* Pemupukan otomatis: pada hari jatuh tempo, sebelum sesi siram PERTAMA, backend menyalakan pengaduk lalu
- * pompa N → P → K bergantian, mengaduk, baru menyiram. Jarak hari & takaran dari AI. Hasil dibaca dari kode
+ * pompa N → P → K bergantian, mengaduk, baru menyiram. Jarak hari dari AI; takaran dari AI atau ml isian petani. Hasil dibaca dari kode
  * (`status` + `reasonCode`); `message` berbahasa Inggris, hanya untuk Detail sistem. */
 
 export const INTERVAL_MIN = 1;
@@ -18,6 +18,8 @@ export const INTERVAL_MAX = 60;
 /** Penjelasan panjang (apa yang harus diperiksa), atau null. */
 export function fertilizationReasonDetail(code: string | null | undefined): string | null {
   if (code === "AI_NO_PHOTO") return "AI butuh foto daun terbaru. Pastikan kereta kamera berpatroli dan mengirim foto.";
+  if (code === "TANK_DATA_NOT_READY") return "Pupuk tidak dituang tanpa angka EC dan pH drum yang baru. Periksa sensor drum di halaman Sensor.";
+  if (code === "PUMP_NOT_CALIBRATED") return "Takar debit pompa pupuk itu dulu (kartu Takaran pompa di halaman pompanya), atau kembalikan takaran ke AI.";
   return interlockExplanation(code) ?? deviceFailureExplanation(code);
 }
 
@@ -70,7 +72,12 @@ export function runView(run: Pick<FertilizationRun, "status" | "step" | "reasonC
       return {
         tone: "ok",
         text: "Sudah dipupuk",
-        detail: run.reasonCode === "AI_CAPPED" ? "Takaran dari AI melebihi batas lama pompa, jadi dipotong ke batasnya." : null,
+        detail:
+          run.reasonCode === "AI_CAPPED"
+            ? "Takaran dari AI melebihi batas lama pompa, jadi dipotong ke batasnya."
+            : run.reasonCode === "DOSE_CAPPED"
+              ? "Takaran Anda melebihi batas lama pompa (debit pompa berubah), jadi dipotong ke batasnya."
+              : null,
       };
     case "PARTIAL":
       return {
@@ -107,12 +114,72 @@ export function doses(run: FertilizationRun): { key: "N" | "P" | "K"; label: str
   ];
 }
 
-/** "N 12 dtk · P 8 dtk · K 20 dtk"; null bila tidak ada pompa yang diberi takaran. */
+/** "N 12 dtk · P 8 dtk · K 20 dtk", atau "N 50 ml · …" bila takaran diisi petani; null bila tidak ada takaran. */
 export function doseSummary(run: FertilizationRun): string | null {
+  if (run.doseSource === "MANUAL") {
+    const ml = mlSummary(run.manualNitrogenMl, run.manualPhosphorusMl, run.manualPotassiumMl);
+    if (ml) return `${ml} (takaran Anda)`;
+  }
   const parts = doses(run)
     .filter((d) => d.seconds != null)
     .map((d) => `${d.key} ${formatDuration(d.seconds)}`);
   return parts.length ? parts.join(" · ") : null;
+}
+
+// ── Takaran: AI atau isian petani ───────────────────────────────────────────
+
+const mlFormat = new Intl.NumberFormat("id-ID", { maximumFractionDigits: 1 });
+export const formatMl = (ml: number) => `${mlFormat.format(ml)} ml`;
+
+/** "N 50 ml · P 0 ml · K 40 ml"; null bila tidak ada angka. */
+export function mlSummary(n: number | null | undefined, p: number | null | undefined, k: number | null | undefined): string | null {
+  const parts = (
+    [
+      ["N", n],
+      ["P", p],
+      ["K", k],
+    ] as const
+  )
+    .filter(([, v]) => v != null)
+    .map(([key, v]) => `${key} ${formatMl(v as number)}`);
+  return parts.length ? parts.join(" · ") : null;
+}
+
+/** Isian ml (koma boleh, kosong = 0) → angka 0–10000 dengan 2 desimal, atau pesan salah. */
+export function parseMl(text: string): { ok: true; value: number } | { ok: false; error: string } {
+  const t = text.trim().replace(",", ".");
+  if (t === "") return { ok: true, value: 0 };
+  if (!/^\d+(\.\d{1,2})?$/.test(t)) return { ok: false, error: "Isi angka mililiter, contoh 50 atau 12,5." };
+  const n = Number(t);
+  if (n > 10_000) return { ok: false, error: "Paling banyak 10.000 ml." };
+  return { ok: true, value: n };
+}
+
+/** Isian ml dari angka tersimpan: 12.5 → "12,5"; null → "". */
+export const mlText = (v: number | null | undefined) => (v == null ? "" : new Intl.NumberFormat("id-ID", { maximumFractionDigits: 2, useGrouping: false }).format(v));
+
+const nutrientName: Record<string, string> = { N: "Nitrogen (N)", P: "Fosfor (P)", K: "Kalium (K)" };
+
+/** 409 PUT /fertilization/dose (dibaca dari details.reason) → kalimat petani. */
+export function doseErrorMessage(e: unknown): string {
+  if (e instanceof ApiRequestError && e.details) {
+    const pump = nutrientName[String(e.details.nutrient ?? "")] ?? "pompa pupuk";
+    switch (e.details.reason) {
+      case "DOSE_MISSING":
+        return "Isi takaran N, P, dan K (boleh 0).";
+      case "DOSE_ZERO":
+        return "Takaran N, P, dan K semuanya 0, jadi tidak ada pupuk yang dituang. Isi paling tidak satu.";
+      case "PUMP_UNAVAILABLE":
+        return `Pompa ${pump} tidak ditemukan atau sedang dimatikan.`;
+      case "PUMP_NOT_CALIBRATED":
+        return `Pompa ${pump} belum ditakar debitnya. Takar dulu di kartu Takaran pompa, atau isi 0 untuk unsur ini.`;
+      case "TOO_MUCH": {
+        const max = typeof e.details.maxMl === "number" ? e.details.maxMl : null;
+        return max != null ? `Terlalu banyak. Pompa ${pump} paling banyak ${formatMl(max)} sekali pupuk.` : `Terlalu banyak untuk pompa ${pump}.`;
+      }
+    }
+  }
+  return errorMessage(e);
 }
 
 // ── Tanggal ─────────────────────────────────────────────────────────────────

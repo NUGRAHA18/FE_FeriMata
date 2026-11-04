@@ -48,6 +48,7 @@ export const qk = {
   irrigationSchedules: ["irrigation", "schedules"] as const,
 
   fertilizationSchedule: ["fertilization", "schedule"] as const,
+  fertilizationDose: ["fertilization", "dose"] as const,
   fertilizationRunsRoot: ["fertilization", "runs"] as const,
   fertilizationRuns: (page: number, size: number) => ["fertilization", "runs", { page, size }] as const,
 

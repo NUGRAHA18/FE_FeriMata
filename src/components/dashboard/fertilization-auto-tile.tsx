@@ -59,7 +59,7 @@ export function FertilizationAutoTile({ className }: { className?: string }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-5 font-semibold text-ink">Pupuk otomatis</p>
-          <p className="text-xs text-ink-2">Pada hari pupuk, pupuk N, P, K dituang ke drum sebelum jam siram pertama; takarannya ditentukan AI.</p>
+          <p className="text-xs text-ink-2">Pada hari pupuk, pupuk N, P, K dituang ke drum sebelum jam siram pertama; takarannya dari AI atau Anda atur sendiri.</p>
           {status ? (
             <p className={cn("mt-0.5 flex items-start gap-1.5 text-xs", on || s?.activeRun ? "font-medium text-accent-ink" : "text-muted")}>
               <StatusDot tone={on || s?.activeRun ? "ok" : "neutral"} pulse={!!(on || s?.activeRun)} className="mt-1 size-1.5" />

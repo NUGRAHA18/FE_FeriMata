@@ -23,41 +23,16 @@ export function nextRunLabel(nextRunAt: string | null, now = Date.now()): string
 
 export type LastRunView = { tone: Tone; text: string; detail: string | null };
 
-type LastDuration = { seconds?: number | null; source?: string | null };
-
-/** "85 detik (ditentukan AI)", "5 mnt (durasi cadangan)", … ; null bila backend belum mengirim lamanya. */
-export function lastDurationText({ seconds, source }: LastDuration, reasonCode?: string | null): string | null {
-  if (seconds == null) return null;
-  const how =
-    source === "AI"
-      ? reasonCode === "AI_CAPPED"
-        ? "ditentukan AI, dipotong ke batas pompa"
-        : "ditentukan AI"
-      : source === "FALLBACK"
-        ? "durasi cadangan"
-        : source === "MANUAL"
-          ? "diatur manual"
-          : null;
-  return `${formatDuration(seconds)}${how ? ` (${how})` : ""}`;
-}
-
-/** SKIPPED karena AI_NO_WATER_NEEDED = normal (bukan merah/kuning). `detail` = penjelasan interlock
- *  atau alasan durasi cadangan dipakai. */
-export function lastRunView(result: string | null, reasonCode: string | null | undefined, duration: LastDuration = {}): LastRunView | null {
+/** Lama siram = isian jadwal (backend, 4 Nov 2026). `lastSeconds` = detik yang benar-benar dikirim ke pompa.
+ *  SKIPPED karena AI_NO_WATER_NEEDED hanya ada di data lama; tetap ditampilkan normal (bukan merah/kuning). */
+export function lastRunView(result: string | null, reasonCode: string | null | undefined, lastSeconds?: number | null): LastRunView | null {
   const reason = irrigationReasonText(reasonCode);
   const detail = interlockExplanation(reasonCode);
   switch (result) {
     case null:
       return null;
-    case "STARTED": {
-      const lama = lastDurationText(duration, reasonCode);
-      const fallback = duration.source === "FALLBACK" && reasonCode && reasonCode !== "AI_CAPPED";
-      return {
-        tone: "ok",
-        text: lama ? `Disiram ${lama}` : "Disiram",
-        detail: fallback ? `AI tidak bisa dipakai: ${reason}.` : null,
-      };
-    }
+    case "STARTED":
+      return { tone: "ok", text: lastSeconds != null ? `Disiram ${formatDuration(lastSeconds)}` : "Disiram", detail: null };
     case "WAITING":
       // Siram didahului pemupukan; pompa siram menyala setelah pupuk selesai diaduk.
       return { tone: "info", text: "Menunggu pemupukan selesai", detail: "Pupuk sedang dituang dan diaduk. Pompa siram menyala sendiri setelahnya." };

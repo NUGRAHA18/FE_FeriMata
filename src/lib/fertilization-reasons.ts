@@ -11,6 +11,10 @@ const reasonText: Record<string, string> = {
   PUMP_UNAVAILABLE: "pompa pupuk atau pengaduk tidak ditemukan atau dimatikan",
   AI_NO_DOSE_NEEDED: "AI menilai tanah tidak perlu pupuk",
   AI_CAPPED: "takaran dari AI dipotong ke batas pompa",
+  // Takaran isian petani (BE ≥ 4 Nov 2026).
+  TANK_DATA_NOT_READY: "data EC/pH drum belum ada atau sudah lama",
+  PUMP_NOT_CALIBRATED: "pompa pupuk belum ditakar debitnya",
+  DOSE_CAPPED: "takaran Anda dipotong ke batas pompa",
   BACKEND_DOWN: "sistem mati saat jadwalnya",
   NO_ACK: "perangkat tidak menjawab perintah",
   NO_RESPONSE: "perangkat tidak menjawab perintah",

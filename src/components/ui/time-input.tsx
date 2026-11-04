@@ -142,13 +142,13 @@ export function TimeInput({ value, onChange, error }: { value: string; onChange:
   );
 }
 
-/** Lama siram CADANGAN dalam menit (koma boleh; lama sebenarnya diputuskan AI). `value` teks ketikan; ubah ke detik dengan parseMinutes. */
+/** Lama siram dalam menit (koma boleh). `value` teks ketikan; ubah ke detik dengan parseMinutes. */
 export function DurationInput({ value, onChange, max, error }: { value: string; onChange: (v: string) => void; max: number | null; error?: string | null }) {
   const quick = [3, 5, 10].filter((m) => max == null || m * 60 <= max);
   const seconds = parseMinutes(value);
   return (
     <BigInput
-      label="Lama siram cadangan"
+      label="Lama siram"
       inputMode="decimal"
       autoComplete="off"
       placeholder="5"
@@ -156,7 +156,7 @@ export function DurationInput({ value, onChange, max, error }: { value: string; 
       onChange={(e) => onChange(e.target.value.replace(/[^\d.,]/g, ""))}
       suffix="menit"
       error={error}
-      hint={`Dipakai bila AI tidak menjawab. ${max != null ? `Paling lama ${durationWords(max)}. ` : ""}Boleh pakai koma: 1,5 = 1 menit 30 detik.`}
+      hint={`${max != null ? `Paling lama ${durationWords(max)}. ` : ""}Boleh pakai koma: 1,5 = 1 menit 30 detik.`}
     >
       <QuickChoices
         label="Lama yang sering dipakai"
