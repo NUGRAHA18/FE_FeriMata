@@ -56,8 +56,11 @@ describe("fakta yang tidak boleh salah", () => {
     expect(all).toContain("tidak pernah ditolak");
   });
 
-  it("pupuk otomatis: takaran dari AI, dituang sebelum jam siram (BE ≥ 2 Nov 2026)", () => {
-    expect(all).toMatch(/takaran n, p, dan k ditentukan ai/);
+  it("pupuk otomatis: takaran dari AI atau isian petani, dituang sebelum jam siram (BE ≥ 4 Nov 2026)", () => {
+    expect(all).toMatch(/ai menghitung takaran n, p, dan k/);
+    expect(all).toMatch(/atur sendiri: anda mengisi mililiter/);
+    // Lama siram ditentukan backend dari isian jadwal, bukan AI.
+    expect(all).not.toMatch(/lama siram ditentukan ai|lamanya ditentukan ai|lama siram cadangan/);
     expect(all).toMatch(/sebelum jam siram pertama/);
     expect(all).not.toMatch(/campur pupuk otomatis/);
   });

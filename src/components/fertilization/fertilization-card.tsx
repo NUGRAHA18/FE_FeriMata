@@ -28,6 +28,7 @@ import {
   stages,
 } from "@/lib/fertilization";
 import { useNow } from "@/lib/use-now";
+import { DoseSection } from "./dose-section";
 
 const toneText: Record<Tone, string> = { ok: "text-accent-ink", warn: "text-warn-ink", danger: "text-danger-ink", info: "text-info-ink", neutral: "text-ink-2" };
 const QUICK_DAYS = ["3", "5", "7", "14"];
@@ -100,7 +101,7 @@ export function IntervalForm({ initial, onDone }: { initial: number | null; onDo
         onChange={(e) => (setText(e.target.value.replace(/\D/g, "")), setError(null))}
         suffix="hari"
         error={error}
-        hint={`Antara ${INTERVAL_MIN} sampai ${INTERVAL_MAX} hari. Takaran pupuk tetap ditentukan AI.`}
+        hint={`Antara ${INTERVAL_MIN} sampai ${INTERVAL_MAX} hari.`}
       >
         <QuickChoices label="Jarak yang sering dipakai" options={QUICK_DAYS.map((d) => ({ value: d, text: `${d} hari` }))} selected={text} onPick={(v) => (setText(v), setError(null))} />
       </BigInput>
@@ -204,6 +205,8 @@ function ScheduleBody({ s, lastRun }: { s: FertilizationSchedule; lastRun: Ferti
         </div>
       )}
 
+      {!editing && state.kind !== "disabled" && <DoseSection />}
+
       {(s.aiError || s.aiScheduleId != null) && (
         <TechInfo className="mt-3 px-3 py-1.5 text-xs">
           <p className="mt-1.5 font-mono break-words text-ink-2">
@@ -260,7 +263,7 @@ export function FertilizationCard() {
         }
       />
       <p className="mb-3 text-sm text-ink-2">
-        Pada hari pupuk, sebelum jam siram pertama, pupuk N, P, dan K dituang bergantian ke drum, diaduk, lalu ikut disiram. Takarannya ditentukan AI dari kondisi tanah.
+        Pada hari pupuk, sebelum jam siram pertama, pupuk N, P, dan K dituang bergantian ke drum, diaduk, lalu ikut disiram. Takarannya dari AI, atau Anda atur sendiri.
       </p>
       {q.data?.activeRun && <ActiveRun run={q.data.activeRun} />}
       {q.isPending ? (

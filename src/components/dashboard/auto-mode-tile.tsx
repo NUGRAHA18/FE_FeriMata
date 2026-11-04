@@ -75,7 +75,7 @@ export function AutoModeTile({ className }: { className?: string }) {
         </span>
         <div className="min-w-0 flex-1">
           <p className="text-sm leading-5 font-semibold text-ink">Siram otomatis</p>
-          <p className="text-xs text-ink-2">Pompa siram menyala sendiri pada jam siram; lama siram ditentukan AI.</p>
+          <p className="text-xs text-ink-2">Pompa siram menyala sendiri pada jam siram, selama waktu yang diisi di jadwal.</p>
           {status ? (
             <p className={cn("mt-0.5 flex items-start gap-1.5 text-xs", on ? "font-medium text-accent-ink" : "text-muted")}>
               <StatusDot tone={on ? "ok" : "neutral"} pulse={on} className="mt-1 size-1.5" />

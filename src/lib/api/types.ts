@@ -397,7 +397,7 @@ export const irrigationScheduleSchema = z.object({
   id: z.number(),
   /** "06:00", waktu kebun (WIB). */
   time: z.string(),
-  /** Lama siram cadangan bila AI tak tersedia; lama sebenarnya diputuskan AI saat jamnya tiba. */
+  /** Lama pompa siram menyala setiap jam ini (ditentukan backend dari isian petani, bukan AI; 4 Nov 2026). */
   durationSeconds: z.number(),
   enabled: z.boolean(),
   notes: z.string().nullable(),
@@ -409,20 +409,18 @@ export const irrigationScheduleSchema = z.object({
   lastResult: z.string().nullable(),
   /** Teks teknis bahasa Inggris — hanya untuk "Detail sistem". */
   lastMessage: z.string().nullable(),
-  /** Kode alasan: interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, error API, atau keputusan AI (AI_NO_WATER_NEEDED,
-   *  AI_CAPPED, AI_NOT_CONFIGURED, AI_INPUTS_NOT_READY, AI_UNAVAILABLE). */
+  /** Kode alasan: interlock, PUMP_UNAVAILABLE, BACKEND_DOWN, FERTILIZING, error API. Kode AI_* hanya dari data
+   *  lama (sebelum 4 Nov 2026, saat lama siram masih dari AI). */
   lastReasonCode: z.string().nullable().optional(),
   /** Detik yang benar-benar dikirim ke pompa pada jalan terakhir (backend >= 31 Okt 2026). */
   lastDurationSeconds: z.number().nullable().optional(),
-  /** Asal lama siram terakhir: AI · FALLBACK (durasi cadangan) · MANUAL. String agar nilai baru tidak ditolak. */
-  lastDurationSource: z.string().nullable().optional(),
   lastCommandUid: z.string().nullable(),
 });
 export type IrrigationSchedule = z.infer<typeof irrigationScheduleSchema>;
 
 // ── Pemupukan otomatis (BE ≥ 2 Nov 2026) ─────────────────────────────────────
 // Pada hari jatuh tempo, sebelum sesi siram PERTAMA: pengaduk → pompa N → P → K → aduk → siram.
-// Jarak hari & dosis N/P/K dari layanan AI; backend hanya menjalankan.
+// Jarak hari dari layanan AI. Takaran N/P/K: bawaan dari AI, atau ml isian petani (BE ≥ 4 Nov 2026).
 
 const decimal = z.number().nullable();
 
@@ -442,7 +440,12 @@ export const fertilizationRunSchema = z.object({
   aiNitrogenSeconds: decimal,
   aiPhosphorusSeconds: decimal,
   aiPotassiumSeconds: decimal,
-  /** Detik yang dikirim ke pompa (nilai AI dipotong ke batas pompa). */
+  /** AI · MANUAL (ml isian petani); null bila takaran belum ditentukan. Opsional untuk backend lama. */
+  doseSource: z.string().nullable().optional(),
+  manualNitrogenMl: decimal.optional(),
+  manualPhosphorusMl: decimal.optional(),
+  manualPotassiumMl: decimal.optional(),
+  /** Detik yang dikirim ke pompa (detik AI, atau ml ÷ debit kalibrasi; dipotong ke batas pompa). */
   nitrogenSeconds: z.number().nullable(),
   phosphorusSeconds: z.number().nullable(),
   potassiumSeconds: z.number().nullable(),
@@ -475,6 +478,31 @@ export const fertilizationScheduleSchema = z.object({
   activeRun: fertilizationRunSchema.nullable(),
 });
 export type FertilizationSchedule = z.infer<typeof fertilizationScheduleSchema>;
+
+/** GET/PUT /fertilization/dose: takaran dari AI (bawaan) atau ml isian petani. */
+export const fertilizationDoseSchema = z.object({
+  /** AI · MANUAL. String agar nilai baru tidak ditolak. */
+  mode: z.string(),
+  /** Isian petani; tetap tersimpan saat kembali ke AI. */
+  nitrogenMl: decimal,
+  phosphorusMl: decimal,
+  potassiumMl: decimal,
+  updatedAt: instant.nullable(),
+  updatedBy: z.string().nullable(),
+  pumps: z.array(
+    z.object({
+      /** N · P · K */
+      nutrient: z.string(),
+      actuatorCode: z.string(),
+      available: z.boolean(),
+      /** null = belum ditakar (kalibrasi debit), takaran manual tidak bisa dipakai untuk pompa ini. */
+      flowMlPerSecond: decimal,
+      /** Paling banyak ml sekali jalan; null bila tidak diketahui. */
+      maxMl: decimal,
+    }),
+  ),
+});
+export type FertilizationDose = z.infer<typeof fertilizationDoseSchema>;
 
 // ── Layanan AI (diteruskan backend) ──────────────────────────────────────────
 /** GET /ai/status — tidak pernah gagal; lihat `reachable`. */

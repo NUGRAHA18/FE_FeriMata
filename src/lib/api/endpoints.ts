@@ -8,6 +8,7 @@ import {
   aiHistoryRowSchema,
   aiServiceStatusSchema,
   alertSchema,
+  fertilizationDoseSchema,
   fertilizationRunSchema,
   fertilizationScheduleSchema,
   irrigationScheduleSchema,
@@ -161,6 +162,10 @@ export const putFertilizationInterval = (intervalDays: number) =>
 /** OPERATOR. Menghentikan pemupukan otomatis (jadwal di AI dihapus). */
 export const deleteFertilizationSchedule = () =>
   apiRequest("/fertilization/schedule", { method: "DELETE", schema: fertilizationScheduleSchema });
+export type FertilizationDoseInput = { mode: "AI" | "MANUAL"; nitrogenMl?: number | null; phosphorusMl?: number | null; potassiumMl?: number | null };
+export const getFertilizationDose = (signal?: AbortSignal) => apiRequest("/fertilization/dose", { schema: fertilizationDoseSchema, signal });
+export const putFertilizationDose = (body: FertilizationDoseInput) =>
+  apiRequest("/fertilization/dose", { method: "PUT", body, schema: fertilizationDoseSchema });
 export const getFertilizationRuns = (page = 0, size = 20, signal?: AbortSignal) =>
   apiRequest("/fertilization/runs", { query: { page, size }, schema: pageSchema(fertilizationRunSchema), signal });
 

@@ -9,9 +9,9 @@ describe("status layanan AI", () => {
     expect(aiStatusView({ ...base, configured: false, reachable: false })).toMatchObject({ tone: "neutral", text: "Layanan AI belum diatur" });
     const down = aiStatusView({ ...base, configured: true, reachable: false });
     expect(down).toMatchObject({ tone: "danger", text: "Layanan AI mati", short: "AI mati" });
-    expect(down.detail).toMatch(/durasi cadangan.*pemupukan otomatis ditunda/);
+    expect(down.detail).toMatch(/sesuai jadwal.*pemupukan otomatis ditunda/);
     const up = aiStatusView({ ...base, configured: true, reachable: true, latencyMs: 22 });
-    expect(up).toMatchObject({ tone: "ok", text: "Layanan AI berjalan", detail: "Durasi siram dan takaran pupuk dihitung AI." });
+    expect(up).toMatchObject({ tone: "ok", text: "Layanan AI berjalan", detail: "Takaran pupuk dihitung AI (kecuali Anda atur sendiri)." });
     // Teks mentah AI (Inggris) tidak pernah masuk teks petani.
     expect(JSON.stringify(up)).not.toMatch(/Running/);
   });
