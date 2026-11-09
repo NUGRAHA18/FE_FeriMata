@@ -11,6 +11,7 @@ import {
   fertilizationDoseSchema,
   fertilizationRunSchema,
   fertilizationScheduleSchema,
+  irrigationRunSchema,
   irrigationScheduleSchema,
   calibrationSampleSchema,
   dispensedVolumeSchema,
@@ -151,6 +152,9 @@ export const createIrrigationSchedule = (body: IrrigationInput) =>
 export const patchIrrigationSchedule = (id: number, body: Partial<IrrigationInput>) =>
   apiRequest(`/irrigation/schedules/${id}`, { method: "PATCH", body, schema: irrigationScheduleSchema });
 export const deleteIrrigationSchedule = (id: number) => apiRequest(`/irrigation/schedules/${id}`, { method: "DELETE" });
+/** Riwayat siram terjadwal, terbaru dulu (BE ≥ 9 Nov 2026; backend lama → 404). */
+export const getIrrigationRuns = (page = 0, size = 20, signal?: AbortSignal) =>
+  apiRequest("/irrigation/runs", { query: { page, size }, schema: pageSchema(irrigationRunSchema), signal });
 
 // Pemupukan otomatis. Jarak hari disimpan di layanan AI (502 AI_SERVICE_ERROR bila AI tak terjangkau).
 export type FertilizationScheduleResult = z.infer<typeof fertilizationScheduleSchema>;

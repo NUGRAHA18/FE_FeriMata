@@ -16,7 +16,7 @@ import { useActuators, useCreateIrrigation, useDeleteIrrigation, useIrrigationSc
 import type { IrrigationSchedule } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { formatDuration } from "@/lib/format";
-import { irrigationErrorMessage, lastRunView, nextRunLabel } from "@/lib/irrigation";
+import { irrigationErrorMessage, irrigationRunView, nextRunLabel, scheduleLastRun } from "@/lib/irrigation";
 import { useNow } from "@/lib/use-now";
 import { cn } from "@/lib/cn";
 
@@ -89,7 +89,9 @@ function ScheduleRow({ s, onEdit, onDelete }: { s: IrrigationSchedule; onEdit: (
   const patch = usePatchIrrigation();
   const now = useNow();
   const next = nextRunLabel(s.nextRunAt, now || undefined);
-  const last = lastRunView(s.lastResult, s.lastReasonCode, s.lastDurationSeconds);
+  // Sama dengan baris Riwayat siram: "Disiram" hanya bila perangkat tidak melaporkan gagal.
+  const lastRun = scheduleLastRun(s);
+  const last = lastRun && irrigationRunView(lastRun);
 
   return (
     <li className="flex min-w-0 items-start gap-3 rounded-inner bg-card p-3 ring-1 ring-line">
@@ -110,10 +112,11 @@ function ScheduleRow({ s, onEdit, onDelete }: { s: IrrigationSchedule; onEdit: (
             </span>
           </p>
         )}
-        {(s.lastMessage || s.lastReasonCode) && (
+        {(s.lastMessage || s.lastReasonCode || s.lastCommandFailureCode) && (
           <TechInfo className="mt-2 px-3 py-1.5 text-xs">
             <p className="mt-1.5 font-mono break-words text-ink-2">
               {s.lastReasonCode && <span className="block">{s.lastReasonCode}</span>}
+              {s.lastCommandFailureCode && <span className="block">{s.lastCommandFailureCode}</span>}
               {s.lastMessage}
             </p>
           </TechInfo>

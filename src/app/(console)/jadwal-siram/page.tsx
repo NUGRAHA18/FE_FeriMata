@@ -1,6 +1,7 @@
 "use client";
 
 import { AiServiceStatusCard } from "@/components/ai/ai-service-cards";
+import { IrrigationRunsCard } from "@/components/actuators/irrigation-runs";
 import { IrrigationScheduleCard } from "@/components/actuators/irrigation-schedule";
 import { FertilizationCard } from "@/components/fertilization/fertilization-card";
 import { FertilizationRunsCard } from "@/components/fertilization/fertilization-runs";
@@ -17,6 +18,7 @@ export default function IrrigationPage() {
         <AiServiceStatusCard />
         <IrrigationScheduleCard />
         <FertilizationCard />
+        <IrrigationRunsCard />
         <FertilizationRunsCard />
       </div>
     </>
