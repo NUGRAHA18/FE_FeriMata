@@ -415,8 +415,40 @@ export const irrigationScheduleSchema = z.object({
   /** Detik yang benar-benar dikirim ke pompa pada jalan terakhir (backend >= 31 Okt 2026). */
   lastDurationSeconds: z.number().nullable().optional(),
   lastCommandUid: z.string().nullable(),
+  /** Status `lastCommandUid` di perangkat (PENDING · SENT · EXECUTED · FAILED · CANCELLED); null tanpa perintah.
+   *  STARTED + FAILED = perintah terkirim tapi perangkat tidak menyiram. Opsional untuk backend < 9 Nov 2026. */
+  lastCommandStatus: z.string().nullable().optional(),
+  /** Kode gagal dari perangkat (NO_RESPONSE, INTERLOCK_*, …). */
+  lastCommandFailureCode: z.string().nullable().optional(),
 });
 export type IrrigationSchedule = z.infer<typeof irrigationScheduleSchema>;
+
+/** GET /irrigation/runs (BE ≥ 9 Nov 2026): satu baris per jam siram per hari, termasuk yang dibatalkan, gagal, dan terlewat. */
+export const irrigationRunSchema = z.object({
+  id: z.number(),
+  /** Tanggal kebun (WIB), "2026-11-09". */
+  runDate: z.string(),
+  /** Null bila jadwalnya sudah dihapus. */
+  irrigationScheduleId: z.number().nullable(),
+  /** "06:00": jam jadwal saat itu (WIB). */
+  time: z.string(),
+  /** STARTED (perintah terkirim ke pompa) · SKIPPED · FAILED · MISSED · WAITING (menunggu pemupukan; baris yang sama
+   *  diperbarui ke hasil akhirnya). String agar nilai baru tidak ditolak. */
+  result: z.string(),
+  /** Diterjemahkan untuk petani; `message` hanya untuk Detail sistem. */
+  reasonCode: z.string().nullable(),
+  message: z.string().nullable(),
+  /** Detik yang dikirim ke pompa. */
+  durationSeconds: z.number().nullable(),
+  commandUid: z.string().nullable(),
+  /** Status perintah di perangkat: PENDING · SENT · EXECUTED · FAILED · CANCELLED; null tanpa perintah.
+   *  STARTED + EXECUTED = benar-benar disiram; STARTED + FAILED = perintah terkirim tapi perangkat gagal. */
+  commandStatus: z.string().nullable(),
+  commandFailureCode: z.string().nullable(),
+  commandError: z.string().nullable(),
+  recordedAt: instant,
+});
+export type IrrigationRun = z.infer<typeof irrigationRunSchema>;
 
 // ── Pemupukan otomatis (BE ≥ 2 Nov 2026) ─────────────────────────────────────
 // Pada hari jatuh tempo, sebelum sesi siram PERTAMA: pengaduk → pompa N → P → K → aduk → siram.

@@ -121,6 +121,8 @@ export const guideSections: GuideSection[] = [
       { term: "Terakhir: Terlewat (sistem mati)", meaning: "Komputer utama mati pada jam siram. Penyiraman tidak diulang." },
       { term: "Terakhir: Gagal", meaning: "Perintah tidak bisa dikirim ke pompa, misalnya pompa siram dimatikan di Pengaturan." },
       { term: "Terakhir: Menunggu pemupukan selesai", meaning: "Hari ini hari pupuk. Pupuk sedang dituang dan diaduk; pompa siram menyala sendiri setelahnya." },
+      { term: "Riwayat siram", meaning: "Catatan tiap jam siram per hari, terbaru di atas: disiram, dibatalkan demi keamanan, gagal, terlewat, atau menunggu pemupukan. Kartu Jam siram hanya menampilkan hasil terakhir; di sini semua hari tersimpan." },
+      { term: "Riwayat siram: Gagal / Perangkat tidak menjawab", meaning: "Perintah siram sudah terkirim, tetapi perangkat gagal menjalankannya atau tidak menjawab. Periksa pompa siram dan panel saklar; siram manual di halaman Kontrol bila perlu." },
       { term: "Pupuk otomatis · Setiap N hari", meaning: "Seberapa sering tanaman dipupuk." },
       { term: "Takaran pupuk", meaning: "Otomatis (AI): AI menghitung takaran N, P, dan K dari kondisi tanah pada hari itu. Atur sendiri: Anda mengisi mililiter N, P, dan K; pompanya harus sudah ditakar debitnya. Pupuk tetap tidak dituang bila angka EC/pH drum sudah lama." },
       { term: "Pupuk berikutnya", meaning: "Hari pupuk berikutnya. Pupuk dituang sebelum jam siram pertama hari itu." },

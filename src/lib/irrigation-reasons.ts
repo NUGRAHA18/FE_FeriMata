@@ -20,6 +20,10 @@ const reasonText: Record<string, string> = {
   AI_UNAVAILABLE: "layanan AI tidak menjawab",
   // AI butuh foto patroli ≤ 24 jam; tanpa itu BE tidak memanggil AI (BE ≥ 2 Nov 2026).
   AI_NO_PHOTO: "belum ada foto kamera 24 jam terakhir",
+  // Penolakan dari perangkat sendiri (`commandFailureCode` riwayat siram).
+  INTERLOCK_POWER: "listrik PLN padam atau belum terbaca",
+  INTERLOCK_FLOAT: "air drum rendah",
+  INTERLOCK_EXCLUSIVE: "perangkat lain sedang berjalan",
   // Pemupukan otomatis (BE ≥ 2 Nov 2026).
   FERTILIZING: "menunggu pemupukan selesai",
   FERTILIZATION_IN_PROGRESS: "pemupukan sedang berjalan",

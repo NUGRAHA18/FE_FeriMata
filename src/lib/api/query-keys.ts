@@ -46,6 +46,7 @@ export const qk = {
 
   pushConfig: ["push", "config"] as const,
   irrigationSchedules: ["irrigation", "schedules"] as const,
+  irrigationRuns: (page: number, size: number) => ["irrigation", "runs", { page, size }] as const,
 
   fertilizationSchedule: ["fertilization", "schedule"] as const,
   fertilizationDose: ["fertilization", "dose"] as const,

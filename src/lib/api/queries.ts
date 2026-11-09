@@ -4,6 +4,7 @@ import { keepPreviousData, useMutation, useQuery, useQueryClient } from "@tansta
 import { useCallback } from "react";
 import { applyAcknowledged, applyActuator, applySensor, mergeReadings, type ReadingMap } from "@/lib/realtime/apply";
 import { isRetiredActuator } from "@/lib/actuator-commands";
+import { isIrrigationRunPending } from "@/lib/irrigation";
 import * as api from "./endpoints";
 import { qk, type LiveActivity } from "./query-keys";
 import type { Actuator, ActuatorCommand, DashboardOverview, Device, Sensor, SensorReading } from "./types";
@@ -304,9 +305,14 @@ export function useSendCommand(actuatorId: number) {
 
 // ── Jadwal siram ─────────────────────────────────────────────────────────────
 
-/** Diambil ulang tiap menit supaya "berikutnya" dan hasil terakhir ikut berubah setelah jam siram. */
+/** Diambil ulang tiap menit supaya "berikutnya" dan hasil terakhir ikut berubah setelah jam siram; tiap 10 detik
+ *  selama hasil terakhir belum final (menunggu pemupukan / menunggu jawaban perangkat). */
 export function useIrrigationSchedules() {
-  return useQuery({ queryKey: qk.irrigationSchedules, queryFn: ({ signal }) => api.getIrrigationSchedules(signal), refetchInterval: 60_000 });
+  return useQuery({
+    queryKey: qk.irrigationSchedules,
+    queryFn: ({ signal }) => api.getIrrigationSchedules(signal),
+    refetchInterval: (q) => (q.state.data?.some((s) => isIrrigationRunPending({ result: s.lastResult, commandStatus: s.lastCommandStatus })) ? 10_000 : 60_000),
+  });
 }
 
 function useIrrigationMutation<V>(fn: (v: V) => Promise<unknown>) {
@@ -318,6 +324,17 @@ export const useCreateIrrigation = () => useIrrigationMutation((body: api.Irriga
 export const usePatchIrrigation = () =>
   useIrrigationMutation(({ id, body }: { id: number; body: Partial<api.IrrigationInput> }) => api.patchIrrigationSchedule(id, body));
 export const useDeleteIrrigation = () => useIrrigationMutation((id: number) => api.deleteIrrigationSchedule(id));
+
+/** Riwayat siram. Baris yang belum final (menunggu pemupukan / menunggu jawaban pompa) diperbarui di tempat oleh
+ *  backend, jadi diambil ulang tiap 10 detik selama ada; selain itu tiap menit. */
+export function useIrrigationRuns(page: number, size = 10) {
+  return useQuery({
+    queryKey: qk.irrigationRuns(page, size),
+    queryFn: ({ signal }) => api.getIrrigationRuns(page, size, signal),
+    placeholderData: keepPreviousData,
+    refetchInterval: (q) => (q.state.data?.content.some(isIrrigationRunPending) ? 10_000 : 60_000),
+  });
+}
 
 // ── Pemupukan otomatis ───────────────────────────────────────────────────────
 
