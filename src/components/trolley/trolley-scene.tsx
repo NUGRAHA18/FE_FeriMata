@@ -15,8 +15,6 @@ import { END_X_M, HOME_X_M, RAIL_LENGTH_M, stationX } from "./trolley-model";
  * Baut, rantai, dan kabel tidak digambar supaya ringan di ponsel. Kereta digambar 1,8× agar terbaca dari jauh.
  * Satuan meter; x = selatan (HOME) → utara (END), y = atas, z = timur. Rel 2,2 m di atas lantai. */
 
-export type ViewPreset = "dekat" | "miring" | "samping" | "atas";
-
 export type TrolleySceneProps = {
   /** Posisi kereta yang digambar (m sepanjang rel); null = belum diketahui (kereta tidak digambar). */
   x: number | null;
@@ -28,7 +26,6 @@ export type TrolleySceneProps = {
   fault: boolean;
   selected: number | null;
   onSelect?: (station: number) => void;
-  view: ViewPreset;
   reduceMotion: boolean;
   /** WebGL tidak tersedia: pemanggil menampilkan denah 2D. */
   onUnavailable: () => void;
@@ -54,22 +51,12 @@ function readPalette(): Palette {
   };
 }
 
-const cameraPresets: Record<Exclude<ViewPreset, "dekat">, { pos: [number, number, number]; target: [number, number, number] }> = {
-  miring: { pos: [-0.9, 3.3, 4.3], target: [2.9, 1.0, 0] },
-  samping: { pos: [3, 1.7, 7.0], target: [3, 1.3, 0] },
-  atas: { pos: [3, 8.5, 0.01], target: [3, 0, 0] },
-};
-/** Layar sempit (ponsel): mundur dan lebih tinggi supaya rel 6 m, kereta di ujung, dan label tetap muat. */
-const narrowPresets: typeof cameraPresets = {
-  miring: { pos: [1.2, 4.7, 4.9], target: [3.0, 1.15, 0] },
-  samping: { pos: [3, 2.4, 10.5], target: [3, 1.2, 0] },
-  atas: { pos: [3, 10.5, 0.01], target: [3, 0, 0] },
-};
+type Preset = { pos: [number, number, number]; target: [number, number, number] };
+/** Satu sudut pandang: miring dari selatan-timur, seluruh rel dan kedua bedeng terlihat. */
+const widePreset: Preset = { pos: [-0.9, 3.3, 4.3], target: [2.9, 1.0, 0] };
+/** Layar sempit (ponsel): lebih jauh dan tinggi supaya rel 6 m, kereta di ujung, dan label tetap muat. */
+const narrowPreset: Preset = { pos: [1.2, 4.7, 4.9], target: [3.0, 1.15, 0] };
 const isNarrow = (aspect: number) => aspect < 1.5;
-
-/** "Dekat": mengikuti kereta, sedikit dari bawah-depan supaya kamera dan roda terlihat. */
-const FOLLOW_OFFSET = new THREE.Vector3(-0.9, -0.35, 1.15);
-const FOLLOW_TARGET_DY = -0.22;
 
 /** Profil V-slot 2040 sederhana: persegi 20 × 40 mm dengan alur di tiap sisi. */
 function vslotGeometry(length: number) {
@@ -129,7 +116,7 @@ export default function TrolleyScene(props: TrolleySceneProps) {
   useEffect(() => {
     live.current = props;
   });
-  const api = useRef<{ invalidate: () => void; setView: (v: ViewPreset) => void; restyle: () => void } | null>(null);
+  const api = useRef<{ invalidate: () => void; restyle: () => void } | null>(null);
 
   useEffect(() => {
     const host = hostRef.current;
@@ -474,7 +461,6 @@ export default function TrolleyScene(props: TrolleySceneProps) {
     let shownX: number | null = null;
     let shownPan = 0; // 0 = timur (+z), π = barat
     let last = performance.now();
-    let followX: number | null = null;
     const project = new THREE.Vector3();
     const lensPos = new THREE.Vector3();
     const aim = new THREE.Vector3();
@@ -490,27 +476,6 @@ export default function TrolleyScene(props: TrolleySceneProps) {
         el.style.visibility = visible ? "visible" : "hidden";
         el.style.transform = `translate(-50%, -50%) translate(${((project.x + 1) / 2) * w}px, ${((1 - project.y) / 2) * h}px)`;
       });
-    };
-
-    const follow = (x: number) => {
-      // Tampilan Dekat: geser kamera dan titik pandang bersama kereta; putaran pengguna tetap dipertahankan.
-      if (live.current.view !== "dekat") {
-        followX = null;
-        return;
-      }
-      if (followX === null) {
-        controls.target.set(x, RAIL_Y + FOLLOW_TARGET_DY, 0);
-        camera.position.copy(controls.target).add(FOLLOW_OFFSET);
-      } else {
-        const dx = x - followX;
-        if (dx === 0) return;
-        controls.target.x += dx;
-        camera.position.x += dx;
-      }
-      followX = x;
-      // update() memicu "change" → invalidate; aman karena frame ini sudah berjalan (raf = 0 hanya
-      // menjadwalkan satu frame lagi, yang berhenti sendiri begitu kereta diam).
-      controls.update();
     };
 
     const frame = (now: number) => {
@@ -543,7 +508,6 @@ export default function TrolleyScene(props: TrolleySceneProps) {
         // Roda menggelinding: sudut = jarak / jari-jari (skala tidak memengaruhi jarak tempuh nyata).
         vWheels.forEach((w, i) => (w.rotation.y += (i % 2 ? -1 : 1) * (moved / 0.012)));
         drive.rotation.y -= moved / 0.0325;
-        follow(x);
       }
 
       const targetPan = s.panWest ? Math.PI : 0;
@@ -622,18 +586,10 @@ export default function TrolleyScene(props: TrolleySceneProps) {
       }
     };
 
-    const setView = (v: ViewPreset) => {
-      followX = null;
-      if (v === "dekat") {
-        const x = shownX ?? live.current.x ?? RAIL_LENGTH_M / 2;
-        controls.target.set(x, RAIL_Y + FOLLOW_TARGET_DY, 0);
-        camera.position.copy(controls.target).add(FOLLOW_OFFSET);
-        followX = x;
-      } else {
-        const preset = (isNarrow(camera.aspect) ? narrowPresets : cameraPresets)[v];
-        camera.position.set(...preset.pos);
-        controls.target.set(...preset.target);
-      }
+    const applyPreset = () => {
+      const preset = isNarrow(camera.aspect) ? narrowPreset : widePreset;
+      camera.position.set(...preset.pos);
+      controls.target.set(...preset.target);
       controls.update();
       invalidate();
     };
@@ -645,7 +601,7 @@ export default function TrolleyScene(props: TrolleySceneProps) {
       const wasNarrow = isNarrow(camera.aspect);
       camera.aspect = w / h;
       // Pindah antara layar lebar dan sempit (putar ponsel): pasang ulang preset yang sesuai.
-      if (wasNarrow !== isNarrow(camera.aspect) && live.current.view !== "dekat") setView(live.current.view);
+      if (wasNarrow !== isNarrow(camera.aspect)) applyPreset();
       // Layar sempit: perlebar sudut supaya rel 6 m tetap muat.
       camera.fov = isNarrow(w / h) ? 50 : 40;
       camera.updateProjectionMatrix();
@@ -666,9 +622,9 @@ export default function TrolleyScene(props: TrolleySceneProps) {
     mq.addEventListener("change", onTheme);
 
     restyle();
-    setView(live.current.view);
+    applyPreset();
     resize();
-    api.current = { invalidate, setView, restyle };
+    api.current = { invalidate, restyle };
 
     return () => {
       api.current = null;
@@ -695,10 +651,6 @@ export default function TrolleyScene(props: TrolleySceneProps) {
     api.current?.restyle();
     api.current?.invalidate();
   }, [props.x, props.panWest, props.moving, props.patrol, props.fault, props.selected, props.reduceMotion]);
-
-  useEffect(() => {
-    api.current?.setView(props.view);
-  }, [props.view]);
 
   return (
     <div ref={hostRef} className={cn("relative overflow-hidden", props.className)}>

@@ -169,7 +169,7 @@ export const guideSections: GuideSection[] = [
       { term: "Gagal", meaning: "Perangkat menolak atau tidak bisa mengerjakan. Alasannya tertulis di bawahnya." },
       { term: "Perangkat tidak menjawab", meaning: "Tidak ada jawaban dari perangkat dalam 2 menit. Perintah mungkin tidak dijalankan — atau sudah — jadi periksa perangkatnya langsung." },
       { term: "Ditolak demi keamanan", meaning: "Perintah Nyalakan dihentikan oleh aturan keselamatan. Alasannya tertulis di layar." },
-      { term: "Kartu Kereta kamera", meaning: "Gambar 3D rel, 10 stasiun, kereta, dan arah kamera. Ketuk nomor stasiun untuk memindahkan kereta ke sana. Posisi kereta mengikuti laporan perangkat; saat berjalan, posisinya perkiraan." },
+      { term: "Kartu Kereta kamera", meaning: "Gambar 3D rel, 10 stasiun, kereta, dan arah kamera. Ketuk nomor stasiun, lalu Pindah ke stasiun. Tombol kereta (Pindah, Kembali ke awal, Patroli sekarang, Hentikan) langsung dijalankan tanpa jendela konfirmasi, supaya gambar kereta tetap terlihat. Posisi kereta mengikuti laporan perangkat; saat berjalan, posisinya perkiraan." },
       { term: "Patroli sekarang", meaning: "Kereta kamera berjalan memotret tanaman di setiap stasiun, lalu kembali." },
       { term: "Kembali ke awal", meaning: "Kereta kamera berjalan ke ujung selatan rel lalu berhenti. Pakai juga bila posisinya tertulis belum diketahui." },
       { term: "Berhenti di antara stasiun", meaning: "Kereta dihentikan sebelum sampai stasiun, jadi posisinya tidak pasti. Pilih stasiun atau tekan Kembali ke awal." },

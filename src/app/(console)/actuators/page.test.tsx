@@ -37,12 +37,26 @@ const actuators = [
   act("TROLLEY-GOTO", "Pindahkan kereta kamera", "TROLLEY_POSITION", "JETSON-01", ["HOME", "GOTO_STATION", "STOP"]),
 ];
 
+let uid = 0;
+function command(url: string, body: string) {
+  const actuatorId = Number(url.match(/actuators\/(\d+)/)?.[1] ?? 0);
+  const a = actuators.find((x) => x.id === actuatorId) ?? actuators[5];
+  const req = JSON.parse(body) as { command: string; parameters?: Record<string, unknown> };
+  uid += 1;
+  return {
+    id: uid, commandUid: `u${uid}`, actuatorId: a.id, actuatorCode: a.code, deviceId: a.deviceId, deviceCode: a.deviceCode,
+    commandType: req.command, parameters: req.parameters ?? null, source: "API", requestedBy: "operator", status: "SENT",
+    requestedAt: t(1), sentAt: t(1), executedAt: null, errorMessage: null,
+  };
+}
+
 let fetchMock: ReturnType<typeof vi.fn>;
 beforeEach(() => {
   const o = overview();
   o.sensors.latestReadings = [trolleyReading("trolley.station", 3), trolleyReading("trolley.home_limit", 0), trolleyReading("trolley.end_limit", 0)];
   fetchMock = vi.fn((url: string, init?: RequestInit) => {
-    if (init?.method === "POST") return json(202, { commandUid: "u1", status: "SENT", actuatorId: 0, command: "GOTO_STATION", requestedAt: t(1) });
+    if (init?.method === "POST") return json(202, command(String(url), String(init.body)));
+    if (/\/commands\//.test(String(url))) return json(200, command(String(url).replace(/commands\/.*/, "commands"), '{"command":"HOME"}'));
     if (String(url).includes("/actuators")) return json(200, actuators);
     return json(200, o);
   });
@@ -70,21 +84,63 @@ describe("Halaman Kontrol: kereta kamera", () => {
     expect(within(service).getAllByText("Kereta kamera (arah)").length).toBeGreaterThan(0);
   });
 
-  it("memilih stasiun membuka konfirmasi dengan stasiun itu dan mengirim GOTO_STATION", async () => {
+  const posts = () => fetchMock.mock.calls.filter(([, init]) => init?.method === "POST");
+  const gotoId = actuators[5].id;
+  const patrolId = actuators[4].id;
+
+  it("memilih stasiun lalu Pindah ke stasiun langsung mengirim GOTO_STATION, tanpa dialog", async () => {
     signIn();
     const { user } = renderWithProviders(<ActuatorsPage />);
-    const stop5 = await screen.findByRole("button", { name: "Tampilkan foto stasiun ST-05" });
-    await user.click(stop5);
+    await user.click(await screen.findByRole("button", { name: "Tampilkan foto stasiun ST-05" }));
     await user.click(screen.getByRole("button", { name: "Pindah ke stasiun 5" }));
-    const dialog = await screen.findByRole("dialog", { name: /pindahkan kereta kamera/i });
-    expect(within(dialog).getByRole("button", { name: "Stasiun 5" })).toHaveAttribute("aria-pressed", "true");
-    await user.click(within(dialog).getByRole("button", { name: "Pindahkan" }));
-    await waitFor(() => {
-      const post = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
-      expect(post).toBeDefined();
-      expect(String(post![0])).toContain(`/actuators/${actuators[5].id}/commands`);
-      expect(JSON.parse(String(post![1]!.body))).toEqual({ command: "GOTO_STATION", parameters: { station: 5 } });
-    });
+    await waitFor(() => expect(posts()).toHaveLength(1));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const [url, init] = posts()[0];
+    expect(String(url)).toContain(`/actuators/${gotoId}/commands`);
+    expect(JSON.parse(String(init!.body))).toEqual({ command: "GOTO_STATION", parameters: { station: 5 } });
+    // Pilihan stasiun ditutup setelah terkirim.
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Pindah ke stasiun 5" })).not.toBeInTheDocument());
+  });
+
+  it("Patroli sekarang, Kembali ke awal, dan Hentikan dikirim sekali tekan tanpa dialog", async () => {
+    signIn();
+    const { user } = renderWithProviders(<ActuatorsPage />);
+    await user.click(await screen.findByRole("button", { name: /patroli sekarang/i }));
+    await waitFor(() => expect(posts()).toHaveLength(1));
+    await user.click(screen.getByRole("button", { name: /kembali ke awal/i }));
+    await waitFor(() => expect(posts()).toHaveLength(2));
+    await user.click(screen.getByRole("button", { name: /hentikan/i }));
+    await waitFor(() => expect(posts()).toHaveLength(3));
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+    const sent = posts().map(([u, i]) => [String(u).match(/actuators\/(\d+)/)![1], JSON.parse(String(i!.body)).command]);
+    expect(sent).toEqual([
+      [String(patrolId), "START"],
+      [String(gotoId), "HOME"],
+      [String(gotoId), "STOP"],
+    ]);
+  });
+
+  it("penolakan keselamatan tampil di bawah tombol", async () => {
+    signIn();
+    const base = fetchMock.getMockImplementation() as (url: string, init?: RequestInit) => Promise<Response>;
+    fetchMock.mockImplementation((url: string, init?: RequestInit) =>
+      init?.method === "POST"
+        ? json(409, { status: 409, error: "SAFETY_INTERLOCK", message: "blocked", details: { interlock: "BACKUP_POWER" } })
+        : base(url, init),
+    );
+    const { user } = renderWithProviders(<ActuatorsPage />);
+    await user.click(await screen.findByRole("button", { name: /patroli sekarang/i }));
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent("Ditolak demi keamanan");
+    expect(alert).toHaveTextContent(/Listrik PLN padam/);
+  });
+
+  it("hanya satu sudut pandang: tidak ada pilihan Dekat/Samping/Atas", async () => {
+    signIn();
+    renderWithProviders(<ActuatorsPage />);
+    await screen.findByRole("heading", { name: "Kereta kamera" });
+    expect(screen.queryByRole("radiogroup", { name: "Sudut pandang" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Dekat")).not.toBeInTheDocument();
   });
 
   it("stasiun tempat kereta berada tidak bisa dijadikan tujuan", async () => {

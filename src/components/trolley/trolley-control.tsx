@@ -1,38 +1,29 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Camera, Home, MapPin, Play, Square, X } from "lucide-react";
+import { Camera, Home, MapPin, Play, ShieldAlert, Square, X } from "lucide-react";
 import { useState, useSyncExternalStore } from "react";
-import { CommandDialog } from "@/components/actuators/command-dialog";
 import { CommandTracker, type TrackedCommand } from "@/components/actuators/command-tracker";
 import { GreenhouseMap } from "@/components/dashboard/greenhouse-map";
 import { DeviceIssueChips, livenessTone } from "@/components/devices/device-row";
 import { Button } from "@/components/ui/button";
 import { Card, CardHeader } from "@/components/ui/card";
-import { Segmented } from "@/components/ui/segmented";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge, StatusDot } from "@/components/ui/status";
 import { RelativeTime } from "@/components/ui/time";
 import { cameraPanCode, patrolActuatorCode, trolleyGotoCode, trolleyLayout, trolleyServiceCodes } from "@/config/dashboard-layout";
-import { useActuators, useOverview, useReadingByMetric } from "@/lib/api/queries";
-import type { Actuator } from "@/lib/api/types";
+import { describeCommandError, type CommandErrorView } from "@/lib/actuator-safety";
+import type { CommandRequest } from "@/lib/api/endpoints";
+import { useActuators, useOverview, useReadingByMetric, useSendCommand } from "@/lib/api/queries";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { livenessLabel } from "@/lib/format";
 import { useNow } from "@/lib/use-now";
 import { deriveStatus, estimatedX, initialStopWatch, inputsFrom, nextStopWatch, stationX, stopTarget, stopWatchFlags, type StopWatch, type TrolleyStatus } from "./trolley-model";
-import type { ViewPreset } from "./trolley-scene";
 
 const TrolleyScene = dynamic(() => import("./trolley-scene"), {
   ssr: false,
   loading: () => <Skeleton className="size-full rounded-none" />,
 });
-
-const views: { value: ViewPreset; label: string }[] = [
-  { value: "miring", label: "Miring" },
-  { value: "dekat", label: "Dekat" },
-  { value: "samping", label: "Samping" },
-  { value: "atas", label: "Atas" },
-];
 
 function subscribeReducedMotion(cb: () => void) {
   const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -47,20 +38,22 @@ function useReducedMotion() {
   );
 }
 
-type Dialog = { actuator: Actuator; command: string; station?: number; key: number };
+type Pending = "goto" | "home" | "patrol" | "stop";
 
 /** Kereta kamera: model 3D (atau denah 2D bila WebGL tidak ada), status, dan perintah tingkat tinggi
- * TROLLEY-GOTO / TROLLEY-PATROL. Relay mentah R2/R3 ada di bagian Servis halaman Kontrol. */
+ * TROLLEY-GOTO / TROLLEY-PATROL. Relay mentah R2/R3 ada di bagian Servis halaman Kontrol.
+ * Perintah dikirim langsung dari tombol, tanpa dialog konfirmasi: dialog menutupi gambar kereta di
+ * ponsel. Memilih stasiun lalu menekan "Pindah ke stasiun N" sudah dua langkah. Keputusan keselamatan
+ * tetap di backend dan edge; penolakannya ditampilkan di bawah tombol. */
 export function TrolleyControl() {
   const canWrite = useCanWrite();
   const reduceMotion = useReducedMotion();
   const now = useNow();
-  const [view, setView] = useState<ViewPreset>("miring");
   const [webgl, setWebgl] = useState(true);
   const [selected, setSelected] = useState<number | null>(null);
-  const [dialog, setDialog] = useState<Dialog | null>(null);
-  const [lastDialog, setLastDialog] = useState<Dialog | null>(null);
   const [tracked, setTracked] = useState<TrackedCommand | null>(null);
+  const [pending, setPending] = useState<Pending | null>(null);
+  const [failure, setFailure] = useState<CommandErrorView | null>(null);
 
   const byCode = useActuators((list) => Object.fromEntries(list.map((a) => [a.code, a]))).data;
   const station = useReadingByMetric(trolleyLayout.stationKey);
@@ -73,6 +66,8 @@ export function TrolleyControl() {
   const run = byCode?.[runCode];
   const deviceCode = gotoAct?.deviceCode ?? patrolAct?.deviceCode;
   const device = useOverview((o) => o.devices.items.find((d) => d.deviceCode === deviceCode) ?? null).data;
+  const sendGoto = useSendCommand(gotoAct?.id ?? -1);
+  const sendPatrol = useSendCommand(patrolAct?.id ?? -1);
 
   // Kereta yang dihentikan di antara stasiun tidak melaporkan posisi baru; amati sendiri transisinya
   // (pola "sesuaikan state saat render" React, tanpa effect).
@@ -104,14 +99,25 @@ export function TrolleyControl() {
 
   if (!gotoAct && !patrolAct) return null;
 
-  const open = (actuator: Actuator | undefined, command: string, st?: number) => {
-    if (!actuator) return;
-    const d = { actuator, command, station: st, key: Date.now() };
-    setDialog(d);
-    setLastDialog(d);
+  const send = async (kind: Pending, target: "goto" | "patrol", req: CommandRequest) => {
+    const actuator = target === "goto" ? gotoAct : patrolAct;
+    // Hentikan selalu boleh dikirim, juga saat perintah lain belum dijawab backend.
+    if (!actuator || (pending && kind !== "stop")) return;
+    setPending(kind);
+    setFailure(null);
+    try {
+      const cmd = await (target === "goto" ? sendGoto : sendPatrol).mutateAsync(req);
+      setTracked({ uid: cmd.commandUid, sentAtLocal: Date.now() });
+      setSelected(null);
+    } catch (err) {
+      setFailure(describeCommandError(err));
+    } finally {
+      setPending(null);
+    }
   };
   const blocked = status.moving || status.limitFault;
-  const stopAct = stopTarget(status) === "patrol" ? patrolAct : gotoAct;
+  const stopKind = stopTarget(status);
+  const stopAct = stopKind === "patrol" ? patrolAct : gotoAct;
   const here = selected != null && !status.moving && !status.positionStale && status.station === selected;
   const tone = status.limitFault ? "danger" : status.moving ? "ok" : status.station == null ? "warn" : "neutral";
 
@@ -146,11 +152,6 @@ export function TrolleyControl() {
       </div>
 
       <div className="relative overflow-hidden rounded-inner bg-card-2 ring-1 ring-line">
-        {webgl && (
-          <div className="absolute top-2 left-2 z-10 max-w-[calc(100%-1rem)] overflow-x-auto rounded-control bg-card/80 shadow-sm backdrop-blur-md">
-            <Segmented label="Sudut pandang" size="sm" value={view} onChange={setView} options={views} />
-          </div>
-        )}
         {webgl ? (
           <TrolleyScene
             x={x}
@@ -160,7 +161,6 @@ export function TrolleyControl() {
             fault={status.limitFault}
             selected={selected}
             onSelect={canWrite ? (n) => setSelected((s) => (s === n ? null : n)) : undefined}
-            view={view}
             reduceMotion={reduceMotion}
             onUnavailable={() => setWebgl(false)}
             className="aspect-[4/3] w-full sm:aspect-[16/9]"
@@ -188,8 +188,9 @@ export function TrolleyControl() {
           <Button
             variant="accent"
             icon={MapPin}
-            onClick={() => open(gotoAct, "GOTO_STATION", selected)}
-            disabled={!gotoAct?.enabled || blocked || here}
+            onClick={() => send("goto", "goto", { command: "GOTO_STATION", parameters: { station: selected } })}
+            loading={pending === "goto"}
+            disabled={!gotoAct?.enabled || blocked || here || (pending !== null && pending !== "goto")}
           >
             Pindah ke stasiun {selected}
           </Button>
@@ -201,13 +202,27 @@ export function TrolleyControl() {
 
       {canWrite && (
         <div className="mt-3 grid grid-cols-1 gap-2 sm:grid-cols-3">
-          <Button size="lg" icon={Home} onClick={() => open(gotoAct, "HOME")} disabled={!gotoAct?.enabled || blocked}>
+          <Button
+            size="lg"
+            icon={Home}
+            onClick={() => send("home", "goto", { command: "HOME" })}
+            loading={pending === "home"}
+            disabled={!gotoAct?.enabled || blocked || (pending !== null && pending !== "home")}
+          >
             Kembali ke awal
           </Button>
-          <Button size="lg" variant="accent" icon={Play} onClick={() => open(patrolAct, "START")} disabled={!patrolAct?.enabled || blocked}>
+          <Button
+            size="lg"
+            variant="accent"
+            icon={Play}
+            onClick={() => send("patrol", "patrol", { command: "START" })}
+            loading={pending === "patrol"}
+            disabled={!patrolAct?.enabled || blocked || (pending !== null && pending !== "patrol")}
+          >
             Patroli sekarang
           </Button>
-          <Button size="lg" variant="danger" icon={Square} onClick={() => open(stopAct, "STOP")} disabled={!stopAct}>
+          {/* Hentikan tidak pernah dinonaktifkan oleh perintah lain yang sedang dikirim. */}
+          <Button size="lg" variant="danger" icon={Square} onClick={() => send("stop", stopKind, { command: "STOP" })} loading={pending === "stop"} disabled={!stopAct}>
             Hentikan
           </Button>
         </div>
@@ -218,23 +233,16 @@ export function TrolleyControl() {
           Sebagian perintah kereta dimatikan di Pengaturan.
         </p>
       )}
-      {tracked && <CommandTracker tracked={tracked} className="mt-3" />}
-
-      {/* lastDialog menahan isi dialog selama animasi tutup. */}
-      {(dialog ?? lastDialog) && (
-        <CommandDialog
-          key={(dialog ?? lastDialog)!.key}
-          actuator={(dialog ?? lastDialog)!.actuator}
-          command={(dialog ?? lastDialog)!.command}
-          defaultStation={(dialog ?? lastDialog)!.station}
-          open={dialog !== null}
-          onClose={() => setDialog(null)}
-          onSent={(t) => {
-            setTracked(t);
-            setSelected(null);
-          }}
-        />
+      {failure && (
+        <div role="alert" className="mt-3 rounded-inner bg-danger-soft p-3.5 text-danger-ink">
+          <p className="flex items-center gap-2 font-medium">
+            <ShieldAlert aria-hidden className="size-4" strokeWidth={1.9} />
+            {failure.title}
+          </p>
+          <p className="mt-1 text-sm">{failure.message}</p>
+        </div>
       )}
+      {tracked && <CommandTracker key={tracked.uid} tracked={tracked} className="mt-3" />}
     </Card>
   );
 }
