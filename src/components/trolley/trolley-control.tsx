@@ -29,6 +29,7 @@ const TrolleyScene = dynamic(() => import("./trolley-scene"), {
 
 const views: { value: ViewPreset; label: string }[] = [
   { value: "miring", label: "Miring" },
+  { value: "dekat", label: "Dekat" },
   { value: "samping", label: "Samping" },
   { value: "atas", label: "Atas" },
 ];
@@ -119,7 +120,6 @@ export function TrolleyControl() {
       <CardHeader
         title="Kereta kamera"
         icon={Camera}
-        action={webgl ? <Segmented label="Sudut pandang" size="sm" value={view} onChange={setView} options={views} /> : null}
       />
       {device && (
         <div className="mb-3 flex flex-wrap items-center gap-2 text-sm text-muted">
@@ -145,12 +145,18 @@ export function TrolleyControl() {
         </p>
       </div>
 
-      <div className="overflow-hidden rounded-inner bg-card-2 ring-1 ring-line">
+      <div className="relative overflow-hidden rounded-inner bg-card-2 ring-1 ring-line">
+        {webgl && (
+          <div className="absolute top-2 left-2 z-10 max-w-[calc(100%-1rem)] overflow-x-auto rounded-control bg-card/80 shadow-sm backdrop-blur-md">
+            <Segmented label="Sudut pandang" size="sm" value={view} onChange={setView} options={views} />
+          </div>
+        )}
         {webgl ? (
           <TrolleyScene
             x={x}
             panWest={status.pan == null ? null : status.pan === "barat"}
             moving={status.moving}
+            patrol={status.busy === "patrol"}
             fault={status.limitFault}
             selected={selected}
             onSelect={canWrite ? (n) => setSelected((s) => (s === n ? null : n)) : undefined}
