@@ -23,6 +23,8 @@ type CommandDialogProps = {
   onClose: () => void;
   /** Dipanggil setelah 202 agar pemanggil ikut melacak perintah. */
   onSent?: (t: TrackedCommand) => void;
+  /** Stasiun yang sudah dipilih (mis. diketuk di model 3D); pemanggil memberi `key` baru per pilihan. */
+  defaultStation?: number;
 };
 
 /** Mulai melacak perintah yang baru diterima backend (waktu lokal untuk peringatan "belum menjawab"). */
@@ -34,11 +36,11 @@ type FieldErrors = Partial<Record<"duration" | "station", string>>;
 
 /** Konfirmasi perintah. Nyalakan selalu minta durasi (wajib bila ada maxRunSeconds); pindah kereta
  * minta nomor stasiun; berhenti cukup konfirmasi ringan. */
-export function CommandDialog({ actuator, command, open, onClose, onSent }: CommandDialogProps) {
+export function CommandDialog({ actuator, command, open, onClose, onSent, defaultStation }: CommandDialogProps) {
   const send = useSendCommand(actuator.id);
   const spec = commandSpec(actuator, command);
   const [duration, setDuration] = useState("");
-  const [station, setStation] = useState("");
+  const [station, setStation] = useState(defaultStation != null ? String(defaultStation) : "");
   const [errors, setErrors] = useState<FieldErrors>({});
   const [failure, setFailure] = useState<CommandErrorView | null>(null);
   const [tracked, setTracked] = useState<TrackedCommand | null>(null);
