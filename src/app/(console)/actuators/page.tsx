@@ -1,19 +1,21 @@
 "use client";
 
-import { Camera, ToggleRight } from "lucide-react";
+import { ChevronDown, ToggleRight, Wrench } from "lucide-react";
 import { ActuatorCard } from "@/components/actuators/actuator-card";
-import { useTrolleyStation } from "@/components/dashboard/conditions-card";
 import { DeviceIssueChips, livenessTone } from "@/components/devices/device-row";
 import { PageHeader } from "@/components/shell/page-header";
+import { TrolleyControl } from "@/components/trolley/trolley-control";
 import { Card } from "@/components/ui/card";
 import { EmptyState, ErrorState, Skeleton } from "@/components/ui/skeleton";
 import { StatusDot } from "@/components/ui/status";
-import { trolleyActuatorCodes } from "@/config/dashboard-layout";
+import { trolleyCardCodes, trolleyServiceCodes } from "@/config/dashboard-layout";
 import { errorMessage } from "@/lib/api/client";
 import { useActuators, useDevices, useOverview } from "@/lib/api/queries";
 import type { Actuator } from "@/lib/api/types";
 import { useCanWrite } from "@/lib/auth/use-session";
-import { deviceNameLabel, livenessLabel, stationLabel } from "@/lib/format";
+import { deviceNameLabel, livenessLabel } from "@/lib/format";
+
+const serviceCodes: readonly string[] = trolleyServiceCodes;
 
 function groupByDevice(list: Actuator[]) {
   const groups = new Map<string, Actuator[]>();
@@ -21,13 +23,29 @@ function groupByDevice(list: Actuator[]) {
   return [...groups.entries()];
 }
 
-function TrolleyNote() {
-  const station = useTrolleyStation();
+/** Relay mentah kereta (R2 jalan, R3 arah): hanya untuk teknisi saat servis, tertutup secara bawaan. */
+function TrolleyService({ list }: { list: Actuator[] }) {
+  if (!list.length) return null;
   return (
-    <p className="mb-3 flex items-start gap-2 rounded-inner bg-info-soft px-3.5 py-2.5 text-sm text-info">
-      <Camera aria-hidden className="mt-0.5 size-4 shrink-0" />
-      <span>Kereta kamera sekarang {stationLabel(station)}.</span>
-    </p>
+    <Card>
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-control text-base font-semibold text-ink focus-visible:ring-2 focus-visible:ring-accent focus-visible:outline-none">
+          <span className="flex items-center gap-2.5">
+            <Wrench aria-hidden className="size-5 text-muted" strokeWidth={2} />
+            Servis kereta kamera (untuk teknisi)
+          </span>
+          <ChevronDown aria-hidden className="size-5 text-muted transition-transform group-open:rotate-180" />
+        </summary>
+        <p className="mt-3 mb-3 rounded-inner bg-warn-soft px-3.5 py-2.5 text-sm text-warn-ink">
+          Saklar langsung motor kereta. Atur arah dulu, baru nyalakan jalan. Untuk pemakaian biasa gunakan kartu Kereta kamera di atas.
+        </p>
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+          {list.map((a) => (
+            <ActuatorCard key={a.id} actuator={a} />
+          ))}
+        </div>
+      </details>
+    </Card>
   );
 }
 
@@ -36,6 +54,10 @@ export default function ActuatorsPage() {
   const devices = useOverview((o) => Object.fromEntries(o.devices.items.map((d) => [d.deviceCode, d]))).data;
   const names = useDevices((list) => Object.fromEntries(list.map((d) => [d.deviceCode, deviceNameLabel(d.name)]))).data;
   const canWrite = useCanWrite();
+
+  const all = q.data ?? [];
+  const service = all.filter((a) => serviceCodes.includes(a.code));
+  const regular = all.filter((a) => !serviceCodes.includes(a.code) && !trolleyCardCodes.includes(a.code));
 
   return (
     <>
@@ -57,11 +79,12 @@ export default function ActuatorsPage() {
         </div>
       ) : q.error ? (
         <ErrorState message={errorMessage(q.error)} onRetry={() => q.refetch()} />
-      ) : !q.data.length ? (
+      ) : !all.length ? (
         <EmptyState icon={<ToggleRight aria-hidden className="size-5" strokeWidth={2} />} title="Belum ada perangkat yang bisa dikendalikan" />
       ) : (
         <div className="flex flex-col gap-4">
-          {groupByDevice(q.data).map(([code, list]) => {
+          <TrolleyControl />
+          {groupByDevice(regular).map(([code, list]) => {
             const d = devices?.[code];
             return (
               <Card key={code}>
@@ -81,7 +104,6 @@ export default function ActuatorsPage() {
                     </div>
                   )}
                 </div>
-                {list.some((a) => trolleyActuatorCodes.includes(a.code)) && <TrolleyNote />}
                 <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                   {list.map((a) => (
                     <ActuatorCard key={a.id} actuator={a} />
@@ -90,6 +112,7 @@ export default function ActuatorsPage() {
               </Card>
             );
           })}
+          <TrolleyService list={service} />
         </div>
       )}
     </>

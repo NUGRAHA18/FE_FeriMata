@@ -48,11 +48,21 @@ export const trolleyLayout = {
   stationSpacingCm: 60,
 };
 
-/** Ditampilkan sebagai aktuator biasa (tanpa d-pad). GOTO & PATROL = aktuator virtual JETSON-01 (BE-1). */
-export const trolleyActuatorCodes = ["TROLLEY-RUN", "TROLLEY-DIR", "TROLLEY-GOTO", "TROLLEY-PATROL"];
-
 /** Aktuator virtual patroli kamera; tombol "Patroli sekarang" di kartu kamera memakainya. */
 export const patrolActuatorCode = "TROLLEY-PATROL";
+
+/** Aktuator virtual pindah stasiun / kembali ke awal / hentikan (BE-1). */
+export const trolleyGotoCode = "TROLLEY-GOTO";
+
+/** Relay mentah R2 (jalan) dan R3 (arah, ON = utara). Hanya di bagian Servis halaman Kontrol: petani
+ *  memakai kartu Kereta kamera, yang mengirim perintah tingkat tinggi dan diurutkan aman oleh edge. */
+export const trolleyServiceCodes = ["TROLLEY-RUN", "TROLLEY-DIR"] as const;
+
+/** Relay R1 arah kamera (ON = barat, OFF = timur). Tetap tampil di Kontrol; arahnya juga digambar di model 3D. */
+export const cameraPanCode = "CAMERA-PAN";
+
+/** Dikendalikan lewat kartu Kereta kamera, tidak tampil sebagai kartu aktuator biasa di Kontrol. */
+export const trolleyCardCodes: readonly string[] = [trolleyGotoCode, patrolActuatorCode];
 
 /** Pompa siram yang dinyalakan jadwal siram; batas lama siram = maxRunSeconds-nya. */
 export const irrigationPumpCode = "DIST-PUMP";
