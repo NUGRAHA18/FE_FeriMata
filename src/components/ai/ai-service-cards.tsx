@@ -202,7 +202,7 @@ export function DetectNowCard() {
             </p>
           )}
         </div>
-        {notConfigured && <p className="rounded-inner bg-card-2 px-3.5 py-2.5 text-sm text-ink-2 ring-1 ring-line">Layanan AI belum diatur, jadi pemeriksaan belum bisa dijalankan. Hubungi admin.</p>}
+        {notConfigured && <p className="rounded-inner bg-card-2 px-3.5 py-2.5 text-sm text-ink-2 ring-1 ring-line">Layanan AI belum diatur, jadi pemeriksaan belum bisa dijalankan. Hubungi pengelola sistem.</p>}
         <Button variant="accent" size="lg" icon={ScanSearch} loading={run.isPending} disabled={notConfigured} onClick={() => run.mutate({ kind, images: files })} className="w-full sm:w-auto sm:self-end">
           {files.length ? `Periksa ${files.length} foto` : "Periksa foto patroli terbaru"}
         </Button>

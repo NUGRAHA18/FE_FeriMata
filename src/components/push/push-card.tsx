@@ -27,7 +27,7 @@ function Note({ children }: { children: ReactNode }) {
 }
 
 const supportText: Record<Exclude<PushSupport, "ok">, ReactNode> = {
-  insecure: "Notifikasi butuh alamat https. Minta admin memasang domain untuk aplikasi ini.",
+  insecure: "Notifikasi butuh alamat https. Minta pengelola sistem memasang domain untuk aplikasi ini.",
   "ios-install": (
     <>
       Di iPhone/iPad, notifikasi hanya bisa dipakai bila aplikasi dipasang: buka di Safari, ketuk tombol <strong>Bagikan</strong>, pilih{" "}
@@ -38,7 +38,7 @@ const supportText: Record<Exclude<PushSupport, "ok">, ReactNode> = {
 };
 
 function pushErrorMessage(e: unknown): string {
-  if (e instanceof ApiRequestError) return e.status === 409 ? "Sistem menolak pendaftaran notifikasi dari browser ini. Coba lagi nanti atau hubungi admin." : errorMessage(e);
+  if (e instanceof ApiRequestError) return e.status === 409 ? "Sistem menolak pendaftaran notifikasi dari browser ini. Coba lagi nanti atau hubungi pengelola sistem." : errorMessage(e);
   return "Browser gagal menyalakan notifikasi. Periksa koneksi internet lalu coba lagi.";
 }
 
@@ -93,7 +93,7 @@ export function PushCard() {
   let content: ReactNode;
   if (config.isPending || support === null) content = <Skeleton className="h-16" />;
   else if (config.error) content = <ErrorState message={errorMessage(config.error)} onRetry={() => config.refetch()} />;
-  else if (!config.data.enabled || !publicKey) content = <Note>Notifikasi belum diaktifkan di sistem. Hubungi admin.</Note>;
+  else if (!config.data.enabled || !publicKey) content = <Note>Notifikasi belum diaktifkan di sistem. Hubungi pengelola sistem.</Note>;
   else if (support !== "ok") content = <Note>{supportText[support]}</Note>;
   else if (state === "blocked")
     content = (

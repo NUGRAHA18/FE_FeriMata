@@ -8,7 +8,7 @@ import { FertilizationRunsCard } from "@/components/fertilization/fertilization-
 import { PageHeader } from "@/components/shell/page-header";
 
 /** Jadwal siram harian + pupuk otomatis (dituang sebelum jam siram pertama pada hari pupuk).
- *  Semua peran bisa membuka; hanya operator/admin yang bisa mengubah. */
+ *  Semua peran bisa membuka; hanya operator yang bisa mengubah. */
 export default function IrrigationPage() {
   return (
     <>

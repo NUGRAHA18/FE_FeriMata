@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { ArrowUpRight, BookOpen, Info, Palette, Sprout, Users } from "lucide-react";
 import { useState } from "react";
-import { useSession } from "@/lib/auth/use-session";
+import { useCanWrite } from "@/lib/auth/use-session";
 import { GuideDialog } from "@/components/onboarding/guide";
 import { DevTools } from "@/components/settings/dev-tools";
 import { DisabledItemsCard } from "@/components/settings/disabled-items";
@@ -27,9 +27,7 @@ const themeSamples = [
 export default function SettingsPage() {
   const system = useOverview((o) => o.system).data;
   const connection = useConnectionState();
-  const role = useSession()?.user.role;
-  const isAdmin = role === "ADMIN";
-  const canWrite = isAdmin || role === "OPERATOR";
+  const canWrite = useCanWrite();
   const [simpleMode, setSimpleMode] = useSimpleMode();
   const [guideOpen, setGuideOpen] = useState(false);
 
@@ -47,7 +45,7 @@ export default function SettingsPage() {
           </Link>
         </Card>
         {canWrite && <DisabledItemsCard />}
-        {isAdmin && (
+        {canWrite && (
           <Card className="lg:col-span-2">
             <CardHeader title="Pengguna" icon={Users} />
             <p className="text-sm text-ink-2">Tambah akun untuk petani atau operator lain, atur perannya, dan atur ulang kata sandi.</p>

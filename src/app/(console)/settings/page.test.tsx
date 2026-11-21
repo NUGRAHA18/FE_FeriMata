@@ -39,11 +39,17 @@ describe("Halaman Pengaturan", () => {
     expect(screen.getByRole("dialog", { name: /selamat datang/i })).toBeInTheDocument();
   });
 
-  it("menu Pengguna hanya untuk ADMIN", () => {
-    signIn("OPERATOR");
+  it("menu Pengguna hanya untuk Operator (peran tertinggi), tidak untuk Pemantau", () => {
+    signIn("VIEWER", "pemantau");
     const { unmount } = renderWithProviders(<SettingsPage />);
     expect(screen.queryByRole("link", { name: /kelola pengguna/i })).not.toBeInTheDocument();
     unmount();
+    signIn("OPERATOR");
+    renderWithProviders(<SettingsPage />);
+    expect(screen.getByRole("link", { name: /kelola pengguna/i })).toHaveAttribute("href", "/users");
+  });
+
+  it("sesi lama yang masih berperan ADMIN diperlakukan sebagai Operator sampai masuk lagi", () => {
     signIn("ADMIN", "admin");
     renderWithProviders(<SettingsPage />);
     expect(screen.getByRole("link", { name: /kelola pengguna/i })).toHaveAttribute("href", "/users");

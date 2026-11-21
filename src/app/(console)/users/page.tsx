@@ -16,20 +16,19 @@ import { RelativeTime } from "@/components/ui/time";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { useCreateUser, usePatchUser, useResetPassword, useUsers } from "@/lib/api/queries";
 import type { User } from "@/lib/api/types";
-import { useSession } from "@/lib/auth/use-session";
+import { useCanWrite, useSession } from "@/lib/auth/use-session";
 import { roleLabel } from "@/lib/format";
 
 const roles: { value: string; label: string; hint: string }[] = [
   { value: "VIEWER", label: "Pemantau", hint: "Hanya melihat angka dan foto, tidak bisa menyalakan perangkat." },
-  { value: "OPERATOR", label: "Operator", hint: "Menyalakan/mematikan perangkat, mencatat tanaman, menangani peringatan." },
-  { value: "ADMIN", label: "Admin", hint: "Semua yang operator bisa, plus mengelola pengguna." },
+  { value: "OPERATOR", label: "Operator", hint: "Semua fitur: menyalakan/mematikan perangkat, mencatat tanaman, menangani peringatan, dan mengelola pengguna." },
 ];
 
 function NewUserForm({ onClose }: { onClose: () => void }) {
   const create = useCreateUser();
   const [username, setUsername] = useState("");
   const [fullName, setFullName] = useState("");
-  const [role, setRole] = useState("OPERATOR");
+  const [role, setRole] = useState("VIEWER");
   const [password, setPassword] = useState("");
   const fieldErrors = create.error instanceof ApiRequestError ? create.error.fieldErrors() : {};
 
@@ -111,7 +110,7 @@ function UserRow({ user, self }: { user: User; self: boolean }) {
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="font-semibold text-ink">{user.fullName ?? user.username}</p>
-              <Badge tone={user.role === "ADMIN" ? "info" : user.role === "OPERATOR" ? "ok" : "neutral"}>{roleLabel(user.role)}</Badge>
+              <Badge tone={user.role === "OPERATOR" ? "ok" : "neutral"}>{roleLabel(user.role)}</Badge>
               {self && <Badge tone="neutral">Anda</Badge>}
               {!user.enabled && <Badge tone="warn">Nonaktif</Badge>}
               {user.mustChangePassword && <Badge tone="warn">Sandi sementara</Badge>}
@@ -171,13 +170,14 @@ export default function UsersPage() {
   const router = useRouter();
   const q = useUsers();
   const [adding, setAdding] = useState(false);
-  const isAdmin = session?.user.role === "ADMIN";
+  // Operator = peran tertinggi, jadi hanya operator yang mengelola pengguna.
+  const canManage = useCanWrite();
 
   useEffect(() => {
-    if (session && !isAdmin) router.replace("/");
-  }, [session, isAdmin, router]);
+    if (session && !canManage) router.replace("/");
+  }, [session, canManage, router]);
 
-  if (!isAdmin) return null;
+  if (!canManage) return null;
 
   return (
     <>

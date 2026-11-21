@@ -16,7 +16,7 @@ import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { logout as apiLogout } from "@/lib/api/endpoints";
 import { useChangePassword, useMe } from "@/lib/api/queries";
 import { endSession, getSession, saveSession } from "@/lib/auth/session";
-import { useSession } from "@/lib/auth/use-session";
+import { useCanWrite, useSession } from "@/lib/auth/use-session";
 import { formatDateTime, roleLabel } from "@/lib/format";
 import { disablePushOnLogout } from "@/lib/push";
 
@@ -97,7 +97,7 @@ function ProfileContent() {
     router.replace("/login");
   }
 
-  const isAdmin = session?.user.role === "ADMIN";
+  const canManageUsers = useCanWrite();
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -143,7 +143,7 @@ function ProfileContent() {
           <Link href="/settings" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink ring-1 ring-line hover:bg-sunken">
             <Settings aria-hidden className="size-4" /> Pengaturan
           </Link>
-          {isAdmin && (
+          {canManageUsers && (
             <Link href="/users" className="inline-flex h-10 items-center gap-2 rounded-control bg-card-2 px-4 text-sm font-medium text-ink ring-1 ring-line hover:bg-sunken">
               <Users aria-hidden className="size-4" /> Kelola pengguna
             </Link>

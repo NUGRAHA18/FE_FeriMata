@@ -26,7 +26,7 @@ const todayLocal = () => csvTime(Date.now()).slice(0, 10);
 
 /* ── Umur & fase ───────────────────────────────────────────────────────────── */
 
-/** Koreksi tanggal semai yang salah isi (operator/admin). */
+/** Koreksi tanggal semai yang salah isi (operator). */
 function EditDateForm({ current, onDone }: { current: string; onDone: () => void }) {
   const save = useSetSowingDate();
   const [date, setDate] = useState(current);
@@ -97,7 +97,7 @@ function NoDateCard({ onAdd }: { onAdd: () => void }) {
       <CardHeader title="Umur tanaman" icon={CalendarDays} />
       <p className="text-base font-semibold text-ink">Tanggal semai belum diisi</p>
       <p className="mt-1 text-sm text-ink-2">
-        {canWrite ? "Tambahkan tanaman pertama untuk mulai menghitung hari tanam." : "Operator atau admin perlu menambahkan tanaman pertama beserta tanggal semainya."}
+        {canWrite ? "Tambahkan tanaman pertama untuk mulai menghitung hari tanam." : "Operator perlu menambahkan tanaman pertama beserta tanggal semainya."}
       </p>
       {canWrite && (
         <Button variant="accent" icon={Plus} className="mt-3" onClick={onAdd}>
