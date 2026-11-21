@@ -177,7 +177,7 @@ export function errorMessage(error: unknown): string {
     // Pesan backend untuk 502 AI berbahasa Inggris (detail teknis) → kalimat tetap.
     if (error.code === "AI_SERVICE_ERROR") return AI_SERVICE_MESSAGE;
     // Backend lama belum punya rute ini (bukan "data tidak ada").
-    if (error.status === 404 && /^endpoint not found$/i.test(error.message)) return "Fitur ini belum tersedia di sistem. Hubungi admin untuk memperbarui sistem.";
+    if (error.status === 404 && /^endpoint not found$/i.test(error.message)) return "Fitur ini belum tersedia di sistem. Hubungi pengelola sistem untuk memperbarui sistem.";
     return error.message;
   }
   if (error instanceof Error) return error.message;

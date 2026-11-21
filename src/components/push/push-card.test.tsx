@@ -34,7 +34,7 @@ describe("Kartu notifikasi di HP ini", () => {
     signIn("VIEWER", "pemantau");
     stubApi(config(false));
     renderWithProviders(<PushCard />);
-    expect(await screen.findByText("Notifikasi belum diaktifkan di sistem. Hubungi admin.")).toBeInTheDocument();
+    expect(await screen.findByText("Notifikasi belum diaktifkan di sistem. Hubungi pengelola sistem.")).toBeInTheDocument();
     expect(screen.queryByRole("switch")).not.toBeInTheDocument();
   });
 

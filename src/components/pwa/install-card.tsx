@@ -22,7 +22,7 @@ const howTo: Record<Exclude<InstallState, "installed" | "prompt">, ReactNode> = 
       <strong>Tambahkan ke layar utama</strong>. Di komputer, cari ikon pasang di kanan kolom alamat.
     </>
   ),
-  insecure: "Pemasangan butuh alamat https. Buka FertiMata lewat alamat https, atau minta admin memasang domain untuk aplikasi ini.",
+  insecure: "Pemasangan butuh alamat https. Buka FertiMata lewat alamat https, atau minta pengelola sistem memasang domain untuk aplikasi ini.",
 };
 
 export function InstallCard({ className }: { className?: string }) {

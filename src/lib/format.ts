@@ -259,7 +259,7 @@ export function deviceTypeLabel(type: string | null | undefined): string | null 
   return deviceTypeLabels[type] ?? type;
 }
 
-const roleLabels: Record<string, string> = { ADMIN: "Admin", OPERATOR: "Operator", VIEWER: "Pemantau" };
+const roleLabels: Record<string, string> = { ADMIN: "Operator", OPERATOR: "Operator", VIEWER: "Pemantau" };
 
 export function roleLabel(role: string | null | undefined): string {
   if (!role) return "—";

@@ -33,14 +33,14 @@ describe("Halaman Panduan", () => {
     signIn("OPERATOR");
     window.history.replaceState(null, "", "/panduan#kontrol");
     renderWithProviders(<GuidePage />);
-    expect(screen.queryByText(/Hanya operator atau admin yang bisa menyalakan perangkat/)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Hanya operator yang bisa menyalakan perangkat/)).not.toBeInTheDocument();
   });
 
   it("Pemantau tetap mendapat penjelasan Kontrol, dengan catatan hanya operator yang bisa menyalakan", () => {
     signIn("VIEWER", "pemantau");
     window.history.replaceState(null, "", "/panduan#kontrol");
     renderWithProviders(<GuidePage />);
-    expect(screen.getByText(/Hanya operator atau admin yang bisa menyalakan perangkat/)).toBeInTheDocument();
+    expect(screen.getByText(/Hanya operator yang bisa menyalakan perangkat/)).toBeInTheDocument();
     expect(screen.getByText("Tunggu sampai tulisannya berubah dari \"Terkirim, menunggu jawaban perangkat\" menjadi \"Dijalankan\".")).toBeInTheDocument();
   });
 

@@ -151,7 +151,7 @@ function ScheduleBody({ s, lastRun }: { s: FertilizationSchedule; lastRun: Ferti
   return (
     <>
       {state.kind === "disabled" && <Notice tone="neutral">Pupuk otomatis dimatikan di pengaturan sistem. Jam siram tetap berjalan tanpa pupuk.</Notice>}
-      {state.kind === "ai-not-configured" && <Notice tone="warn">Layanan AI belum disambungkan ke sistem, jadi jadwal dan takaran pupuk belum bisa dipakai. Hubungi admin.</Notice>}
+      {state.kind === "ai-not-configured" && <Notice tone="warn">Layanan AI belum disambungkan ke sistem, jadi jadwal dan takaran pupuk belum bisa dipakai. Hubungi pengelola sistem.</Notice>}
       {state.kind === "ai-unreachable" && (
         <Notice tone="warn">Layanan AI tidak menjawab, jadi jadwal pupuk tidak bisa dibaca sekarang. Bila sampai hari pupuk AI tetap tidak menjawab, pupuk tidak dituang dan dicoba lagi pada jam siram berikutnya.</Notice>
       )}
@@ -165,7 +165,7 @@ function ScheduleBody({ s, lastRun }: { s: FertilizationSchedule; lastRun: Ferti
         <EmptyState
           icon={<FlaskConical aria-hidden className="size-5" strokeWidth={2} />}
           title="Belum ada jadwal pupuk"
-          hint={canWrite ? "Tekan Atur jadwal pupuk dan pilih setiap berapa hari tanaman dipupuk." : "Operator atau admin bisa mengatur jadwal pupuk."}
+          hint={canWrite ? "Tekan Atur jadwal pupuk dan pilih setiap berapa hari tanaman dipupuk." : "Operator bisa mengatur jadwal pupuk."}
         />
       ) : (
         <dl>

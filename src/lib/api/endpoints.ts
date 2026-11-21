@@ -52,7 +52,7 @@ export const logout = (refreshToken: string) => apiRequest("/auth/logout", { met
 export const changePassword = (body: { currentPassword: string; newPassword: string }) =>
   apiRequest("/auth/change-password", { method: "POST", body, schema: loginResponseSchema });
 
-// Pengguna (ADMIN)
+// Pengguna (OPERATOR)
 export const getUsers = (signal?: AbortSignal) => apiRequest("/users", { schema: z.array(userSchema), signal });
 export type UserInput = { username: string; password: string; fullName?: string; role: string; mustChangePassword?: boolean };
 export const createUser = (body: UserInput) => apiRequest("/users", { method: "POST", body, schema: userSchema });

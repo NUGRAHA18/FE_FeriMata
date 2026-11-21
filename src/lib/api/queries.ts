@@ -494,7 +494,7 @@ export function useChangePassword() {
   });
 }
 
-// ── Pengguna (ADMIN) ─────────────────────────────────────────────────────────
+// ── Pengguna (OPERATOR) ─────────────────────────────────────────────────────────
 
 export function useUsers() {
   return useQuery({ queryKey: qk.users, queryFn: ({ signal }) => api.getUsers(signal) });

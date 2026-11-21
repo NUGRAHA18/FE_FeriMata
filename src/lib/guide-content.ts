@@ -109,7 +109,7 @@ export const guideSections: GuideSection[] = [
     icon: CalendarClock,
     href: "/jadwal-siram",
     purpose: "Pompa siram menyala sendiri setiap hari pada jam yang dipilih. Lama menyalanya sesuai yang Anda isi di jadwal. Pada hari pupuk, sebelum jam siram pertama, pupuk N, P, dan K dituang dulu ke drum, diaduk, lalu ikut disiram. Dibuka dari tombol bulat Siram di bawah layar.",
-    viewerNote: "Akun Pemantau bisa melihat jadwal siram dan pupuk; menambah, mengubah, dan menghapus jadwal dilakukan operator atau admin.",
+    viewerNote: "Akun Pemantau bisa melihat jadwal siram dan pupuk; menambah, mengubah, dan menghapus jadwal dilakukan operator.",
     onScreen: [
       { term: "Jam siram", meaning: "Daftar jam (WIB, 24 jam) pompa siram menyala, misalnya \"06:00 · siram 5 mnt\"." },
       { term: "Lama siram", meaning: "Berapa lama pompa siram menyala setiap jam siram. Anda yang mengisinya; AI tidak mengubahnya." },
@@ -146,7 +146,7 @@ export const guideSections: GuideSection[] = [
       { sign: "\"Jam … sudah ada di jadwal\".", action: "Satu jam hanya boleh dipakai sekali. Pilih jam lain atau ubah jadwal yang sudah ada." },
       { sign: "\"Jam tidak valid\".", action: "Jam 00 sampai 23, menit 00 sampai 59. Contoh: 06:00 untuk pagi, 17:30 untuk sore." },
       { sign: "\"Terlalu lama\".", action: "Lama siram melebihi batas pompa siram. Bagi menjadi dua jadwal bila perlu siram lebih lama." },
-      { sign: "\"Layanan AI tidak menjawab\" di kartu Pupuk otomatis.", action: "Jadwal pupuk disimpan di layanan AI. Tunggu beberapa saat lalu muat ulang. Kalau tetap, hubungi admin untuk memeriksa layanan AI." },
+      { sign: "\"Layanan AI tidak menjawab\" di kartu Pupuk otomatis.", action: "Jadwal pupuk disimpan di layanan AI. Tunggu beberapa saat lalu muat ulang. Kalau tetap, hubungi pengelola sistem untuk memeriksa layanan AI." },
       { sign: "\"Belum ada jam siram yang aktif\".", action: "Pupuk hanya dituang sebelum jam siram. Tambahkan atau nyalakan jam siram." },
       { sign: "Tertulis \"Belum dipupuk: data sensor tanah belum ada atau sudah lama\".", action: "Periksa sensor tanah di halaman Sensor (angkanya harus baru). Pupuk dicoba lagi pada jam siram berikutnya." },
       { sign: "Tertulis \"Dipupuk sebagian\".", action: "Periksa pompa pupuk dan panel saklar di halaman Kontrol. Jangan menuang ulang manual kecuali yakin pupuk belum keluar." },
@@ -158,7 +158,7 @@ export const guideSections: GuideSection[] = [
     icon: ToggleRight,
     href: "/actuators",
     purpose: "Menyalakan dan mematikan pompa, pengaduk, dan kereta kamera dari HP.",
-    viewerNote: "Hanya operator atau admin yang bisa menyalakan perangkat. Akun Pemantau bisa membaca bagian ini dan melihat status perangkat.",
+    viewerNote: "Hanya operator yang bisa menyalakan perangkat. Akun Pemantau bisa membaca bagian ini dan melihat status perangkat.",
     onScreen: [
       { term: "Menyala / Mati", meaning: "Keadaan perangkat menurut laporan perangkat itu sendiri." },
       { term: "Sedang berjalan / Tidak berjalan", meaning: "Untuk patroli dan kereta kamera: apakah tugasnya sedang dikerjakan." },
@@ -265,7 +265,7 @@ export const guideSections: GuideSection[] = [
       "Untuk menghapus, tekan tombol tempat sampah di tanaman itu, lalu Hapus. Bila itu tanaman terakhir, tanggal semai ikut dikosongkan.",
     ],
     troubles: [
-      { sign: "Tertulis \"Tanggal semai belum diisi\".", action: "Operator atau admin menekan Tambah tanaman pertama dan mengisi tanggal semainya." },
+      { sign: "Tertulis \"Tanggal semai belum diisi\".", action: "Operator menekan Tambah tanaman pertama dan mengisi tanggal semainya." },
       { sign: "Umur tanaman terlihat salah.", action: "Umur dihitung dari tanggal semai (hari ke-0 = hari benih disemai). Tekan Ubah tanggal semai di kartu Umur tanaman untuk memperbaikinya." },
     ],
     viewerNote: "Akun Pemantau hanya bisa melihat; menambah dan menghapus tanaman dilakukan operator.",
@@ -292,7 +292,7 @@ export const guideSections: GuideSection[] = [
     href: "/profile",
     purpose: "Data akun Anda, notifikasi ke HP, ganti kata sandi, dan keluar.",
     onScreen: [
-      { term: "Peran", meaning: "Admin: mengatur akun dan semua fitur. Operator: menyalakan perangkat dan mencatat data. Pemantau: hanya melihat." },
+      { term: "Peran", meaning: "Operator: semua fitur, termasuk menyalakan perangkat, mencatat data, dan mengatur akun. Pemantau: hanya melihat." },
       { term: "Notifikasi di HP ini", meaning: "Kirim peringatan Darurat ke HP ini walaupun aplikasi ditutup." },
       { term: "Kirim notifikasi uji", meaning: "Mencoba apakah notifikasi sampai ke HP." },
       { term: "Ganti kata sandi", meaning: "Setelah diganti, HP atau komputer lain harus masuk lagi." },
@@ -304,7 +304,7 @@ export const guideSections: GuideSection[] = [
       "Kalau HP dipakai bergantian, tekan Keluar setelah selesai.",
     ],
     troubles: [
-      { sign: "\"Notifikasi butuh alamat https\".", action: "Aplikasi dibuka lewat alamat angka (http). Minta admin memasang alamat https." },
+      { sign: "\"Notifikasi butuh alamat https\".", action: "Aplikasi dibuka lewat alamat angka (http). Minta pengelola sistem memasang alamat https." },
       { sign: "Di iPhone tidak ada saklar notifikasi.", action: "Buka di Safari, ketuk Bagikan, pilih Tambahkan ke Layar Utama, lalu buka dari ikon di layar utama." },
       { sign: "Tertulis \"diblokir\".", action: "Ketuk ikon gembok di samping alamat, pilih Izin → Notifikasi → Izinkan, lalu muat ulang halaman." },
     ],
@@ -314,13 +314,13 @@ export const guideSections: GuideSection[] = [
     title: "Pengaturan",
     icon: Settings,
     href: "/settings",
-    purpose: "Tema tampilan, mode sederhana, petunjuk singkat, sensor & perangkat yang dimatikan, dan (untuk admin) daftar pengguna.",
+    purpose: "Tema tampilan, mode sederhana, petunjuk singkat, sensor & perangkat yang dimatikan, dan (untuk operator) daftar pengguna.",
     onScreen: [
       { term: "Sensor & perangkat yang dimatikan", meaning: "Sensor dan perangkat yang sedang tidak dipakai, tidak tampil di halaman lain. Buka salah satu untuk menyalakannya lagi." },
       { term: "Tampilan", meaning: "Pilih tema Terang, Gelap, atau Ikuti sistem. Terang cocok di siang hari, Gelap nyaman di malam hari." },
       { term: "Mode sederhana", meaning: "Menyembunyikan semua panel Detail sistem supaya layar lebih ringkas." },
       { term: "Buka petunjuk", meaning: "Membuka lagi petunjuk singkat Beranda." },
-      { term: "Pengguna", meaning: "Khusus admin: menambah akun, mengganti peran, dan mengatur ulang kata sandi." },
+      { term: "Pengguna", meaning: "Khusus operator: menambah akun, mengganti peran, dan mengatur ulang kata sandi." },
     ],
     steps: [
       "Nyalakan Mode sederhana kalau layar terasa terlalu ramai.",
