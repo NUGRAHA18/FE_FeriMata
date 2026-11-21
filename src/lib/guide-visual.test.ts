@@ -35,10 +35,10 @@ describe("panduan bergambar", () => {
       });
 
       it("id sama dengan aturan pembuat gambar (scripts/panduan/pages.mjs)", async () => {
-        const { pages } = (await import("../../scripts/panduan/pages.mjs")) as { pages: { slug: string; spots: { id: string }[] }[] };
+        const { pages } = (await import("../../scripts/panduan/pages.mjs")) as { pages: { slug: string; spots: { id: string; hidden?: boolean }[] }[] };
         const page = pages.find((p) => p.slug === guide.slug);
         expect(page, "halaman di pages.mjs").toBeDefined();
-        expect(page!.spots.map((s) => s.id)).toEqual(spots.map((s) => s.id));
+        expect(page!.spots.filter((s) => !s.hidden).map((s) => s.id)).toEqual(spots.map((s) => s.id));
       });
     });
   }

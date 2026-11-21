@@ -43,9 +43,14 @@ function locate(spec) {
     const y2 = Math.max(...b.map((v) => v.y + v.h));
     return { x: x1, y: y1, w: x2 - x1, h: y2 - y1 };
   };
+  // Elemen yang teksnya cocok: teks langsung elemen itu (tanpa anak), atau seluruh teks bila ia daun.
   const leafMatching = (test) => {
-    const all = [...document.querySelectorAll("body *")].filter((el) => visible(el) && el.children.length === 0);
-    return all.find((el) => test(el.textContent.trim().replace(/\s+/g, " ")));
+    const own = (el) => [...el.childNodes].filter((n) => n.nodeType === 3).map((n) => n.textContent).join(" ").trim().replace(/\s+/g, " ");
+    const all = [...document.querySelectorAll("body *")].filter(visible);
+    return all.find((el) => {
+      const t = el.children.length === 0 ? el.textContent.trim().replace(/\s+/g, " ") : own(el);
+      return t !== "" && test(t);
+    });
   };
   const boxed = (el) => {
     for (let n = el; n && n !== document.body; n = n.parentElement) {
@@ -71,13 +76,15 @@ function locate(spec) {
     if (s.regex) {
       const re = new RegExp(s.regex, "i");
       const el = leafMatching((t) => re.test(t));
-      return el ? box(el.closest("button, a, div") || el) : null;
+      if (!el) return null;
+      return box(/^H[1-6]$/.test(el.tagName) ? el : el.closest("button, a, div") || el);
     }
     if (s.text) {
       const want = s.text.toLowerCase();
       const el = leafMatching((t) => t.toLowerCase() === want);
       if (!el) return null;
-      return s.text === "AKSI MANUAL" ? box(el.closest("p, div") || el) : box(boxed(el));
+      if (s.text === "AKSI MANUAL") return box(el.closest("p, div") || el);
+      return box(el.closest("button, a") || boxed(el));
     }
     return null;
   };
@@ -106,21 +113,32 @@ async function main() {
     [JSON.stringify({ token: "demo", expiresAt: far, refreshToken: "demo", refreshExpiresAt: far, user: demo.me })],
   );
 
+  // Rute GET → data contoh (nilai boleh fungsi dari parameter kueri). Yang tidak terdaftar dijawab 404.
   const routes = {
     "/auth/me": demo.me,
     "/push/config": demo.push,
     "/dashboard/overview": demo.overview,
     "/devices": demo.devices,
+    "/sensors": demo.sensors,
     "/actuators": demo.actuators,
     "/ai/status": demo.aiStatus,
     "/ai/detections": demo.detections,
+    "/ai/history/irrigation": [],
     "/irrigation/schedules": demo.irrigation,
+    "/irrigation/runs": demo.irrigationRuns,
     "/fertilization/schedule": demo.fertilization,
+    "/fertilization/runs": demo.fertilizationRuns,
+    "/fertilization/dose": demo.dose,
+    "/alerts": (q) => (q.get("acknowledged") === "true" ? { content: [], page: 0, size: 20, totalElements: 0, totalPages: 0, last: true } : demo.alerts),
+    "/plants": demo.plants,
+    "/cultivation/active": demo.cultivation,
   };
   await ctx.route("**/api/**", (route) => {
-    const path = new URL(route.request().url()).pathname.replace(/^\/api/, "");
+    const url = new URL(route.request().url());
+    const path = url.pathname.replace(/^\/api/, "");
     if (route.request().method() !== "GET") return route.fulfill({ status: 200, contentType: "application/json", body: "{}" });
-    const body = routes[path];
+    const entry = routes[path];
+    const body = typeof entry === "function" ? entry(url.searchParams) : entry;
     return route.fulfill({ status: body === undefined ? 404 : 200, contentType: "application/json", body: JSON.stringify(body ?? { message: "contoh: tidak ada" }) });
   });
 
@@ -151,23 +169,22 @@ async function main() {
     const pageHeight = await page.evaluate(() => document.documentElement.scrollHeight);
     const PAD = 14;
     const parts = [];
-    for (const [i, p] of spec.parts.entries()) {
+    for (const [i, p] of (spec.parts ?? [{ from: null, to: null }]).entries()) {
       const top = Math.max(0, p.from ? boxes[p.from].y - PAD : 0);
       const bottom = Math.min(pageHeight, p.to ? boxes[p.to].y + boxes[p.to].h + PAD : pageHeight);
       const file = `${spec.slug}-${i + 1}.jpg`;
       await page.screenshot({ path: join(root, "public/panduan", file), type: "jpeg", quality: 82, fullPage: true, clip: { x: 0, y: top, width: WIDTH, height: bottom - top } });
       const height = bottom - top;
       const inside = spec.spots
+        .filter((s) => !s.hidden)
         .map((s, n) => ({ id: s.id, n: n + 1, b: boxes[s.id] }))
         .filter(({ b }) => b.y + b.h / 2 >= top && b.y + b.h / 2 <= bottom)
-        .map(({ id, n, b }) => ({
-          id,
-          n,
-          x: +((b.x / WIDTH) * 100).toFixed(2),
-          y: +(((b.y - top) / height) * 100).toFixed(2),
-          w: +((b.w / WIDTH) * 100).toFixed(2),
-          h: +((b.h / height) * 100).toFixed(2),
-        }));
+        .map(({ id, n, b }) => {
+          // Kotak yang menjorok ke luar potongan (mis. kartu panjang yang terpotong) dijepit ke tepi gambar.
+          const y = Math.max(0, (b.y - top) / height) * 100;
+          const h = Math.min(((b.y - top + b.h) / height) * 100, 100) - y;
+          return { id, n, x: +((b.x / WIDTH) * 100).toFixed(2), y: +y.toFixed(2), w: +((b.w / WIDTH) * 100).toFixed(2), h: +h.toFixed(2) };
+        });
       parts.push({ image: `/panduan/${file}`, width: WIDTH * SCALE, height: Math.round(height * SCALE), spots: inside });
     }
     writeFileSync(join(root, "src/lib/guide-visual", `${spec.slug}.generated.json`), JSON.stringify({ slug: spec.slug, parts }, null, 2) + "\n");

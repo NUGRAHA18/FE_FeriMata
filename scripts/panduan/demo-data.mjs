@@ -43,21 +43,26 @@ const READINGS = {
 export function buildDemo(now = Date.now()) {
   const deviceId = Object.fromEntries(catalog.devices.map((d) => [d.deviceCode, d.id]));
   const base = catalog.sampleReading;
-  const latestReadings = Object.entries(READINGS).map(([metricKey, [deviceCode, value, unit]], i) => ({
-    ...base,
-    id: 900000 + i,
-    sensorId: 100 + i,
-    sensorCode: metricKey.toUpperCase().replace(/[._]/g, "-"),
-    metricKey,
-    deviceId: deviceId[deviceCode],
-    deviceCode,
-    value,
-    calibratedValue: null,
-    textValue: null,
-    unit,
-    recordedAt: iso(now - (8 + (i % 7) * 6) * 1000),
-    receivedAt: iso(now - (7 + (i % 7) * 6) * 1000),
-  }));
+  // sensorId/kode dari katalog sungguhan: halaman Sensor mencocokkan bacaan lewat sensorId.
+  const sensorOf = Object.fromEntries(catalog.sensors.map((x) => [x.metricKey, x]));
+  const latestReadings = Object.entries(READINGS).map(([metricKey, [deviceCode, value, unit]], i) => {
+    const sensor = sensorOf[metricKey];
+    return {
+      ...base,
+      id: 900000 + i,
+      sensorId: sensor ? sensor.id : 100 + i,
+      sensorCode: sensor ? sensor.code : metricKey.toUpperCase().replace(/[._]/g, "-"),
+      metricKey,
+      deviceId: deviceId[deviceCode],
+      deviceCode,
+      value,
+      calibratedValue: null,
+      textValue: null,
+      unit: unit ?? (sensor ? sensor.unit : null),
+      recordedAt: iso(now - (8 + (i % 7) * 6) * 1000),
+      receivedAt: iso(now - (7 + (i % 7) * 6) * 1000),
+    };
+  });
 
   const deviceItems = catalog.deviceStatus.map((d) => ({
     ...d,
@@ -106,11 +111,55 @@ export function buildDemo(now = Date.now()) {
     lastMessage: null, lastReasonCode: null, lastDurationSeconds: last ? 300 : null, lastCommandUid: last ? `demo-${id}` : null, lastCommandStatus: last ? "EXECUTED" : null, lastCommandFailureCode: null,
   });
 
+  const day = (offsetDays) => new Date(now + offsetDays * 86_400_000).toISOString().slice(0, 10);
+  const sowing = day(-23);
+  const cult = JSON.parse(JSON.stringify(catalog.cultivationActive));
+  Object.assign(cult.cycle, { sowingDate: sowing, transplantDate: sowing });
+  Object.assign(cult, { today: day(0), hst: 23 });
+
+  const sensors = catalog.sensors.map((x) => ({ ...x, enabled: true, autoRegistered: false }));
+
+  const irrigationRuns = [
+    { id: 3, runDate: day(0), irrigationScheduleId: 1, time: "06:00", result: "STARTED", reasonCode: null, message: null, durationSeconds: 300, commandUid: "demo-3", commandStatus: "EXECUTED", commandFailureCode: null, commandError: null, recordedAt: iso(now - 20 * 3_600_000) },
+    { id: 2, runDate: day(-1), irrigationScheduleId: 2, time: "17:00", result: "STARTED", reasonCode: null, message: null, durationSeconds: 300, commandUid: "demo-2", commandStatus: "EXECUTED", commandFailureCode: null, commandError: null, recordedAt: iso(now - 31 * 3_600_000) },
+    { id: 1, runDate: day(-1), irrigationScheduleId: 1, time: "06:00", result: "SKIPPED", reasonCode: "FLOAT_LOW", message: "Air drum rendah", durationSeconds: null, commandUid: null, commandStatus: null, commandFailureCode: null, commandError: null, recordedAt: iso(now - 44 * 3_600_000) },
+  ];
+  const fertRun = (id, daysAgo) => ({
+    ...catalog.fertilizationRunTemplate, id, runDate: day(-daysAgo), irrigationScheduleId: 1, status: "DONE", step: null, reasonCode: null, message: null, intervalDays: 3,
+    aiNitrogenSeconds: 40, aiPhosphorusSeconds: 25, aiPotassiumSeconds: 55, doseSource: "AI", manualNitrogenMl: null, manualPhosphorusMl: null, manualPotassiumMl: null,
+    nitrogenSeconds: 40, phosphorusSeconds: 25, potassiumSeconds: 55, stirrerSeconds: 120, startedAt: iso(now - daysAgo * 86_400_000), finishedAt: iso(now - daysAgo * 86_400_000 + 240_000), createdAt: iso(now - daysAgo * 86_400_000),
+  });
+  const page = (content) => ({ content, page: 0, size: 10, totalElements: content.length, totalPages: content.length ? 1 : 0, last: true });
+  const dose = { ...catalog.fertilizationDose, pumps: catalog.fertilizationDose.pumps.map((p) => ({ ...p, available: true, flowMlPerSecond: 3.2, maxMl: 480 })) };
+
+  const mkAlert = (id, type, severity, title, message, deviceCode, hoursAgo, extra = {}) => ({
+    ...alert, id, type, severity, title, message, relatedDeviceCode: deviceCode, relatedDeviceId: deviceId[deviceCode], createdAt: iso(now - hoursAgo * 3_600_000), ...extra,
+  });
+  const alertsList = [
+    mkAlert(12, "POWER_BACKUP", "CRITICAL", "Listrik PLN padam, memakai baterai", "Perangkat JETSON-01 memakai listrik cadangan. Pompa, pengaduk, dan kereta kamera dikunci sementara.", "JETSON-01", 0.4),
+    mkAlert(11, "MODBUS_TIMEOUT", "WARNING", "Alat tidak menjawab", "Data dari meteran listrik berhenti masuk. Periksa kabel dan daya alat tersebut.", "PZEM-01", 2),
+    mkAlert(7, "PUMP_CALIBRATION_DUE", "INFO", "Pompa pupuk perlu dikalibrasi", "Ukur debit pompa pupuk supaya takaran pupuk tepat.", "RIO-TANK-01", 5),
+  ];
+
+  overview.alerts = { unacknowledged: alertsList.length, critical: 1, warning: 1, active: alertsList };
+  const det = (id, station, pan, mins, healthy) => ({
+    ...detection, id, stationCode: station, panDirection: pan, detectedAt: iso(now - mins * 60_000), createdAt: iso(now - mins * 60_000),
+    scores: { Healthy: healthy, "Nitrogen-Deficiency": +(0.9 - healthy).toFixed(2) / 2, "Phosphorus-Deficiency": +(0.9 - healthy).toFixed(2) / 4, "Potassium-Deficiency": +(0.9 - healthy).toFixed(2) / 4 },
+  });
+  const detections = page([det(3, "ST-03", "TIMUR", 20, 0.72), det(2, "ST-02", "BARAT", 26, 0.81)]);
+
   return {
     me: { id: 1, username: "budi", fullName: "Pak Budi", role: "OPERATOR", enabled: true, mustChangePassword: false, createdAt: iso(now - 30 * 86_400_000) },
     push: { enabled: false, publicKey: null, minSeverity: "CRITICAL", subscriptions: 0 },
     overview,
-    detections: { content: [detection], page: 0, size: 10, totalElements: 1, totalPages: 1, last: true },
+    detections,
+    sensors,
+    irrigationRuns: page(irrigationRuns),
+    fertilizationRuns: page([fertRun(2, 2), fertRun(1, 5)]),
+    dose,
+    alerts: page(alertsList),
+    plants: catalog.plants,
+    cultivation: cult,
     devices,
     aiStatus: { configured: true, reachable: true, message: "Running Melon AI System API", latencyMs: 23, checkedAt: iso(now) },
     actuators,

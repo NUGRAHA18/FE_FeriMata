@@ -1,4 +1,6 @@
 import beranda from "./guide-visual/beranda.generated.json";
+import jadwalSiram from "./guide-visual/jadwal-siram.generated.json";
+import sensor from "./guide-visual/sensor.generated.json";
 
 /* Panduan bergambar: tangkapan layar tampilan HP dengan nomor di tiap bagian, lalu satu-dua kalimat penjelasan.
  * Gambar dan posisi nomor DIHASILKAN skrip (scripts/panduan, `npm run panduan:shots`) dari aplikasi yang
@@ -74,8 +76,28 @@ const berandaItems: Record<string, VisualItem> = {
   },
 };
 
+const sensorItems: Record<string, VisualItem> = {
+  cari: { title: "Cari sensor", text: "Ketik nama sensor, misalnya \"tanah\" atau \"drum\", untuk mempersempit daftar." },
+  kelompok: { title: "Kelompok sensor", text: "Sensor dikelompokkan menurut alat tempat sambungannya, misalnya sensor udara & tanah atau kotak kendali drum pupuk." },
+  kartu: { title: "Kartu sensor", text: "Satu kartu = satu sensor: nama, angka terakhir, dan kapan diperbarui. Tanda \"—\" berarti belum ada angka; \"Belum terbaca\" berarti angkanya belum bisa dipercaya. Ketuk kartu untuk melihat grafiknya." },
+  drum: { title: "Kotak kendali drum pupuk", text: "Sensor di drum pupuk: pelampung air, kepekatan (EC), keasaman (pH), dan suhu larutan." },
+  pelampung: { title: "Pelampung air drum", text: "\"Air cukup\" berarti drum masih terisi. Kalau \"Air rendah\", pompa air utama, pompa pupuk, dan pengaduk tidak bisa dinyalakan sampai drum diisi." },
+};
+
+const siramItems: Record<string, VisualItem> = {
+  ai: { title: "Layanan AI", text: "Menunjukkan apakah layanan AI hidup. Siram tetap jalan sesuai jam walau AI mati; pupuk dengan takaran AI baru jalan bila AI hidup." },
+  jam: { title: "Jam siram", text: "Jam siram setiap hari. Pompa menyala selama waktu yang tertulis. Geser saklar untuk menghidupkan atau mematikan satu jam; pensil untuk mengubah, tempat sampah untuk menghapus." },
+  tambah: { title: "Tambah jam", text: "Tambahkan jam siram baru dan isi berapa lama pompa menyala." },
+  pupuk: { title: "Pupuk otomatis", text: "Pada hari pupuk, sebelum jam siram pertama, pupuk N, P, K dituang ke drum lalu diaduk. Atur setiap berapa hari lewat \"Ubah jarak hari\". \"Hentikan pupuk otomatis\" menghentikan pemupukan; siram tetap jalan." },
+  takaran: { title: "Takaran", text: "\"Otomatis (AI)\": takaran dihitung AI. Atau atur sendiri dalam mililiter lewat \"Ubah takaran\"." },
+  "riwayat-siram": { title: "Riwayat siram", text: "Satu catatan tiap jam siram: disiram, atau dibatalkan demi keamanan (misalnya air drum rendah), gagal, atau terlewat." },
+  "riwayat-pupuk": { title: "Riwayat pupuk", text: "Hasil tiap pemupukan dan takaran tiap pompa: lama menyala untuk N, P, dan K." },
+};
+
 const visualGuides: Record<string, VisualGuide> = {
   beranda: { slug: "beranda", screen: "Beranda", parts: beranda.parts, items: berandaItems },
+  sensor: { slug: "sensor", screen: "Sensor", parts: sensor.parts, items: sensorItems },
+  "jadwal-siram": { slug: "jadwal-siram", screen: "Siram & pupuk", parts: jadwalSiram.parts, items: siramItems },
 };
 
 /** Panduan bergambar untuk bagian Panduan dengan id ini, atau undefined bila belum dibuat. */

@@ -519,5 +519,602 @@
   "unit": null,
   "recordedAt": "2026-11-21T16:52:55Z",
   "receivedAt": "2026-11-21T16:52:55.837891Z"
+ },
+ "sensors": [
+  {
+   "id": 26,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "AIR-HUMIDITY",
+   "metricKey": "air.humidity",
+   "name": "Kelembapan udara greenhouse",
+   "type": "AIR_HUMIDITY",
+   "unit": "%RH",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "model": "SHT40 XY-MD02",
+    "modbusAddress": "3"
+   },
+   "createdAt": "2026-09-28T08:10:10.911392Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 25,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "AIR-TEMP",
+   "metricKey": "air.temperature",
+   "name": "Suhu udara greenhouse",
+   "type": "AIR_TEMPERATURE",
+   "unit": "C",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "model": "SHT40 XY-MD02",
+    "modbusAddress": "3"
+   },
+   "createdAt": "2026-09-28T08:10:10.902916Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 37,
+   "deviceId": 5,
+   "deviceCode": "RIO-TANK-01",
+   "code": "FLOAT-LOW",
+   "metricKey": "tank.float_low_ok",
+   "name": "Pelampung air drum",
+   "type": "LEVEL_SWITCH",
+   "unit": null,
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "1 = tertutup, air cukup. 0 = air rendah ATAU kabel putus - pompa distribusi, dosing dan aduk diblokir.",
+   "metadata": {
+    "channel": "IN1",
+    "modbusAddress": "21"
+   },
+   "createdAt": "2026-10-29T15:20:29.087930Z",
+   "updatedAt": "2026-10-29T15:20:29.087930Z"
+  },
+  {
+   "id": 4,
+   "deviceId": 1,
+   "deviceCode": "JETSON-01",
+   "code": "JETSON-SOC-TEMP",
+   "metricKey": "jetson.soc_temperature",
+   "name": "Suhu komputer utama",
+   "type": "TEMPERATURE",
+   "unit": "C",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Indikator termal panel; Jetson hanya aman pada suhu lingkungan 0-35 C.",
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.523312Z",
+   "updatedAt": "2026-09-28T08:10:10.523312Z"
+  },
+  {
+   "id": 27,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "LIGHT",
+   "metricKey": "light.illuminance",
+   "name": "Intensitas cahaya",
+   "type": "ILLUMINANCE",
+   "unit": "lux",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Sensor cahaya RS485 0-200.000 lux, menghadap atas.",
+   "metadata": {
+    "modbusAddress": "4"
+   },
+   "createdAt": "2026-09-28T08:10:10.920892Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 7,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-CURRENT",
+   "metricKey": "mains.current",
+   "name": "Arus total panel",
+   "type": "CURRENT",
+   "unit": "A",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Baseline saat pompa OFF kira-kira 0,3 A. Di atas baseline saat pompa OFF = SSR rusak short.",
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.586260Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 9,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-ENERGY",
+   "metricKey": "mains.energy",
+   "name": "Energi total panel",
+   "type": "ENERGY",
+   "unit": "kWh",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.618133Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 6,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-FREQUENCY",
+   "metricKey": "mains.frequency",
+   "name": "Frekuensi PLN",
+   "type": "FREQUENCY",
+   "unit": "Hz",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.570844Z",
+   "updatedAt": "2026-09-28T08:10:10.570844Z"
+  },
+  {
+   "id": 8,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-POWER",
+   "metricKey": "mains.power",
+   "name": "Daya total panel",
+   "type": "POWER",
+   "unit": "W",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.602325Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 10,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-POWER-FACTOR",
+   "metricKey": "mains.power_factor",
+   "name": "Faktor daya panel",
+   "type": "POWER_FACTOR",
+   "unit": null,
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.631983Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 5,
+   "deviceId": 2,
+   "deviceCode": "PZEM-01",
+   "code": "MAINS-VOLTAGE",
+   "metricKey": "mains.voltage",
+   "name": "Tegangan PLN",
+   "type": "VOLTAGE",
+   "unit": "V",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": null,
+   "createdAt": "2026-09-28T08:10:10.552735Z",
+   "updatedAt": "2026-09-28T08:10:10.552735Z"
+  },
+  {
+   "id": 13,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-EC",
+   "metricKey": "soil_a.ec",
+   "name": "EC tanah",
+   "type": "SOIL_EC",
+   "unit": "mS/cm",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.759990Z",
+   "updatedAt": "2026-10-29T15:20:16.099413Z"
+  },
+  {
+   "id": 17,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-K",
+   "metricKey": "soil_a.potassium",
+   "name": "K tanah",
+   "type": "SOIL_POTASSIUM",
+   "unit": "mg/kg",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.820010Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 11,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-MOISTURE",
+   "metricKey": "soil_a.moisture",
+   "name": "Kelembapan tanah",
+   "type": "SOIL_MOISTURE",
+   "unit": "%",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.741439Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 15,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-N",
+   "metricKey": "soil_a.nitrogen",
+   "name": "N tanah",
+   "type": "SOIL_NITROGEN",
+   "unit": "mg/kg",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.787103Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 16,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-P",
+   "metricKey": "soil_a.phosphorus",
+   "name": "P tanah",
+   "type": "SOIL_PHOSPHORUS",
+   "unit": "mg/kg",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.802761Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 14,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-PH",
+   "metricKey": "soil_a.ph",
+   "name": "pH tanah",
+   "type": "SOIL_PH",
+   "unit": "pH",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.771125Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 12,
+   "deviceId": 4,
+   "deviceCode": "GREENHOUSE-01",
+   "code": "SOIL-A-TEMP",
+   "metricKey": "soil_a.temperature",
+   "name": "Suhu tanah",
+   "type": "SOIL_TEMPERATURE",
+   "unit": "C",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": null,
+   "metadata": {
+    "modbusAddress": "1"
+   },
+   "createdAt": "2026-09-28T08:10:10.750991Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 28,
+   "deviceId": 5,
+   "deviceCode": "RIO-TANK-01",
+   "code": "TANK-EC",
+   "metricKey": "tank.ec",
+   "name": "EC larutan",
+   "type": "SOLUTION_EC",
+   "unit": "mS/cm",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "DFR0300 di rakit probe, dikompensasi ke 25 C.",
+   "metadata": {
+    "channel": "A1",
+    "modbusAddress": "10"
+   },
+   "createdAt": "2026-09-28T08:10:10.939850Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 29,
+   "deviceId": 5,
+   "deviceCode": "RIO-TANK-01",
+   "code": "TANK-PH",
+   "metricKey": "tank.ph",
+   "name": "pH larutan",
+   "type": "SOLUTION_PH",
+   "unit": "pH",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "PH-4502C di rakit probe, dibaca saat papan EC mati.",
+   "metadata": {
+    "channel": "A2",
+    "modbusAddress": "10"
+   },
+   "createdAt": "2026-09-28T08:10:10.950834Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 36,
+   "deviceId": 5,
+   "deviceCode": "RIO-TANK-01",
+   "code": "TANK-WATER-TEMP",
+   "metricKey": "tank.water_temperature",
+   "name": "Suhu larutan",
+   "type": "SOLUTION_TEMPERATURE",
+   "unit": "C",
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "DS18B20 untuk kompensasi suhu EC dan pH.",
+   "metadata": {
+    "modbusAddress": "6"
+   },
+   "createdAt": "2026-10-29T15:20:29.056464Z",
+   "updatedAt": "2026-10-29T15:20:29.056464Z"
+  },
+  {
+   "id": 3,
+   "deviceId": 1,
+   "deviceCode": "JETSON-01",
+   "code": "TROLLEY-END",
+   "metricKey": "trolley.end_limit",
+   "name": "Sensor ujung rel utara",
+   "type": "LIMIT_SWITCH",
+   "unit": null,
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Kontak NC - aktif berarti tertekan ATAU kabel putus.",
+   "metadata": {
+    "source": "GPIO kontak kering + filter RC"
+   },
+   "createdAt": "2026-09-28T08:10:10.503586Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 2,
+   "deviceId": 1,
+   "deviceCode": "JETSON-01",
+   "code": "TROLLEY-HOME",
+   "metricKey": "trolley.home_limit",
+   "name": "Sensor ujung rel selatan (posisi awal)",
+   "type": "LIMIT_SWITCH",
+   "unit": null,
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Kontak NC - aktif berarti tertekan ATAU kabel putus.",
+   "metadata": {
+    "source": "GPIO kontak kering + filter RC"
+   },
+   "createdAt": "2026-09-28T08:10:10.483520Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  },
+  {
+   "id": 1,
+   "deviceId": 1,
+   "deviceCode": "JETSON-01",
+   "code": "TROLLEY-STATION",
+   "metricKey": "trolley.station",
+   "name": "Posisi kereta kamera",
+   "type": "POSITION",
+   "unit": null,
+   "enabled": true,
+   "autoRegistered": false,
+   "description": "Nomor stasiun 1-10 dari hitungan magnet reed (tiap 600 mm); 0 = HOME.",
+   "metadata": {
+    "source": "GPIO reed switch"
+   },
+   "createdAt": "2026-09-28T08:10:10.448694Z",
+   "updatedAt": "2026-10-29T15:19:40.874682Z"
+  }
+ ],
+ "cultivationActive": {
+  "cycle": {
+   "id": 3,
+   "code": "MT-2026-10-29-3",
+   "name": "Musim tanam 2026-10-29",
+   "variety": null,
+   "sowingDate": "2026-10-29",
+   "transplantDate": "2026-10-29",
+   "expectedHarvestDate": null,
+   "endedAt": null,
+   "status": "ACTIVE",
+   "notes": null,
+   "phases": [
+    {
+     "id": 13,
+     "code": "SEMAI",
+     "name": "Semai",
+     "startHst": 0,
+     "endHst": 7,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    },
+    {
+     "id": 14,
+     "code": "VEGETATIF",
+     "name": "Vegetatif",
+     "startHst": 8,
+     "endHst": 24,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    },
+    {
+     "id": 15,
+     "code": "PEMBUNGAAN",
+     "name": "Pembungaan",
+     "startHst": 25,
+     "endHst": 34,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    },
+    {
+     "id": 16,
+     "code": "PEMBUAHAN",
+     "name": "Pembuahan",
+     "startHst": 35,
+     "endHst": 60,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    },
+    {
+     "id": 17,
+     "code": "PEMATANGAN",
+     "name": "Pematangan",
+     "startHst": 61,
+     "endHst": 74,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    },
+    {
+     "id": 18,
+     "code": "PANEN",
+     "name": "Panen",
+     "startHst": 75,
+     "endHst": null,
+     "ecTargetMin": 1.2,
+     "ecTargetMax": 2.5,
+     "notes": null
+    }
+   ],
+   "createdAt": "2026-10-29T16:51:20.551199Z",
+   "updatedAt": "2026-10-29T16:51:20.551199Z"
+  },
+  "today": "2026-11-22",
+  "hst": 24,
+  "currentPhase": {
+   "id": 14,
+   "code": "VEGETATIF",
+   "name": "Vegetatif",
+   "startHst": 8,
+   "endHst": 24,
+   "ecTargetMin": 1.2,
+   "ecTargetMax": 2.5,
+   "notes": null
+  },
+  "nextPhase": {
+   "id": 15,
+   "code": "PEMBUNGAAN",
+   "name": "Pembungaan",
+   "startHst": 25,
+   "endHst": 34,
+   "ecTargetMin": 1.2,
+   "ecTargetMax": 2.5,
+   "notes": null
+  },
+  "daysUntilNextPhase": 1,
+  "plantCount": 1
+ },
+ "plants": [
+  {
+   "id": 3,
+   "code": "Melon",
+   "name": "Melon",
+   "description": null,
+   "active": true,
+   "createdAt": "2026-10-29T16:51:20.813551Z",
+   "updatedAt": "2026-10-29T16:51:20.813551Z"
+  }
+ ],
+ "fertilizationRunTemplate": {
+  "id": 3,
+  "runDate": "2026-11-05",
+  "irrigationScheduleId": null,
+  "status": "SKIPPED",
+  "step": null,
+  "reasonCode": "AI_INPUTS_NOT_READY",
+  "message": "fertilization.ec (tank.ec): stale, 1434538 s old; fertilization.ph (tank.ph): stale, 1434538 s old; fertilization.nitrogen_tanah (soil_a.nitrogen): stale, 1434538 s old; fertilization.phosfor_tanah (soil_a.phosphorus): stale, 1434538 s old; fertilization.kalium_tanah (soil_a.potassium): stale, 1434538 s old; irrigation.ec_air (tank.ec): stale, 1434538 s old; irrigation.suhu_air (tank.water_temperature): no reading; irrigation.suhu_udara (air.temperature): stale, 1434538 s old; irrigation.rh (air",
+  "intervalDays": 1,
+  "aiNitrogenSeconds": null,
+  "aiPhosphorusSeconds": null,
+  "aiPotassiumSeconds": null,
+  "doseSource": null,
+  "manualNitrogenMl": null,
+  "manualPhosphorusMl": null,
+  "manualPotassiumMl": null,
+  "nitrogenSeconds": null,
+  "phosphorusSeconds": null,
+  "potassiumSeconds": null,
+  "stirrerSeconds": null,
+  "stirrerCommandUid": null,
+  "nitrogenCommandUid": null,
+  "phosphorusCommandUid": null,
+  "potassiumCommandUid": null,
+  "startedAt": "2026-11-04T23:00:27.247696Z",
+  "finishedAt": "2026-11-04T23:00:27.247696Z",
+  "createdAt": "2026-11-04T23:00:33.487336Z"
+ },
+ "fertilizationDose": {
+  "mode": "AI",
+  "nitrogenMl": null,
+  "phosphorusMl": null,
+  "potassiumMl": null,
+  "updatedAt": null,
+  "updatedBy": null,
+  "pumps": [
+   {
+    "nutrient": "N",
+    "actuatorCode": "DOSING-N",
+    "available": true,
+    "flowMlPerSecond": null,
+    "maxMl": null
+   },
+   {
+    "nutrient": "P",
+    "actuatorCode": "DOSING-P",
+    "available": true,
+    "flowMlPerSecond": null,
+    "maxMl": null
+   },
+   {
+    "nutrient": "K",
+    "actuatorCode": "DOSING-K",
+    "available": true,
+    "flowMlPerSecond": null,
+    "maxMl": null
+   }
+  ]
  }
 }

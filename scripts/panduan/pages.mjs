@@ -6,6 +6,7 @@
 //   { text: "Teks" }       kartu (rounded-card) yang memuat teks persis ini; { regex: "peringatan" } untuk pola
 //   { selector: "css" }    elemen langsung
 //   { union: [ ... ] }     kotak yang melingkupi beberapa bagian sekaligus
+// `hidden: true` = hanya diukur (batas potongan gambar), tidak diberi nomor.
 
 export const pages = [
   {
@@ -30,6 +31,36 @@ export const pages = [
       { id: "kamera", find: { h2: "Foto tanaman terbaru" } },
       { id: "aktivitas", find: { h2: "Baru saja terjadi" } },
       { id: "menu", find: { selector: "nav" } },
+    ],
+  },
+  {
+    slug: "sensor",
+    path: "/sensors",
+    parts: [{ from: null, to: "drum-akhir" }],
+    spots: [
+      { id: "cari", find: { selector: 'input[type="search"]' } },
+      { id: "kelompok", find: { regex: "^Sensor udara & tanah greenhouse" } },
+      { id: "kartu", find: { text: "Kelembapan tanah" } },
+      { id: "drum", find: { regex: "^Kotak kendali drum pupuk" } },
+      { id: "pelampung", find: { text: "Pelampung air drum" } },
+      { id: "drum-akhir", hidden: true, find: { text: "Suhu larutan" } },
+    ],
+  },
+  {
+    slug: "jadwal-siram",
+    path: "/jadwal-siram",
+    parts: [
+      { from: null, to: "pupuk" },
+      { from: "riwayat-siram", to: null },
+    ],
+    spots: [
+      { id: "ai", find: { text: "Layanan AI berjalan" } },
+      { id: "jam", find: { h2: "Jam siram" } },
+      { id: "tambah", find: { text: "Tambah jam" } },
+      { id: "pupuk", find: { h2: "Pupuk otomatis" } },
+      { id: "takaran", find: { text: "Takaran" } },
+      { id: "riwayat-siram", find: { h2: "Riwayat siram" } },
+      { id: "riwayat-pupuk", find: { h2: "Riwayat pupuk" } },
     ],
   },
 ];
