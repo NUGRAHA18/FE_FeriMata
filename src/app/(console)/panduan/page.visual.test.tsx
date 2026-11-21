@@ -25,7 +25,7 @@ describe("Panduan: bagian bergambar", () => {
 
   it("bagian yang belum bergambar tetap menampilkan teksnya langsung", () => {
     signIn();
-    window.history.replaceState(null, "", "/panduan#sensor");
+    window.history.replaceState(null, "", "/panduan#perangkat");
     renderWithProviders(<GuidePage />);
     expect(screen.queryByText("Baca penjelasan lengkap")).not.toBeInTheDocument();
     expect(screen.getByText("Yang tampil di layar")).toBeInTheDocument();
