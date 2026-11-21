@@ -12,7 +12,8 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useDevices, useReadingBySensor, useSensors } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { deviceNameLabel, formatNumber, formatReading, formatUnit } from "@/lib/format";
+import { deviceNameLabel, formatNumber, formatUnit } from "@/lib/format";
+import { describeReading } from "@/lib/reading-display";
 import { pictoTile, SensorPicto } from "@/components/icons/pictos";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
@@ -21,8 +22,10 @@ import { cn } from "@/lib/cn";
 function SensorTile({ sensor: s }: { sensor: Sensor }) {
   const r = useReadingBySensor(s.id);
   const stale = useConnectionState() !== "connected";
-  const value = formatReading(r);
-  const unit = formatUnit(r?.unit ?? s.unit);
+  // Pelampung → "Air cukup"; EC 0 → "Belum terbaca". Angka lain tampil biasa.
+  const shown = describeReading(s.metricKey, r);
+  const value = shown.text;
+  const unit = shown.kind === "value" ? formatUnit(r?.unit ?? s.unit) : null;
   return (
     <Link
       href={`/sensors/${s.id}`}
@@ -40,9 +43,19 @@ function SensorTile({ sensor: s }: { sensor: Sensor }) {
         </div>
       )}
       <p className={cn("tabular mt-2 flex flex-wrap items-baseline gap-x-1 text-ink", stale && r && "opacity-60")}>
-        <span className="metric-value text-[30px] sm:text-[40px]">{value ?? "—"}</span>
+        <span
+          className={cn(
+            "metric-value",
+            shown.kind === "value" ? "text-[30px] sm:text-[40px]" : "text-[22px] leading-tight sm:text-[26px]",
+            shown.kind === "unread" && "text-warn-ink",
+            shown.kind === "text" && shown.tone === "danger" && "text-danger-ink",
+          )}
+        >
+          {value ?? "—"}
+        </span>
         {value && unit && <span className="text-base text-muted">{unit}</span>}
       </p>
+      {shown.kind === "unread" && <p className="mt-1 text-xs text-warn-ink">{shown.hint}</p>}
       {r?.calibratedValue != null && (
         <p className="tabular mt-1 truncate text-xs text-ink-2">
           dikoreksi lab: {formatNumber(r.calibratedValue)}

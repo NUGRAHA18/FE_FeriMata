@@ -19,7 +19,8 @@ import { RelativeTime } from "@/components/ui/time";
 import { errorMessage } from "@/lib/api/client";
 import { useAlerts, useDevices, useOverview, useSensor, useSensorLatest } from "@/lib/api/queries";
 import type { Sensor } from "@/lib/api/types";
-import { formatDateTime, formatNumber, formatReading, formatUnit } from "@/lib/format";
+import { formatDateTime, formatNumber, formatUnit } from "@/lib/format";
+import { describeReading } from "@/lib/reading-display";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
@@ -36,8 +37,9 @@ function LatestValue({ sensor: s }: { sensor: Sensor }) {
   const latest = useSensorLatest(s.id);
   const stale = useConnectionState() !== "connected";
   const r = latest.data;
-  const value = formatReading(r);
-  const unit = formatUnit(r?.unit ?? s.unit);
+  const shown = describeReading(s.metricKey, r);
+  const value = shown.text;
+  const unit = shown.kind === "value" ? formatUnit(r?.unit ?? s.unit) : null;
   return (
     <Card className="flex flex-col items-center py-8 text-center">
       <p className="text-sm text-muted">Angka terakhir</p>
@@ -45,9 +47,21 @@ function LatestValue({ sensor: s }: { sensor: Sensor }) {
         <Skeleton className="mt-3 h-16 w-40" />
       ) : (
         <p className={cn("tabular mt-2 flex items-start text-ink", stale && r && "opacity-60")}>
-          <span className="metric-value text-[72px] sm:text-[88px]">{value ?? "—"}</span>
+          <span
+            className={cn(
+              "metric-value",
+              shown.kind === "value" ? "text-[72px] sm:text-[88px]" : "text-[40px] leading-tight sm:text-[48px]",
+              shown.kind === "unread" && "text-warn-ink",
+              shown.kind === "text" && shown.tone === "danger" && "text-danger-ink",
+            )}
+          >
+            {value ?? "—"}
+          </span>
           {value && unit && <span className="mt-2 text-3xl text-muted">{unit}</span>}
         </p>
+      )}
+      {!latest.isPending && shown.kind === "unread" && (
+        <p className="mt-1 text-sm text-warn-ink">{shown.hint}</p>
       )}
       {r?.calibratedValue != null && (
         <p className="tabular mt-1 rounded-control bg-accent-soft px-3 py-1 text-sm text-ink">

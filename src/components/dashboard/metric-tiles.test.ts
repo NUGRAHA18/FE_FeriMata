@@ -8,6 +8,10 @@ describe("ecTargetStatus", () => {
     expect(ecTargetStatus({ value: 1489, unit: "uS/cm" }, target)?.label).toBe("Terlalu encer");
     expect(ecTargetStatus({ value: 2.5, unit: "mS/cm" }, target)?.label).toBe("Terlalu pekat");
   });
+  it("EC 0 (probe belum terbaca) tidak dinilai 'Terlalu encer'", () => {
+    expect(ecTargetStatus({ value: 0, unit: "mS/cm" }, target)).toBeNull();
+    expect(ecTargetStatus({ value: 0, unit: "uS/cm" }, target)).toBeNull();
+  });
   it("tidak menilai tanpa target atau satuan yang dikenal", () => {
     expect(ecTargetStatus({ value: 2000, unit: "uS/cm" }, null)).toBeNull();
     expect(ecTargetStatus({ value: 2000, unit: "uS/cm" }, { min: null, max: 2.2 })).toBeNull();
