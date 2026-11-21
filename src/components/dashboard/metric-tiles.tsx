@@ -7,6 +7,7 @@ import { RelativeTime } from "@/components/ui/time";
 import { tankKeys } from "@/config/dashboard-layout";
 import { useOverview, useReadingByMetric } from "@/lib/api/queries";
 import { formatNumber, formatReading, formatUnit, powerSourceLabel } from "@/lib/format";
+import { describeReading } from "@/lib/reading-display";
 import { useConnectionState } from "@/lib/realtime/stomp";
 import { cn } from "@/lib/cn";
 
@@ -73,6 +74,8 @@ export function ecTargetStatus(
   target: { min: number | null; max: number | null } | null | undefined,
 ): MetricStatus | null {
   if (ec?.value == null || target?.min == null || target.max == null) return null;
+  // EC 0 = probe belum terbaca, bukan larutan yang sangat encer: jangan beri penilaian.
+  if (ec.value <= 0) return null;
   const unit = ec.unit?.toLowerCase();
   const ms = unit === "us/cm" || unit === "µs/cm" ? ec.value / 1000 : unit === "ms/cm" ? ec.value : null;
   if (ms == null) return null;
@@ -105,6 +108,9 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
   const ecStatus = ecTargetStatus(ec, target);
   const latest = [ec, ph, temp].filter(Boolean).sort((a, b) => (a!.recordedAt < b!.recordedAt ? 1 : -1))[0];
   const ecUnit = formatUnit(ec?.unit);
+  // EC 0 ditampilkan apa adanya sebagai "Belum terbaca" (pengingat memeriksa probe), bukan angka 0.
+  const ecShown = describeReading(tankKeys.ec, ec);
+  const ecUnread = ecShown.kind === "unread";
   const valueCls = cn("metric-value truncate", compact ? "text-[clamp(1.375rem,17cqi,1.75rem)]" : "text-[clamp(1.5rem,19cqi,2.25rem)]");
   return (
     <section aria-label="Drum pupuk" className={cn("@container flex min-w-0 flex-col rounded-card bg-card shadow-card ring-1 ring-line", compact ? "p-3.5" : "p-4 sm:p-5", className)}>
@@ -116,9 +122,14 @@ export function TankCard({ compact, className }: { compact?: boolean; className?
         <div className="min-w-0">
           <dt className="text-xs text-ink-2">Kepekatan (EC)</dt>
           <dd className="mt-1 flex flex-wrap items-baseline gap-x-1">
-            <span className={valueCls}>{formatReading(ec) ?? "—"}</span>
-            {ec && ecUnit && <span className="text-xs font-medium text-ink-2">{ecUnit}</span>}
+            {ecUnread ? (
+              <span className="text-lg leading-tight font-semibold text-warn-ink">{ecShown.text}</span>
+            ) : (
+              <span className={valueCls}>{formatReading(ec) ?? "—"}</span>
+            )}
+            {ec && ecUnit && !ecUnread && <span className="text-xs font-medium text-ink-2">{ecUnit}</span>}
           </dd>
+          {ecShown.kind === "unread" && <p className="mt-0.5 text-[11px] text-warn-ink">{ecShown.hint}</p>}
           {target?.min != null && target.max != null && (
             <p className="mt-0.5 text-[11px] text-muted">
               target {formatNumber(target.min, 2)}–{formatNumber(target.max, 2)} mS/cm
