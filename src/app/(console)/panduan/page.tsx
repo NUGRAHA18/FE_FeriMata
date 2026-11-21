@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, BookA, ChevronDown, CircleAlert, Info, PlayCircle, Search } from "lucide-react";
 import { useEffect, useState, useSyncExternalStore, type ReactNode } from "react";
+import { VisualGuideView } from "@/components/guide/visual-guide";
 import { GuideDialog } from "@/components/onboarding/guide";
 import { PageHeader } from "@/components/shell/page-header";
 import { Button } from "@/components/ui/button";
@@ -10,6 +11,7 @@ import { EmptyState } from "@/components/ui/skeleton";
 import { useCanWrite } from "@/lib/auth/use-session";
 import { cn } from "@/lib/cn";
 import { filterGlossary, filterSections, glossary, guideSections, type GuideSection, type GuideTerm } from "@/lib/guide-content";
+import { visualGuideFor } from "@/lib/guide-visual";
 
 /* Isi di lib/guide-content.ts. Bagian terbuka mengikuti #anchor (ikon "?" halaman lain); hanya satu
  * terbuka sekaligus, kecuali saat mencari (semua yang cocok terbuka). */
@@ -87,18 +89,10 @@ function Accordion({
 }
 
 function SectionBody({ s, canWrite }: { s: GuideSection; canWrite: boolean }) {
-  return (
+  const visual = visualGuideFor(s.id);
+  // Penjelasan teks lengkap. Bagian yang sudah punya panduan bergambar melipatnya supaya petani melihat gambarnya dulu.
+  const detail = (
     <>
-      {s.viewerNote && !canWrite && (
-        <p className="flex gap-2.5 rounded-inner bg-info-soft px-4 py-3 text-base text-ink">
-          <Info aria-hidden className="mt-0.5 size-5 shrink-0 text-info" />
-          {s.viewerNote}
-        </p>
-      )}
-      <div>
-        <Heading>Halaman ini untuk apa</Heading>
-        <p className="text-base leading-relaxed text-ink">{s.purpose}</p>
-      </div>
       <div>
         <Heading>Yang tampil di layar</Heading>
         <Terms items={s.onScreen} />
@@ -130,6 +124,32 @@ function SectionBody({ s, canWrite }: { s: GuideSection; canWrite: boolean }) {
           ))}
         </ul>
       </div>
+    </>
+  );
+  return (
+    <>
+      {s.viewerNote && !canWrite && (
+        <p className="flex gap-2.5 rounded-inner bg-info-soft px-4 py-3 text-base text-ink">
+          <Info aria-hidden className="mt-0.5 size-5 shrink-0 text-info" />
+          {s.viewerNote}
+        </p>
+      )}
+      <div>
+        <Heading>Halaman ini untuk apa</Heading>
+        <p className="text-base leading-relaxed text-ink">{s.purpose}</p>
+      </div>
+      {visual && <VisualGuideView guide={visual} />}
+      {visual ? (
+        <details className="group rounded-inner bg-card-2 ring-1 ring-line">
+          <summary className="flex min-h-12 cursor-pointer items-center justify-between gap-3 px-4 py-3 text-base font-semibold text-ink">
+            Baca penjelasan lengkap
+            <ChevronDown aria-hidden className="size-5 shrink-0 text-ink-2 transition-transform group-open:rotate-180" />
+          </summary>
+          <div className="flex flex-col gap-5 border-t border-line px-4 pt-4 pb-5">{detail}</div>
+        </details>
+      ) : (
+        detail
+      )}
       {s.href && (
         <Link
           href={s.href}
