@@ -4,13 +4,14 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { LogIn } from "lucide-react";
 import { Suspense, useEffect, useState, type FormEvent } from "react";
 import { LeafCorner } from "@/components/illustrations";
-import { LogoFull } from "@/components/shell/logo";
+import { LogoFull, logoDarkBg } from "@/components/shell/logo";
 import { ThemeToggle } from "@/components/shell/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { Field, PasswordField } from "@/components/ui/input";
 import { productName, siteConfig } from "@/config/site";
 import { ApiRequestError, errorMessage } from "@/lib/api/client";
 import { login } from "@/lib/api/endpoints";
+import { cn } from "@/lib/cn";
 import { consumeEndReason, safeNext, saveSession, type EndReason } from "@/lib/auth/session";
 import { useSession } from "@/lib/auth/use-session";
 
@@ -97,10 +98,10 @@ export default function LoginPage() {
       </div>
       <div className="w-full max-w-[400px]">
         <div className="relative overflow-hidden rounded-card bg-card shadow-card ring-1 ring-line">
-          {/* Kepala berlogo. Logonya berlatar putih, jadi bidang ini tetap putih juga pada tema gelap. */}
-          <div className="relative overflow-hidden bg-white px-6 pt-6 pb-4">
+          {/* Kepala berlogo. Latarnya mengikuti varian logo: putih (tema terang) atau hijau tua (tema gelap). */}
+          <div className={cn("relative overflow-hidden bg-white px-6 pt-6 pb-4", logoDarkBg)}>
             <LeafCorner className="pointer-events-none absolute -top-4 -right-6 h-24 w-36" />
-            <h1 className="relative mx-auto w-full max-w-[240px]">
+            <h1 className="relative mx-auto w-full max-w-[290px]">
               <LogoFull />
             </h1>
           </div>

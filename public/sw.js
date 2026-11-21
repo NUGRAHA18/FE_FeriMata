@@ -8,7 +8,9 @@
  * - Notifikasi push peringatan darurat (Web Push dari backend) dan klik notifikasinya.
  * - `/sw.js?cache=off` (dipakai `next dev`): hanya push, tanpa cache, supaya HMR tidak terganggu.
  */
-const STATIC_CACHE = "fertimata-static-v1";
+// Naikkan versi tiap kali berkas di /icons/ diganti dengan nama yang sama (cache dulu): v2 = logo baru
+// (21 Nov 2026). Cache lama dibuang saat service worker baru aktif.
+const STATIC_CACHE = "fertimata-static-v2";
 const PAGE_CACHE = "fertimata-pages-v1";
 const CACHE_ON = new URL(self.location.href).searchParams.get("cache") !== "off";
 const KEEP = CACHE_ON ? [STATIC_CACHE, PAGE_CACHE] : [];
