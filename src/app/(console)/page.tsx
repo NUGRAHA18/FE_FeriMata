@@ -10,6 +10,7 @@ import { DevicesCard } from "@/components/dashboard/devices-card";
 import { ReadingMetricCard, SystemStatusCard, TankCard } from "@/components/dashboard/metric-tiles";
 import { FirstVisitGuide } from "@/components/onboarding/guide";
 import { LeafCorner } from "@/components/illustrations";
+import { InstallCard } from "@/components/pwa/install-card";
 import { SectionHeader } from "@/components/ui/card";
 import { AlertPill, ConnectionIndicator } from "@/components/shell/header-status";
 import { useShell } from "@/components/shell/shell-context";
@@ -55,6 +56,7 @@ export default function DashboardPage() {
     <>
       <DashboardHeader />
       <FirstVisitGuide />
+      <InstallCard className="mb-4" />
       {/* Bila masih ada angka terakhir, banner offline di atas sudah menjelaskan masalahnya. */}
       {overviewError && overview.data === undefined && (
         <ErrorState className="mb-4" message={`Data belum bisa dimuat: ${errorMessage(overviewError)}`} />
