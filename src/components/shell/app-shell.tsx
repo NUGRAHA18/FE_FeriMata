@@ -24,7 +24,7 @@ export function AppShell({ children, alertCount, connection, initials, banners, 
   return (
     <ShellProvider alertCount={alertCount} connection={connection}>
       <NavRail alertBadge={alertCount > 0} />
-      <div className="min-h-dvh px-4 pt-[max(16px,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 md:pl-[116px] md:pr-6 md:pt-6 lg:pl-[156px] lg:pr-8">
+      <div className="min-h-dvh px-4 pt-[max(16px,env(safe-area-inset-top))] pb-[calc(6rem+env(safe-area-inset-bottom))] md:pb-8 md:pl-[116px] md:pr-6 md:pt-6 lg:pl-[184px] lg:pr-8">
         <div className="mx-auto w-full max-w-[1480px]">
           <MobileHero initials={initials} />
           {/* Ponsel: isi naik menumpang tepi bawah kepala hijau (kartu melayang); Beranda lebih dalam. */}
